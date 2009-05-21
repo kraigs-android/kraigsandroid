@@ -15,6 +15,7 @@
 
 package com.angrydoughnuts.android.brightprof;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -22,7 +23,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DbHelper extends SQLiteOpenHelper {
   public static final String DB_NAME = "brightprof";
   public static final String DB_TABLE = "profiles";
-  public static final int DB_VERSION = 1;
+  public static final int DB_VERSION = 2;
   public static final String PROF_ID_COL = "_id";
   public static final String PROF_NAME_COL = "name";
   public static final String PROF_VALUE_COL = "value";
@@ -37,7 +38,7 @@ public class DbHelper extends SQLiteOpenHelper {
         + " INTEGER PRIMARY KEY AUTOINCREMENT, " + PROF_NAME_COL
         + " TEXT NOT NULL," + PROF_VALUE_COL + " UNSIGNED INTEGER (0, 100))");
     db.execSQL("INSERT INTO " + DB_TABLE + "( " + PROF_NAME_COL + ", "
-        + PROF_VALUE_COL + ") VALUES ('Low', 5)");
+        + PROF_VALUE_COL + ") VALUES ('Low', 10)");
     db.execSQL("INSERT INTO " + DB_TABLE + "( " + PROF_NAME_COL + ", "
         + PROF_VALUE_COL + ") VALUES ('Normal', 25)");
     db.execSQL("INSERT INTO " + DB_TABLE + "( " + PROF_NAME_COL + ", "
@@ -46,6 +47,13 @@ public class DbHelper extends SQLiteOpenHelper {
 
   @Override
   public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-    // First version, nothing to do yet.
+    // In the transition from DB version 1 to 2, the minimum brightness value
+    // was raised from 5 to 10. Update all db entries < 10 to 10.
+    if (oldVersion < 2) {
+      ContentValues values = new ContentValues(1);
+      values.put(PROF_VALUE_COL, 10);
+      String where = PROF_VALUE_COL + " < 10";
+      db.update(DB_TABLE, values, where, null);
+    }
   }
 }

@@ -31,6 +31,11 @@ public class DbAccessor {
     rwDb = db.getWritableDatabase();
   }
 
+  public void closeConnections() {
+    rDb.close();
+    rwDb.close();
+  }
+
   public Cursor getAll() {
     return rDb.query(DbHelper.DB_TABLE, new String[] { DbHelper.PROF_ID_COL,
         DbHelper.PROF_NAME_COL, DbHelper.PROF_VALUE_COL }, null, null, null,
