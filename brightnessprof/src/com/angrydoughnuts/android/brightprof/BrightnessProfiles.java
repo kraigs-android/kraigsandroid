@@ -115,6 +115,12 @@ public class BrightnessProfiles extends Activity {
   }
 
   @Override
+  protected void onDestroy() {
+    dbAccessor.closeConnections();
+    super.onDestroy();
+  }
+
+  @Override
   protected void onResume() {
     // Lookup the initial system brightness and set our app's brightness
     // percentage appropriately.
@@ -223,9 +229,9 @@ public class BrightnessProfiles extends Activity {
   }
 
   private void setBrightness(int brightness) {
-    // The screen is pretty much off at values <5.
-    if (brightness < 5) {
-      appBrightness = 5;
+    // The screen is pretty much off at values <10.
+    if (brightness < 10) {
+      appBrightness = 10;
     } else if (brightness > 100) {
       appBrightness = 100;
     } else {
