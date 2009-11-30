@@ -15,20 +15,15 @@
 
 package com.angrydoughnuts.android.brightprof;
 
-import java.math.BigDecimal;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.provider.Settings.SettingNotFoundException;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -41,9 +36,12 @@ import android.widget.AdapterView.OnItemClickListener;
 
 public class BrightnessProfiles extends Activity {
   private static final int ACTIVITY_EDIT = 0;
+  private static final int ACTIVITY_CALIBRATE = 1;
 
   private static final int MENU_EDIT = 0;
   private static final int MENU_DELETE = 1;
+
+  private static final int OPTION_CALIBRATE = 0;
 
   private int appBrightness;
   private DbAccessor dbAccessor;
@@ -92,7 +90,7 @@ public class BrightnessProfiles extends Activity {
     });
 
     // Get a database cursor.
-    listViewCursor = dbAccessor.getAll();
+    listViewCursor = dbAccessor.getAllProfiles();
     startManagingCursor(listViewCursor);
     // Populate the list view using the Cursor.
     String[] from = new String[] { "name" };
@@ -109,6 +107,9 @@ public class BrightnessProfiles extends Activity {
         int brightness = listViewCursor.getInt(listViewCursor
             .getColumnIndexOrThrow(DbHelper.PROF_VALUE_COL));
         setBrightness(brightness);
+        // TODO(cgallek): This will terminate the application after a profile
+        // is selected. Consider making this a configurable option.
+        finish();
       }
     });
     registerForContextMenu(profileList);
@@ -124,16 +125,7 @@ public class BrightnessProfiles extends Activity {
   protected void onResume() {
     // Lookup the initial system brightness and set our app's brightness
     // percentage appropriately.
-    int systemBrightness = 0;
-    try {
-      systemBrightness = Settings.System.getInt(getContentResolver(),
-          Settings.System.SCREEN_BRIGHTNESS);
-    } catch (SettingNotFoundException e) {
-      // TODO Log an error message.
-    }
-    BigDecimal d = new BigDecimal((systemBrightness * 100) / 255);
-    d = d.setScale(0, BigDecimal.ROUND_HALF_EVEN);
-    appBrightness = d.intValue();
+    appBrightness = Util.getPhoneBrighness(this, dbAccessor);
     // Set the value for the brightness text field and slider.
     refreshDisplay();
 
@@ -177,6 +169,26 @@ public class BrightnessProfiles extends Activity {
   }
 
   @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    boolean result = super.onCreateOptionsMenu(menu);
+    MenuItem calibrate = menu.add(0, OPTION_CALIBRATE, 0, R.string.calibrate);
+    calibrate.setIcon(android.R.drawable.ic_menu_preferences);
+    return result;
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    switch (item.getItemId()) {
+      case OPTION_CALIBRATE:
+        Intent i = new android.content.Intent(getApplicationContext(),
+            CalibrateActivity.class);
+        startActivityForResult(i, ACTIVITY_CALIBRATE);
+        break;
+    }
+    return super.onOptionsItemSelected(item);
+  }
+
+  @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
     switch (keyCode) {
       case KeyEvent.KEYCODE_VOLUME_DOWN:
@@ -191,8 +203,7 @@ public class BrightnessProfiles extends Activity {
   }
 
   @Override
-  protected void onActivityResult(int requestCode, int resultCode,
-      Intent data) {
+  protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
     if (resultCode == RESULT_CANCELED) {
       return;
@@ -229,38 +240,14 @@ public class BrightnessProfiles extends Activity {
   }
 
   private void setBrightness(int brightness) {
-    // The screen is pretty much off at values <10.
-    if (brightness < 10) {
-      appBrightness = 10;
+    if (brightness < 0) {
+      appBrightness = 0;
     } else if (brightness > 100) {
       appBrightness = 100;
     } else {
       appBrightness = brightness;
     }
-    setSystemBrightness(appBrightness);
+    Util.setPhoneBrightness(this, dbAccessor, appBrightness);
     refreshDisplay();
-  }
-
-  void setSystemBrightness(int brightnessPercentage) {
-    BigDecimal d = new BigDecimal((brightnessPercentage * 255.0) / 100);
-    d = d.setScale(0, BigDecimal.ROUND_HALF_EVEN);
-    int brightnessUnits = d.intValue();
-    if (brightnessUnits < 0) {
-      brightnessUnits = 0;
-    } else if (brightnessUnits > 255) {
-      brightnessUnits = 255;
-    }
-
-    // Change the system brightness setting. This doesn't change the
-    // screen brightness immediately. (Scale 0 - 255).
-    Settings.System.putInt(getContentResolver(),
-        Settings.System.SCREEN_BRIGHTNESS, brightnessUnits);
-
-    // Set the brightness of the current window. This takes effect immediately.
-    // When the window is closed, the new system brightness is used.
-    // (Scale 0.0 - 1.0).
-    WindowManager.LayoutParams lp = getWindow().getAttributes();
-    lp.screenBrightness = brightnessPercentage / 100.0f;
-    getWindow().setAttributes(lp);
   }
 }

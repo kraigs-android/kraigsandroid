@@ -78,11 +78,6 @@ public class EditActivity extends Activity {
           return;
         }
 
-        // Restrict the minimum brightness to 10.
-        if (newBrightness < 10) {
-          newBrightness = 10;
-        }
-
         // If nothing changed, act as though cancel was pressed.
         if (name.equals(newName) && brightness == newBrightness) {
           setResult(RESULT_CANCELED);

@@ -15,18 +15,19 @@
 
 package com.angrydoughnuts.android.brightprof;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class DbHelper extends SQLiteOpenHelper {
   public static final String DB_NAME = "brightprof";
-  public static final String DB_TABLE = "profiles";
-  public static final int DB_VERSION = 2;
+  public static final String DB_TABLE_PROFILES = "profiles";
+  public static final String DB_TABLE_CALIBRATE = "calibrate";
+  public static final int DB_VERSION = 3;
   public static final String PROF_ID_COL = "_id";
   public static final String PROF_NAME_COL = "name";
   public static final String PROF_VALUE_COL = "value";
+  public static final String CALIB_MIN_BRIGHT_COL = "min_bright";
 
   public DbHelper(Context context) {
     super(context, DB_NAME, null, DB_VERSION);
@@ -34,26 +35,36 @@ public class DbHelper extends SQLiteOpenHelper {
 
   @Override
   public void onCreate(SQLiteDatabase db) {
-    db.execSQL("CREATE TABLE " + DB_TABLE + " (" + PROF_ID_COL
+    // Table to hold information for each profile.
+    db.execSQL("CREATE TABLE " + DB_TABLE_PROFILES + " (" + PROF_ID_COL
         + " INTEGER PRIMARY KEY AUTOINCREMENT, " + PROF_NAME_COL
         + " TEXT NOT NULL," + PROF_VALUE_COL + " UNSIGNED INTEGER (0, 100))");
-    db.execSQL("INSERT INTO " + DB_TABLE + "( " + PROF_NAME_COL + ", "
-        + PROF_VALUE_COL + ") VALUES ('Low', 10)");
-    db.execSQL("INSERT INTO " + DB_TABLE + "( " + PROF_NAME_COL + ", "
-        + PROF_VALUE_COL + ") VALUES ('Normal', 25)");
-    db.execSQL("INSERT INTO " + DB_TABLE + "( " + PROF_NAME_COL + ", "
+    db.execSQL("INSERT INTO " + DB_TABLE_PROFILES + "( " + PROF_NAME_COL + ", "
+        + PROF_VALUE_COL + ") VALUES ('Low', 0)");
+    db.execSQL("INSERT INTO " + DB_TABLE_PROFILES + "( " + PROF_NAME_COL + ", "
+        + PROF_VALUE_COL + ") VALUES ('Normal', 15)");
+    db.execSQL("INSERT INTO " + DB_TABLE_PROFILES + "( " + PROF_NAME_COL + ", "
         + PROF_VALUE_COL + ") VALUES ('High', 100)");
+
+    createCalibrationTable(db);
   }
 
   @Override
   public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-    // In the transition from DB version 1 to 2, the minimum brightness value
-    // was raised from 5 to 10. Update all db entries < 10 to 10.
-    if (oldVersion < 2) {
-      ContentValues values = new ContentValues(1);
-      values.put(PROF_VALUE_COL, 10);
-      String where = PROF_VALUE_COL + " < 10";
-      db.update(DB_TABLE, values, where, null);
+    // DB version 3 added a table for keeping track of minimum brightness.
+    // It is no longer necessary to enforce this minimum in the profile table
+    // (as values 0 through 100 are now valid).
+    // This creates the new minimum brightness table for old installs.
+    if (oldVersion < 3) {
+      createCalibrationTable(db);
     }
+  }
+
+  void createCalibrationTable(SQLiteDatabase db) {
+    // Table to hold calibration settings.
+    db.execSQL("CREATE TABLE " + DB_TABLE_CALIBRATE + " ("
+        + CALIB_MIN_BRIGHT_COL + " UNSIGNED INTEGER (1, 255))");
+    db.execSQL("INSERT INTO " + DB_TABLE_CALIBRATE + "( "
+        + CALIB_MIN_BRIGHT_COL + ") VALUES (10)");
   }
 }

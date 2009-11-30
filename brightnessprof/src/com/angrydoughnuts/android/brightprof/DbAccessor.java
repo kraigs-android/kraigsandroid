@@ -36,10 +36,10 @@ public class DbAccessor {
     rwDb.close();
   }
 
-  public Cursor getAll() {
-    return rDb.query(DbHelper.DB_TABLE, new String[] { DbHelper.PROF_ID_COL,
-        DbHelper.PROF_NAME_COL, DbHelper.PROF_VALUE_COL }, null, null, null,
-        null, null);
+  public Cursor getAllProfiles() {
+    return rDb.query(DbHelper.DB_TABLE_PROFILES,
+        new String[] { DbHelper.PROF_ID_COL, DbHelper.PROF_NAME_COL,
+            DbHelper.PROF_VALUE_COL }, null, null, null, null, null);
   }
 
   public void updateProfile(int rowId, String name, int brightness) {
@@ -48,16 +48,33 @@ public class DbAccessor {
     values.put(DbHelper.PROF_VALUE_COL, brightness);
     // If this is an unknown row id, create a new row.
     if (rowId < 0) {
-      rwDb.insert(DbHelper.DB_TABLE, null, values);
+      rwDb.insert(DbHelper.DB_TABLE_PROFILES, null, values);
       // Otherwise, update the supplied row id.
     } else {
       String where = DbHelper.PROF_ID_COL + " = " + rowId;
-      rwDb.update(DbHelper.DB_TABLE, values, where, null);
+      rwDb.update(DbHelper.DB_TABLE_PROFILES, values, where, null);
     }
   }
 
   public void deletProfile(int rowId) {
     String where = DbHelper.PROF_ID_COL + " = " + rowId;
-    rwDb.delete(DbHelper.DB_TABLE, where, null);
+    rwDb.delete(DbHelper.DB_TABLE_PROFILES, where, null);
+  }
+
+  public int getMinimumBrightness() {
+    Cursor c = rDb.query(DbHelper.DB_TABLE_CALIBRATE,
+        new String[] { DbHelper.CALIB_MIN_BRIGHT_COL }, null, null, null, null,
+        null);
+    c.moveToFirst();
+    int b = c.getInt(c.getColumnIndexOrThrow(DbHelper.CALIB_MIN_BRIGHT_COL));
+    c.deactivate();
+    c.close();
+    return b;
+  }
+
+  public void setMinimumBrightness(int brightness) {
+    ContentValues values = new ContentValues(1);
+    values.put(DbHelper.CALIB_MIN_BRIGHT_COL, brightness);
+    rwDb.update(DbHelper.DB_TABLE_CALIBRATE, values, null, null);
   }
 }
