@@ -24,14 +24,13 @@ import android.widget.AdapterView.OnItemClickListener;
 public class SettingsActivity extends Activity {
   static public final String EXTRAS_ALARM_ID = "alarm_id";
 
-  private final int TONE_SETTING = 0;
-  private final int SNOOZE_SETTING = 1;
-  private final int VIBRATE_SETTING = 2;
-  private final int TOTAL_SETTINGS = 3;
+  private enum SettingType { TONE, SNOOZE, VIBRATE, VOLUME_FADE; }
 
   private final int MISSING_EXTRAS = -69;
+  // TODO(cgallek): make these an emum?
   private final int TONE_PICK_ID = 1;
   private final int SNOOZE_PICK_ID = 2;
+  private final int VOLUME_FADE_PICK_ID = 3;
 
   private long alarmId;
   private DbAccessor db;
@@ -81,25 +80,33 @@ public class SettingsActivity extends Activity {
     });
 
     // TODO(cgallek): move all these strings to strings.xml
-    Setting[] settingsObjects = new Setting[TOTAL_SETTINGS];
-    settingsObjects[TONE_SETTING] = new Setting() {
+    Setting[] settingsObjects = new Setting[SettingType.values().length];
+    settingsObjects[SettingType.TONE.ordinal()] = new Setting() {
       @Override
       public String name() { return "Tone"; }
       @Override
       public String value() { return "" + settings.getTone().toString(); }
       
     };
-    settingsObjects[SNOOZE_SETTING] = new Setting() {
+    settingsObjects[SettingType.SNOOZE.ordinal()] = new Setting() {
       @Override
       public String name() { return "Snooze (minutes)"; }
       @Override
       public String value() { return "" + settings.getSnoozeMinutes(); }      
     };
-    settingsObjects[VIBRATE_SETTING] = new Setting() {
+    settingsObjects[SettingType.VIBRATE.ordinal()] = new Setting() {
       @Override
       public String name() { return "Vibrate"; }
       @Override
       public String value() { return settings.getVibrate() ? "Enabled" : "Disabled"; }
+    };
+    settingsObjects[SettingType.VOLUME_FADE.ordinal()] = new Setting() {
+      @Override
+      public String name() { return "Alarm volume fade"; }
+      @Override
+      public String value() { return "From " + settings.getVolumeStartPercent() + "% "
+      + "to " + settings.getVolumeEndPercent() + "% "
+      + "over " + settings.getVolumeChangeTimeSec() + " seconds."; }
     };
     
     ListView settingsList = (ListView) findViewById(R.id.settings_list);
@@ -149,10 +156,10 @@ public class SettingsActivity extends Activity {
             "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
             "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
             "51", "52", "53", "54", "55", "56", "57", "58", "59", "60" };
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder snoozeBuilder = new AlertDialog.Builder(this);
         // TODO(cgallek): move this to strings.xml
-        builder.setTitle("Snooze (in minutes)");
-        builder.setSingleChoiceItems(items, settings.getSnoozeMinutes() - 1,
+        snoozeBuilder.setTitle("Snooze (in minutes)");
+        snoozeBuilder.setSingleChoiceItems(items, settings.getSnoozeMinutes() - 1,
             new DialogInterface.OnClickListener() {
           public void onClick(DialogInterface dialog, int item) {
             settings.setSnoozeMinutes(item + 1);
@@ -160,7 +167,11 @@ public class SettingsActivity extends Activity {
             dismissDialog(SNOOZE_PICK_ID);
           }
         });
-        return builder.create();
+        return snoozeBuilder.create();
+      case VOLUME_FADE_PICK_ID:
+        // TODO(cgallek) make this a real dialog.
+        AlertDialog.Builder fadeBuilder = new AlertDialog.Builder(this);
+        return fadeBuilder.create();
       default:
         return super.onCreateDialog(id);
     }
@@ -169,8 +180,8 @@ public class SettingsActivity extends Activity {
   class SettingsListClickListener implements OnItemClickListener {
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-      switch (position) {
-        case TONE_SETTING:
+      switch (SettingType.values()[position]) {
+        case TONE:
           Uri current_tone = settings.getTone();
           Intent i = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALL);
@@ -181,12 +192,16 @@ public class SettingsActivity extends Activity {
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, current_tone);
           startActivityForResult(i, TONE_PICK_ID);
           break;
-        case SNOOZE_SETTING:
+        case SNOOZE:
           showDialog(SNOOZE_PICK_ID);
           break;
-        case VIBRATE_SETTING:
+        case VIBRATE:
           settings.setVibrate(!settings.getVibrate());
           adapter.notifyDataSetChanged();
+          break;
+        case VOLUME_FADE:
+          showDialog(VOLUME_FADE_PICK_ID);
+          break;
       }
     }
   }
