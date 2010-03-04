@@ -23,6 +23,10 @@ public class PendingAlarmList {
   }
 
   public int size() {
+    if (pendingAlarms.size() != alarmTimes.size()) {
+      throw new IllegalStateException("Inconsistent pending alarms: "
+          + pendingAlarms.size() + " vs " + alarmTimes.size());
+    }
     return pendingAlarms.size();
   }
 
@@ -47,6 +51,11 @@ public class PendingAlarmList {
     // Keep track of all scheduled alarms.
     pendingAlarms.put(alarmId, new PendingAlarm(time, scheduleIntent));
     alarmTimes.put(time, alarmId);
+
+    if (pendingAlarms.size() != alarmTimes.size()) {
+      throw new IllegalStateException("Inconsistent pending alarms: "
+          + pendingAlarms.size() + " vs " + alarmTimes.size());
+    }
   }
 
   public boolean remove(long alarmId) {
@@ -55,14 +64,18 @@ public class PendingAlarmList {
       return false;
     }
     Long expectedAlarmId = alarmTimes.remove(alarm.time());
+    alarmManager.cancel(alarm.pendingIntent());
+    alarm.pendingIntent().cancel();
+
     if (expectedAlarmId != alarmId) {
       throw new IllegalStateException("Internal inconsistency in PendingAlarmList");
     }
 
-    if (alarm != null) {
-      alarmManager.cancel(alarm.pendingIntent());
-      alarm.pendingIntent().cancel();
+    if (pendingAlarms.size() != alarmTimes.size()) {
+      throw new IllegalStateException("Inconsistent pending alarms: "
+          + pendingAlarms.size() + " vs " + alarmTimes.size());
     }
+
     return true;
   }
 
