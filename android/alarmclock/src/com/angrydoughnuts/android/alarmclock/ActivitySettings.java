@@ -110,7 +110,6 @@ public final class ActivitySettings extends Activity {
     // Read the current settings from the database.  Keep a copy of the
     // original values so that we can write new values only if they differ
     // from the originals.
-    // TODO(cgallek): Is there a way to make the originals immutable??
     originalInfo = db.readAlarmInfo(alarmId);
     // Info will not be available for the default settings.
     if (originalInfo != null) {
@@ -464,10 +463,8 @@ public final class ActivitySettings extends Activity {
           break;
 
         case TONE:
-          // TODO(cgallek): This dialog previews the selected ringer, but
-          // only through the ringtone sound stream.  If the ringer is set
-          // to silent, the user will not hear the preview.  Figure out
-          // a way to play this through the alarm stream.
+          // NOTE: there doesn't seem to be a way to set the output stream
+          // for this activity.
           Uri current_tone = settings.getTone();
           Intent i = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALL);

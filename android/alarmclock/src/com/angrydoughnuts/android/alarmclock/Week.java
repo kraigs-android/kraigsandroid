@@ -12,6 +12,23 @@ public class Week implements Parcelable {
   public static final Week WEEKDAYS = new Week(new boolean[] {false, true, true, true, true, true, false});
   public static final Week WEEKENDS = new Week(new boolean[] {true, false, false, false, false, false, true});
 
+  public enum Day {
+    SUN(R.string.dow_sun),
+    MON(R.string.dow_mon),
+    TUE(R.string.dow_tue),
+    WED(R.string.dow_wed),
+    THU(R.string.dow_thu),
+    FRI(R.string.dow_fri),
+    SAT(R.string.dow_sat);
+    private int stringId;
+    Day (int stringId) {
+      this.stringId = stringId;
+    }
+    public int stringId() {
+      return stringId;
+    }
+  }
+
   private boolean[] bitmask;
 
   public Week(Parcel source) {
@@ -144,23 +161,5 @@ public class Week implements Parcelable {
   public static Day calendarToDay(int dow) {
     int ordinalOffset = dow - Calendar.SUNDAY;
     return Day.values()[ordinalOffset];
-  }
-
-  // TODO(cgallek): This can probably be made private.
-  public enum Day {
-    SUN(R.string.dow_sun),
-    MON(R.string.dow_mon),
-    TUE(R.string.dow_tue),
-    WED(R.string.dow_wed),
-    THU(R.string.dow_thu),
-    FRI(R.string.dow_fri),
-    SAT(R.string.dow_sat);
-    private int stringId;
-    Day (int stringId) {
-      this.stringId = stringId;
-    }
-    public int stringId() {
-      return stringId;
-    }
   }
 }

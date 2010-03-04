@@ -119,7 +119,6 @@ public final class ActivityAlarmNotification extends Activity {
     timeTick = new Runnable() {
       @Override
       public void run() {
-        // TODO(cgallek): Make this control a custom clock too.
         // Some sound should always be playing.
         if (!mediaPlayer.isPlaying() &&
             fallbackSound != null && !fallbackSound.isPlaying()) { 
