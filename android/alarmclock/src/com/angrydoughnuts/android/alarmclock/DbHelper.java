@@ -25,7 +25,7 @@ public class DbHelper extends SQLiteOpenHelper {
     // TODO(cgallek): change time from seconds to minutes.
     db.execSQL("CREATE TABLE " + DB_TABLE_ALARMS + " (" + ALARMS_COL_ID
         + " INTEGER PRIMARY KEY AUTOINCREMENT, " + ALARMS_COL_TIME
-        + " UNSIGNED INTEGER (0, 86399))," + ALARMS_COL_ENABLED
+        + " UNSIGNED INTEGER (0, 86399)," + ALARMS_COL_ENABLED
         + " UNSIGNED INTEGER (0, 1))");
   }
 

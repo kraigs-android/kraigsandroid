@@ -12,8 +12,8 @@ public class DbAccessor {
 
   public DbAccessor(Context context) {
     db = new DbHelper(context);
-    rDb = db.getReadableDatabase();
     rwDb = db.getWritableDatabase();
+    rDb = db.getReadableDatabase();
   }
 
   public void closeConnections() {
