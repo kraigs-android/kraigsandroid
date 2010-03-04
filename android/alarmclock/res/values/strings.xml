@@ -16,4 +16,11 @@
     <string name="volume_start">Start volume (percent)</string>
     <string name="volume_end">End volume (percent)</string>
     <string name="volume_duration">Fade duration (seconds)</string>
+    <string name="dow_sun_short">Su</string>
+    <string name="dow_mon_short">Mo</string>
+    <string name="dow_tue_short">Tu</string>
+    <string name="dow_wed_short">We</string>
+    <string name="dow_thu_short">Th</string>
+    <string name="dow_fri_short">Fr</string>
+    <string name="dow_sat_short">Sa</string>
 </resources>

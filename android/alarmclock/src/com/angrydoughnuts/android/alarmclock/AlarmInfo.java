@@ -3,6 +3,7 @@ package com.angrydoughnuts.android.alarmclock;
 import java.util.ArrayList;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 
 public class AlarmInfo {
@@ -78,6 +79,36 @@ public class AlarmInfo {
       }
     }
     return days.toArray(new Day[0]);
+  }
+
+  public String getDaysOfWeekString(Context context) {
+    String list = "";
+    for (Day day : getDaysOfWeek()) {
+      switch (day) {
+      case SUN:
+        list += context.getString(R.string.dow_sun_short) + " ";
+        break;
+      case MON:
+        list += context.getString(R.string.dow_mon_short) + " ";
+        break;
+      case TUE:
+        list += context.getString(R.string.dow_tue_short) + " ";
+        break;
+      case WED:
+        list += context.getString(R.string.dow_wed_short) + " ";
+        break;
+      case THU:
+        list += context.getString(R.string.dow_thu_short) + " ";
+        break;
+      case FRI:
+        list += context.getString(R.string.dow_fri_short) + " ";
+        break;
+      case SAT:
+        list += context.getString(R.string.dow_sat_short) + " ";
+        break;
+      }
+    }
+    return list;
   }
 
   public void setDow(Day[] daysOfWeek) {

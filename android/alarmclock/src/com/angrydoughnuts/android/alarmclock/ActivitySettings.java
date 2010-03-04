@@ -26,6 +26,7 @@ import android.widget.AdapterView.OnItemClickListener;
 public class ActivitySettings extends Activity {
   static public final String EXTRAS_ALARM_ID = "alarm_id";
 
+  private enum AlarmInfoType { TIME, NAME, DAYS_OF_WEEK; }
   private enum SettingType { TONE, SNOOZE, VIBRATE, VOLUME_FADE; }
 
   private final int MISSING_EXTRAS = -69;
@@ -38,7 +39,8 @@ public class ActivitySettings extends Activity {
   private AlarmClockServiceBinder service;
   private DbAccessor db;
   private AlarmSettings settings;
-  SettingsAdapter adapter;
+  SettingsAdapter alarmInfoAdapter;
+  SettingsAdapter settingsAdapter;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +82,32 @@ public class ActivitySettings extends Activity {
       }
     });
 
+    // null??
+    final AlarmInfo info = db.readAlarmInfo(alarmId);
+    // TODO(cgallek): move all these strings to strings.xml
+    Setting[] alarmInfoObjects = new Setting[AlarmInfoType.values().length];
+    alarmInfoObjects[AlarmInfoType.TIME.ordinal()] = new Setting() {
+      @Override
+      public String name() { return "Time"; }
+      @Override
+      public String value() { return new AlarmTime(info.getTime()).localizedString(getApplicationContext()); }
+    };
+    alarmInfoObjects[AlarmInfoType.NAME.ordinal()] = new Setting() {
+      @Override
+      public String name() { return "Label"; }
+      @Override
+      public String value() { return info.getName(); }
+    };
+    alarmInfoObjects[AlarmInfoType.DAYS_OF_WEEK.ordinal()] = new Setting() {
+      @Override
+      public String name() { return "Repeat"; }
+      @Override
+      public String value() { return info.getDaysOfWeekString(getApplicationContext()); }
+    };
     ListView alarmInfoList = (ListView) findViewById(R.id.alarm_info_list);
+    alarmInfoAdapter = new SettingsAdapter(getApplicationContext(), alarmInfoObjects);
+    alarmInfoList.setAdapter(alarmInfoAdapter);
+    alarmInfoList.setOnItemClickListener(new AlarmInfoListClickListener());
 
     // TODO(cgallek): move all these strings to strings.xml
     Setting[] settingsObjects = new Setting[SettingType.values().length];
@@ -119,8 +146,8 @@ public class ActivitySettings extends Activity {
     };
     
     ListView settingsList = (ListView) findViewById(R.id.settings_list);
-    adapter = new SettingsAdapter(getApplicationContext(), settingsObjects);
-    settingsList.setAdapter(adapter);
+    settingsAdapter = new SettingsAdapter(getApplicationContext(), settingsObjects);
+    settingsList.setAdapter(settingsAdapter);
     settingsList.setOnItemClickListener(new SettingsListClickListener());
 
     // The alarm info section and the delete button should not be shown when
@@ -171,7 +198,7 @@ public class ActivitySettings extends Activity {
         Ringtone tone = RingtoneManager.getRingtone(c, uri);
         String name = tone != null ? tone.getTitle(c) : "Unknown name";
         settings.setTone(uri, name);
-        adapter.notifyDataSetChanged();
+        settingsAdapter.notifyDataSetChanged();
       default:
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -196,7 +223,7 @@ public class ActivitySettings extends Activity {
             new DialogInterface.OnClickListener() {
           public void onClick(DialogInterface dialog, int item) {
             settings.setSnoozeMinutes(item + 1);
-            adapter.notifyDataSetChanged();
+            settingsAdapter.notifyDataSetChanged();
             dismissDialog(SNOOZE_PICK_ID);
           }
         });
@@ -219,7 +246,7 @@ public class ActivitySettings extends Activity {
             settings.setVolumeStartPercent(Integer.parseInt(volumeStart.getText().toString()));
             settings.setVolumeEndPercent(Integer.parseInt(volumeEnd.getText().toString()));
             settings.setVolumeChangeTimeSec(Integer.parseInt(volumeDuration.getText().toString()));
-            adapter.notifyDataSetChanged();
+            settingsAdapter.notifyDataSetChanged();
             dismissDialog(VOLUME_FADE_PICK_ID);
           }
         });
@@ -232,6 +259,20 @@ public class ActivitySettings extends Activity {
         return fadeBuilder.create();
       default:
         return super.onCreateDialog(id);
+    }
+  }
+
+  class AlarmInfoListClickListener implements OnItemClickListener {
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+      switch (AlarmInfoType.values()[position]) {
+        case TIME:
+          break;
+        case NAME:
+          break;
+        case DAYS_OF_WEEK:
+          break;
+      }
     }
   }
 
@@ -256,7 +297,7 @@ public class ActivitySettings extends Activity {
           break;
         case VIBRATE:
           settings.setVibrate(!settings.getVibrate());
-          adapter.notifyDataSetChanged();
+          settingsAdapter.notifyDataSetChanged();
           break;
         case VOLUME_FADE:
           showDialog(VOLUME_FADE_PICK_ID);
