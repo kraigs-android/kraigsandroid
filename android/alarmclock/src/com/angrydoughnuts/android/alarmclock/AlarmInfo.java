@@ -137,12 +137,20 @@ public class AlarmInfo {
   private String name;
   private Week daysOfWeek;
 
-  AlarmInfo(Cursor cursor) {
+  public AlarmInfo(Cursor cursor) {
     alarmId = cursor.getLong(cursor.getColumnIndex(DbHelper.ALARMS_COL__ID));
     time = IntegerToAlarmTime(cursor.getInt(cursor.getColumnIndex(DbHelper.ALARMS_COL_TIME)));
     enabled = cursor.getInt(cursor.getColumnIndex(DbHelper.ALARMS_COL_ENABLED)) == 1;
     name = cursor.getString(cursor.getColumnIndex(DbHelper.ALARMS_COL_NAME));
     daysOfWeek = new Week(cursor.getInt(cursor.getColumnIndex(DbHelper.ALARMS_COL_DAY_OF_WEEK)));
+  }
+
+  public AlarmInfo() {
+    alarmId = -69;  // initially invalid.
+    time = new AlarmTime(0, 0, 0);
+    enabled = false;
+    name = "";
+    daysOfWeek = new Week();
   }
 
   public ContentValues contentValues() {
@@ -204,8 +212,7 @@ public class AlarmInfo {
     return daysOfWeek.toString(context);
   }
 
-  // TODO(cgallek): Make these private.
-  public static int AlarmTimeToInteger(AlarmTime time) {
+  private static int AlarmTimeToInteger(AlarmTime time) {
     Calendar c = time.calendar();
     int hourOfDay = c.get(Calendar.HOUR_OF_DAY);
     int minute = c.get(Calendar.MINUTE);
@@ -213,7 +220,7 @@ public class AlarmInfo {
     return hourOfDay * 3600 + minute * 60 + second;
   }
 
-  public static AlarmTime IntegerToAlarmTime(int secondsAfterMidnight) {
+  private static AlarmTime IntegerToAlarmTime(int secondsAfterMidnight) {
     int hours = secondsAfterMidnight % 3600;
     int minutes = (secondsAfterMidnight - (hours * 3600)) % 60;
     int seconds = (secondsAfterMidnight- (hours * 3600 + minutes * 60));

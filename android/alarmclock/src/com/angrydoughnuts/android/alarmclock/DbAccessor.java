@@ -25,11 +25,10 @@ public class DbAccessor {
   }
 
   public long newAlarm(AlarmTime time) {
-    // TODO(cgallek) make sure this time doesn't exist yet.
-    ContentValues values = new ContentValues(2);
-    values.put(DbHelper.ALARMS_COL_TIME, AlarmInfo.AlarmTimeToInteger(time));
-    values.put(DbHelper.ALARMS_COL_ENABLED, false);
-    long id = rwDb.insert(DbHelper.DB_TABLE_ALARMS, null, values);
+    AlarmInfo info = new AlarmInfo();
+    info.setTime(time);
+
+    long id = rwDb.insert(DbHelper.DB_TABLE_ALARMS, null, info.contentValues());
     if (id < 0) {
       throw new IllegalStateException("Unable to insert into database");
     }
@@ -64,20 +63,6 @@ public class DbAccessor {
     }
     cursor.close();
     return enabled;
-  }
-
-  public AlarmTime alarmTime(long alarmId) {
-    Cursor cursor = rDb.query(DbHelper.DB_TABLE_ALARMS,
-        new String[] { DbHelper.ALARMS_COL_TIME },
-        DbHelper.ALARMS_COL__ID + " = " + alarmId, null, null, null, null);
-    if (cursor.getCount() != 1) {
-      cursor.close();
-      return null;
-    }
-    cursor.moveToFirst();
-    AlarmTime time = AlarmInfo.IntegerToAlarmTime(cursor.getInt(0));
-    cursor.close();
-    return time;
   }
 
   public boolean writeAlarmInfo(long alarmId, AlarmInfo info) {

@@ -76,7 +76,7 @@ public class AlarmClockService extends Service {
       if (debug(getApplicationContext())) {
         Toast.makeText(getApplicationContext(), "RENABLE " + alarmId, Toast.LENGTH_SHORT).show();
       }
-      pendingAlarms.put(alarmId, db.alarmTime(alarmId));
+      pendingAlarms.put(alarmId, db.readAlarmInfo(alarmId).getTime());
     }
 
     // TODO(cgallek): add a better notification icon.
@@ -210,7 +210,7 @@ public class AlarmClockService extends Service {
 
   public void scheduleAlarm(long alarmId) {
     // Schedule the next alarm.
-    pendingAlarms.put(alarmId, db.alarmTime(alarmId));
+    pendingAlarms.put(alarmId, db.readAlarmInfo(alarmId).getTime());
 
     // Mark the alarm as enabled in the database.
     db.enableAlarm(alarmId, true);
