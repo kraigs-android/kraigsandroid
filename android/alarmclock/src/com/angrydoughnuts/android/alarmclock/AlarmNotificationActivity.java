@@ -3,12 +3,8 @@ package com.angrydoughnuts.android.alarmclock;
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardLock;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.RemoteException;
 import android.view.View;
@@ -16,22 +12,9 @@ import android.widget.Button;
 
 public class AlarmNotificationActivity extends Activity {
 
+  private AlarmClockServiceBinder service;
   private PowerManager.WakeLock wakeLock;
   private KeyguardLock screenLock;
-
-  private AlarmClockInterface clock;
-  final private ServiceConnection serviceConnection = new ServiceConnection() {
-    @Override
-    public void onServiceConnected(ComponentName name, IBinder service) {
-      clock = AlarmClockInterface.Stub.asInterface(service);
-    }
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-      // TODO(cgallek): This should only happen if the AlarmClockService
-      // crashes.  Consider throwing an exception here.
-      clock = null;
-    }
-  };
 
   // TODO(cgallek): This doesn't seem to handle the case when a second alarm
   // fires while the first has not yet been acked.
@@ -39,6 +22,8 @@ public class AlarmNotificationActivity extends Activity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.notification);
+
+    service = AlarmClockServiceBinder.newBinder(getApplicationContext());
 
     PowerManager powerManager =
       (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -64,7 +49,7 @@ public class AlarmNotificationActivity extends Activity {
         Bundle extras = getIntent().getExtras();
         int id = extras.getInt("task_id");
         try {
-          clock.clearAlarm(id);
+          service.clock().clearAlarm(id);
         } catch (RemoteException e) {
           // TODO Auto-generated catch block
           e.printStackTrace();
@@ -77,18 +62,13 @@ public class AlarmNotificationActivity extends Activity {
   @Override
   protected void onResume() {
     super.onResume();
-    final Intent serviceIntent =
-      new Intent(getApplicationContext(), AlarmClockService.class);
-    if (!bindService(
-        serviceIntent, serviceConnection, 0)) {
-      throw new IllegalStateException("Unable to bind to AlarmClock service.");
-    }
+    service.bind();
   }
 
   @Override
   protected void onPause() {
     super.onPause();
-    unbindService(serviceConnection);
+    service.unbind();
   }
 
   // TODO(cgallek): Clicking the power button twice while this activity is
