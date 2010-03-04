@@ -1,5 +1,7 @@
   package com.angrydoughnuts.android.alarmclock;
   
+import java.util.Timer;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -10,6 +12,8 @@ import android.os.IBinder;
   
   public class AlarmClockService extends Service {
     private final int NOTIFICATION_ID = 1;
+
+    private Timer timer;
   
     @Override
     public void onStart(Intent intent, int startId) {
@@ -19,6 +23,12 @@ import android.os.IBinder;
     @Override
     public void onCreate() {
       super.onCreate();
+      timer = new Timer("Alarm Clock Timer", true);
+
+      // TODO(cgallek): This is just a test timer task.  Remove it.
+      // Also, this is not the correct context to use.
+      timer.schedule(
+          new AlarmClockTimerTask(getBaseContext()), 5000, 5000);
 
       final NotificationManager manager =
         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -41,6 +51,8 @@ import android.os.IBinder;
     @Override
     public void onDestroy() {
       super.onDestroy();
+      timer.cancel();
+
       final NotificationManager manager =
         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
       manager.cancel(NOTIFICATION_ID);
