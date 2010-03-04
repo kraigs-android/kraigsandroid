@@ -68,7 +68,6 @@ public final class AlarmClockService extends Service {
       pendingAlarms.put(alarmId, db.readAlarmInfo(alarmId).getTime());
     }
 
-    // TODO(cgallek): add a better notification icon.
     notification = new Notification(R.drawable.alarmclock, null, 0);
     notification.flags |= Notification.FLAG_ONGOING_EVENT;
 
