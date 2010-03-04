@@ -24,6 +24,7 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
     asCalendar.set(Calendar.HOUR_OF_DAY, hours);
     asCalendar.set(Calendar.MINUTE, minutes);
     asCalendar.set(Calendar.SECOND, seconds);
+    findNextOccurance();
   }
 
   public AlarmTime(Calendar calendar) {
@@ -32,6 +33,20 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
     int minutes = asCalendar.get(Calendar.MINUTE) * 60;
     int seconds = asCalendar.get(Calendar.SECOND);
     this.secondsAfterMidnight = hours + minutes + seconds;
+    findNextOccurance();
+  }
+
+  private void findNextOccurance() {
+    Calendar now = Calendar.getInstance();
+
+    if (asCalendar.before(now)) {
+      asCalendar.add(Calendar.DATE, 1);
+    }
+
+    // TODO(cgallek): this is a little sloppy, clean it up.
+    if (asCalendar.before(now)) {
+      throw new IllegalStateException("Inconsistent calendar.");
+    }   
   }
 
   @Override
@@ -67,16 +82,11 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
 
   public Calendar nextLocalOccurance() {
     Calendar now = Calendar.getInstance();
-    Calendar then = Calendar.getInstance();
-    then.setTimeInMillis(asCalendar.getTimeInMillis());
-
-    if (then.before(now)) {
-      then.add(Calendar.DATE, 1);
-    }
-    if (then.before(now)) {
+    if (asCalendar.before(now)) {
       throw new IllegalStateException("Inconsistent calendar.");
     }
-    return then;
+
+    return asCalendar;
   }
 
   public String nextLocalOccuranceAsString() {
