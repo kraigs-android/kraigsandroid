@@ -42,7 +42,7 @@ public class ActivityAlarmClock extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
 
-    service = AlarmClockServiceBinder.newBinder(getApplicationContext());
+    service = new AlarmClockServiceBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
     handler = new Handler();
 

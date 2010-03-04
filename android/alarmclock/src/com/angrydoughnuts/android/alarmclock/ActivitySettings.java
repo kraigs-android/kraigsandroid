@@ -59,7 +59,7 @@ public class ActivitySettings extends Activity {
       throw new IllegalStateException("EXTRAS_ALARM_ID not supplied in intent.");
     }
 
-    service = AlarmClockServiceBinder.newBinder(getApplicationContext());
+    service = new AlarmClockServiceBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
 
     // TODO(cgallek): Is there a way to make the originals final??

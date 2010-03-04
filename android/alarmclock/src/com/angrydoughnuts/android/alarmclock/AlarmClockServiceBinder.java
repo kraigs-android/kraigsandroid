@@ -10,15 +10,28 @@ import android.os.RemoteException;
 
 public class AlarmClockServiceBinder {
   private Context context;
-  private int bindFlags;
   private AlarmClockInterface clock;
   private LinkedList<ServiceCallback> callbacks;
 
-  //TODO(cgallek): consider removing this method and using the
-  // contstructor of AlarmClockServiceBinder directly (removing the
-  // flags argument, of course).
-  public static AlarmClockServiceBinder newBinder(Context context) {
-    return new AlarmClockServiceBinder(context, Context.BIND_AUTO_CREATE);
+  public AlarmClockServiceBinder(Context context) {
+    this.context = context;
+    this.callbacks = new LinkedList<ServiceCallback>();
+  }
+
+  public AlarmClockInterface clock() {
+    return clock;
+  }
+
+  public void bind() {
+    final Intent serviceIntent = new Intent(context, AlarmClockService.class);
+    if (!context.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)) {
+      throw new IllegalStateException("Unable to bind to AlarmClockService.");
+    }
+  }
+
+  public void unbind() {
+    context.unbindService(serviceConnection);
+    clock = null;
   }
 
   private interface ServiceCallback {
@@ -44,12 +57,6 @@ public class AlarmClockServiceBinder {
     }
   };
 
-  private AlarmClockServiceBinder(Context context, int bindFlags) {
-    this.context = context;
-    this.bindFlags = bindFlags;
-    this.callbacks = new LinkedList<ServiceCallback>();
-  }
-
   private void runOrDefer(ServiceCallback callback) {
     if (clock != null) {
       try {
@@ -60,22 +67,6 @@ public class AlarmClockServiceBinder {
     } else {
       callbacks.offer(callback);
     }
-  }
-
-  public AlarmClockInterface clock() {
-    return clock;
-  }
-
-  public void bind() {
-    final Intent serviceIntent = new Intent(context, AlarmClockService.class);
-    if (!context.bindService(serviceIntent, serviceConnection, bindFlags)) {
-      throw new IllegalStateException("Unable to bind to AlarmClockService.");
-    }
-  }
-
-  public void unbind() {
-    context.unbindService(serviceConnection);
-    clock = null;
   }
 
   public void createAlarm(final AlarmTime time) {

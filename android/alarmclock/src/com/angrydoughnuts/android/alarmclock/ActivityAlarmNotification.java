@@ -52,7 +52,7 @@ public class ActivityAlarmNotification extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.notification);
 
-    service = AlarmClockServiceBinder.newBinder(getApplicationContext());
+    service = new AlarmClockServiceBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
 
     alarmId = AlarmClockService.alarmUriToId(getIntent().getData());
