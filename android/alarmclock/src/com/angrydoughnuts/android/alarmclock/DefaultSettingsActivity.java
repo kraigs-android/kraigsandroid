@@ -24,6 +24,9 @@ public class DefaultSettingsActivity extends Activity {
       @Override
       public void onClick(View v) {
         Intent i = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+        i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION);
+        i.putExtra(RingtoneManager.EXTRA_RINGTONE_INCLUDE_DRM, true);
+        i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Default Alarm Tone");
         startActivityForResult(i, TONE_PICK_ID);
       }
     });
