@@ -85,7 +85,7 @@ public class ActivityAlarmClock extends Activity {
     });
 
     final ListView alarmList = (ListView) findViewById(R.id.alarm_list);
-    adapter = new AlarmViewAdapter(getApplicationContext(), getLayoutInflater(), service);
+    adapter = new AlarmViewAdapter(getApplicationContext(), service);
     alarmList.setAdapter(adapter);
     alarmList.setOnItemClickListener(new OnItemClickListener() {
       @Override

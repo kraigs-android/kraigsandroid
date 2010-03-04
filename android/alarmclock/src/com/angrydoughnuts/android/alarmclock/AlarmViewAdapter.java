@@ -19,10 +19,10 @@ class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
   private DbAccessor db;
   private Cursor cursor;
 
-  public AlarmViewAdapter(Context context, LayoutInflater inflater, AlarmClockServiceBinder service) {
+  public AlarmViewAdapter(Context context, AlarmClockServiceBinder service) {
     super(context, 0, new LinkedList<AlarmInfo>());
     this.service = service;
-    this.inflater = inflater;
+    this.inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     this.db = new DbAccessor(context);
     this.cursor = db.readAlarmInfo();
     loadData();
