@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardLock;
 import android.content.Context;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -12,7 +14,9 @@ public class AlarmNotificationActivity extends Activity {
 
   private long alarmId;
   private AlarmClockServiceBinder service;
+  private DbAccessor db;
   private KeyguardLock screenLock;
+  private MediaPlayer mediaPlayer;
 
   // TODO(cgallek): This doesn't seem to handle the case when a second alarm
   // fires while the first has not yet been acked.
@@ -24,6 +28,8 @@ public class AlarmNotificationActivity extends Activity {
     this.alarmId = extras.getLong("task_id");
 
     service = AlarmClockServiceBinder.newBinder(getApplicationContext());
+    db = new DbAccessor(getApplicationContext());
+    mediaPlayer = new MediaPlayer();
 
     KeyguardManager screenLockManager =
       (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
@@ -50,15 +56,35 @@ public class AlarmNotificationActivity extends Activity {
     super.onResume();
     screenLock.disableKeyguard();
     service.bind();
+    // TODO(cgallek): shouldn't be default.
+    Uri tone = Uri.parse(db.readDefaultAlarmSettings());
+    mediaPlayer.reset();
+    // TODO(cgallek): figure out how to make sure the volume is appropriate.
+    mediaPlayer.setLooping(true);
+    try {
+      mediaPlayer.setDataSource(getApplicationContext(), tone);
+      mediaPlayer.prepare();
+      mediaPlayer.start();
+    } catch (Exception e) {
+      // TODO(cgallek): Come up with a better failure mode.
+      e.printStackTrace();
+    }
   }
 
   @Override
   protected void onPause() {
     super.onPause();
+    mediaPlayer.stop();
     service.unbind();
     screenLock.reenableKeyguard();
   }
 
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    db.closeConnections();
+    mediaPlayer.release();
+  }
   // TODO(cgallek): Clicking the power button twice while this activity is
   // in the foreground seems to bypass the keyguard...
 }

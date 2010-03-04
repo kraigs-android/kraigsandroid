@@ -108,6 +108,8 @@ public class DbAccessor {
     return tone_url;
   }
 
+  // TODO(cgallek): remove this function in favor of returning
+  // defaults from the previous function when id is not found.
   public String readDefaultAlarmSettings() {
     return readAlarmSettings(-1);
   }
