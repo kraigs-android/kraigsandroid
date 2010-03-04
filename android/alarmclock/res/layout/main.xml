@@ -4,14 +4,6 @@
   android:layout_width="fill_parent"
   android:layout_height="fill_parent" >
 
-<Button android:text="Start Service"
-  android:id="@+id/start_service"
-  android:layout_width="wrap_content"
-  android:layout_height="wrap_content" />
-<Button android:text="Stop Service"
-  android:id="@+id/stop_service"
-  android:layout_width="wrap_content"
-  android:layout_height="wrap_content" />
 <Button android:text="Set Alarm"
   android:id="@+id/set_alarm"
   android:layout_width="wrap_content"

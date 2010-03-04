@@ -7,7 +7,6 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-import android.widget.Toast;
   
   public class AlarmClockService extends Service {
     private final int NOTIFICATION_ID = 1;
@@ -21,7 +20,6 @@ import android.widget.Toast;
     public void onCreate() {
       super.onCreate();
 
-      Toast.makeText(this, "Alarm Clock Service Start", Toast.LENGTH_SHORT).show();
       NotificationManager manager =
         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
       Notification notification = new Notification(
@@ -37,7 +35,6 @@ import android.widget.Toast;
     @Override
     public void onDestroy() {
       super.onDestroy();
-      Toast.makeText(this, "Alarm Clock Service Stop", Toast.LENGTH_SHORT).show();
       NotificationManager manager =
         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
       manager.cancel(NOTIFICATION_ID);

@@ -15,31 +15,30 @@ public class AlarmClockActivity extends Activity {
   // TODO(cgallek): replace this with a data provider.
   private static boolean alarmOn = false;
   public static boolean getAlarmOn() { return alarmOn; }
-  // TODO(cgallek): make these final.
-  private Intent serviceIntent;
-  private ServiceConnection serviceConnection;
+
+  final private ServiceConnection serviceConnection = new ServiceConnection() {
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+      Toast.makeText(getApplicationContext(), "Service Connected " + name,
+          Toast.LENGTH_SHORT).show();
+    }
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+      // TODO(cgallek): This should only happen if the AlarmClockService
+      // crashes.  Consider throwing an exception here.
+      Toast.makeText(getApplicationContext(), "Service Disconnected " + name,
+          Toast.LENGTH_SHORT).show();
+    }
+  };
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
-    serviceIntent = new Intent(getApplication(), AlarmClockService.class);
 
-    Button startBtn = (Button) findViewById(R.id.start_service);
-    Button stopBtn = (Button) findViewById(R.id.stop_service);
     Button setBtn = (Button) findViewById(R.id.set_alarm);
     Button clearBtn = (Button) findViewById(R.id.clear_alarm);
 
-    startBtn.setOnClickListener(new View.OnClickListener() {
-      public void onClick(View view) {
-        startService(serviceIntent);    
-      }
-    });
-    stopBtn.setOnClickListener(new View.OnClickListener() {
-      public void onClick(View view) {
-        stopService(serviceIntent);
-      }
-    });
     setBtn.setOnClickListener(new View.OnClickListener() {
       public void onClick(View view) {
         alarmOn = true;
@@ -52,34 +51,20 @@ public class AlarmClockActivity extends Activity {
     });
   }
 
-  // TODO(cgallek): should these be onStart/onStop or onResume/onPause??
   @Override
-  protected void onStart() {
+  protected void onResume() {
     super.onStart();
-    serviceConnection = new ServiceConnection() {
-      @Override
-      public void onServiceConnected(ComponentName name, IBinder service) {
-        Toast.makeText(getApplicationContext(), "Service Connected " + name,
-            Toast.LENGTH_SHORT).show();
-      }
-      @Override
-      public void onServiceDisconnected(ComponentName name) {
-        Toast.makeText(getApplicationContext(), "Service Disconnected " + name,
-            Toast.LENGTH_SHORT).show();
-      }
-    };
-
-    boolean bindSuccess = bindService(
-        serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
-    assert(bindSuccess);
+    final Intent serviceIntent =
+      new Intent(getApplicationContext(), AlarmClockService.class);
+    if (!bindService(
+        serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)) {
+      throw new IllegalStateException("Unable to bind to AlarmClock service.");
+    }
   }
 
   @Override
-  protected void onStop() {
+  protected void onPause() {
     super.onStop();
-    // TODO(cgallek): This doesn't seem to call onUnbind() in the service all
-    // the time. I'm not sure why...  The services, therefore, doesn't always
-    // auto shutdown.
     unbindService(serviceConnection);
   }
 }
