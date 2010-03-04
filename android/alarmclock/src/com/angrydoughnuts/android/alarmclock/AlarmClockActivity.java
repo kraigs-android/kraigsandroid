@@ -45,7 +45,7 @@ public class AlarmClockActivity extends Activity {
         testTime.add(Calendar.SECOND, 5);
         // TODO(cgallek): this is going to break if seconds are removed
         // from this service method.
-        service.createAlarm(testTime);
+        service.createAlarm(new AlarmTime(testTime));
         alarmListCursor.requery();
       }
     });
@@ -92,7 +92,7 @@ public class AlarmClockActivity extends Activity {
                 c.set(Calendar.HOUR_OF_DAY, hourOfDay);
                 c.set(Calendar.MINUTE, minute);
                 c.set(Calendar.SECOND, 0);
-                service.createAlarm(c);
+                service.createAlarm(new AlarmTime(c));
                 alarmListCursor.requery();
               }
             },

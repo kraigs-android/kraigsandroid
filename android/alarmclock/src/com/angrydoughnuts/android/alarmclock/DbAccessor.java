@@ -1,7 +1,5 @@
 package com.angrydoughnuts.android.alarmclock;
 
-import java.util.Calendar;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -34,9 +32,8 @@ public class DbAccessor {
         DbHelper.ALARMS_COL_TIME + " DESC");
   }
 
-  public long newAlarm(Calendar calendar) {
+  public long newAlarm(AlarmTime time) {
     // TODO(cgallek) make sure this time doesn't exist yet.
-    AlarmTime time = new AlarmTime(calendar);
     ContentValues values = new ContentValues(2);
     values.put(DbHelper.ALARMS_COL_TIME, time.secondsAfterMidnight());
     values.put(DbHelper.ALARMS_COL_ENABLED, false);

@@ -1,6 +1,5 @@
 package com.angrydoughnuts.android.alarmclock;
 
-import java.util.Calendar;
 import java.util.TreeMap;
 
 import android.app.AlarmManager;
@@ -104,10 +103,10 @@ public class AlarmClockService extends Service {
     }
   }
 
-  public void createAlarm(Calendar calendar) {
+  public void createAlarm(AlarmTime time) {
     // TODO(cgallek): validate params??
     // Store the alarm in the persistent database.
-    long alarmId = db.newAlarm(calendar);
+    long alarmId = db.newAlarm(time);
     scheduleAlarm(alarmId);
   }
 

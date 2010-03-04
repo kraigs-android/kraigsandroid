@@ -1,6 +1,5 @@
 package com.angrydoughnuts.android.alarmclock;
 
-import java.util.Calendar;
 import java.util.LinkedList;
 import android.content.ComponentName;
 import android.content.Context;
@@ -84,11 +83,11 @@ public class AlarmClockServiceBinder {
     });
   }
 
-  public void createAlarm(final Calendar calendar) {
+  public void createAlarm(final AlarmTime time) {
     runOrDefer(new ServiceCallback() {
       @Override
       public void run() throws RemoteException {
-        clock.createAlarm(new CalendarParcel(calendar));
+        clock.createAlarm(time);
       }
     });
   }

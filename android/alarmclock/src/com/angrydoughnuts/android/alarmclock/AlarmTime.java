@@ -2,7 +2,10 @@ package com.angrydoughnuts.android.alarmclock;
 
 import java.util.Calendar;
 
-public class AlarmTime {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class AlarmTime implements Parcelable {
   private int secondsAfterMidnight;
   private Calendar asCalendar;
 
@@ -50,5 +53,33 @@ public class AlarmTime {
     now.set(Calendar.SECOND, 0);
     now.add(Calendar.MINUTE, minutes);
     return new AlarmTime(now);
+  }
+
+  private AlarmTime(Parcel source) {
+    this.secondsAfterMidnight = source.readInt();
+    this.asCalendar = (Calendar) source.readSerializable();
+  }
+
+  @Override
+  public void writeToParcel(Parcel dest, int flags) {
+    dest.writeInt(secondsAfterMidnight);
+    dest.writeSerializable(asCalendar);
+  }
+
+  public static final Parcelable.Creator<AlarmTime> CREATOR =
+    new Parcelable.Creator<AlarmTime>() {
+      @Override
+      public AlarmTime createFromParcel(Parcel source) {
+        return new AlarmTime(source);
+      }
+      @Override
+      public AlarmTime[] newArray(int size) {
+        return new AlarmTime[size];
+      }
+    };
+
+  @Override
+  public int describeContents() {
+    return 0;
   }
 }
