@@ -78,7 +78,7 @@ public class BrightnessProfiles extends Activity {
     checkbox.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
       public void onCheckedChanged(
           CompoundButton buttonView, boolean isChecked) {
-        Util.setAutoBrightnessEnabled(isChecked);
+        Util.setAutoBrightnessEnabled(getContentResolver(), isChecked);
         lockBrightnessControls(isChecked);
       }
     });
@@ -194,7 +194,8 @@ public class BrightnessProfiles extends Activity {
     // Don't setup the calibrate menu item if auto brightness is enabled.
     // Trying to calibrate while it's on is weird...
     MenuItem calibrate = menu.findItem(OPTION_CALIBRATE);
-    if (Util.supportsAutoBrightness() && Util.getAutoBrightnessEnabled()) {
+    if (Util.supportsAutoBrightness(getContentResolver()) &&
+        Util.getAutoBrightnessEnabled(getContentResolver())) {
       calibrate.setEnabled(false);
     } else {
       calibrate.setEnabled(true);
@@ -262,9 +263,9 @@ public class BrightnessProfiles extends Activity {
  
     // Show/Hide the auto brightness check box.
     CheckBox checkbox = (CheckBox) findViewById(R.id.auto_brightness);
-    if (Util.supportsAutoBrightness()) {
+    if (Util.supportsAutoBrightness(getContentResolver())) {
       checkbox.setVisibility(View.VISIBLE);
-      if (Util.getAutoBrightnessEnabled()) {
+      if (Util.getAutoBrightnessEnabled(getContentResolver())) {
         checkbox.setChecked(true);
         lockBrightnessControls(true);
       } else {
@@ -283,7 +284,8 @@ public class BrightnessProfiles extends Activity {
 
   private void setBrightness(int brightness) {
     // Don't try to adjust brightness if auto brightness is enabled.
-    if (Util.supportsAutoBrightness() && Util.getAutoBrightnessEnabled()) {
+    if (Util.supportsAutoBrightness(getContentResolver()) &&
+        Util.getAutoBrightnessEnabled(getContentResolver())) {
       return;
     }
 

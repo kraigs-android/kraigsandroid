@@ -18,6 +18,7 @@ package com.angrydoughnuts.android.brightprof;
 import java.math.BigDecimal;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.view.WindowManager;
@@ -147,20 +148,41 @@ public class Util {
     activity.getWindow().setAttributes(lp);
   }
 
-  static boolean supportsAutoBrightness() {
-    // TODO(cgallek): Implement this.
-    return false;
+  // These constants are not exposed through the API, but are defined in
+  // Settings.System:
+  // http://android.git.kernel.org/?p=platform/frameworks/base.git;a=blob;f=core/java/android/provider/Settings.java;h=f7e55db80b8849c023152ad06d97040199c4e8c5;hb=HEAD
+  private static final String SCREEN_BRIGHTNESS_MODE = "screen_brightness_mode";
+  private static final int SCREEN_BRIGHTNESS_MODE_MANUAL = 0;
+  private static final int SCREEN_BRIGHTNESS_MODE_AUTOMATIC = 1;
+  static boolean supportsAutoBrightness(ContentResolver resolver) {
+    // This is probably not the best way to do this.  The actual capability
+    // is stored in
+    // com.android.internal.R.bool.config_automatic_brightness_available
+    // which is not available through the API.
+    try {
+      Settings.System.getInt(resolver, SCREEN_BRIGHTNESS_MODE);
+      return true;
+    } catch (SettingNotFoundException e) {
+      return false;
+    }
   }
 
-  // TODO(cgallek) remove this boolean.
-  static private boolean autoBrightnessEnabled = true;
-  static boolean getAutoBrightnessEnabled() {
-    // TODO(cgallek): Implement this.
-    return autoBrightnessEnabled;
+  static boolean getAutoBrightnessEnabled(ContentResolver resolver) {
+    try {
+      int autobright = Settings.System.getInt(resolver, SCREEN_BRIGHTNESS_MODE);
+      return autobright == SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
+    } catch (SettingNotFoundException e) {
+      return false;
+    }
   }
 
-  static void setAutoBrightnessEnabled(boolean enabled) {
-    // TODO(cgallek): Implement this.
-    autoBrightnessEnabled = enabled;
+  static void setAutoBrightnessEnabled(ContentResolver resolver, boolean enabled) {
+    if (enabled) {
+      Settings.System.putInt(resolver, SCREEN_BRIGHTNESS_MODE,
+          SCREEN_BRIGHTNESS_MODE_AUTOMATIC);
+    } else {
+      Settings.System.putInt(resolver, SCREEN_BRIGHTNESS_MODE,
+          SCREEN_BRIGHTNESS_MODE_MANUAL);
+    }
   }
 }
