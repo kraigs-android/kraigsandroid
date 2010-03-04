@@ -20,6 +20,12 @@ public class PendingAlarmList {
   }
 
   public void put(long alarmId, AlarmTime time, PendingIntent intent) {
+    // Remove this alarm if it exists already.
+    PendingIntent previous = remove(alarmId);
+    if (previous != null) {
+      previous.cancel();
+    }
+
     pendingAlarms.put(alarmId, new PendingAlarm(time, intent));
     alarmTimes.put(time, alarmId);
   }
