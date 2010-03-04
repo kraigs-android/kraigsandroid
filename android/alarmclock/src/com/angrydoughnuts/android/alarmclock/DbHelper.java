@@ -28,7 +28,6 @@ public class DbHelper extends SQLiteOpenHelper {
     // |(auto primary) | (0 to 86399) | (boolean) |
     // |     _id       |    time      |  enabled  |
     // time is seconds past midnight.
-    // TODO(cgallek): change time from seconds to minutes.
     db.execSQL("CREATE TABLE " + DB_TABLE_ALARMS + " (" 
         + ALARMS_COL__ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
         + ALARMS_COL_TIME + " UNSIGNED INTEGER (0, 86399),"

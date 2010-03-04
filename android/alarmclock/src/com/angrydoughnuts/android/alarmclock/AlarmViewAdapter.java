@@ -30,7 +30,7 @@ class AlarmViewAdapter extends ResourceCursorAdapter {
     TextView timeView = (TextView) view.findViewById(R.id.alarm_time);
     CheckBox enabledView = (CheckBox) view.findViewById(R.id.alarm_enabled);
 
-    Calendar c = TimeUtil.minutesAfterMidnightToLocalCalendar(cursor.getInt(timeIndex));
+    Calendar c = TimeUtil.secondsAfterMidnightToLocalCalendar(cursor.getInt(timeIndex));
     String label = TimeUtil.calendarToClockString(c);
     if (AlarmClockService.debug(context)) {
       label += " [" + cursor.getLong(idIndex) + "]";

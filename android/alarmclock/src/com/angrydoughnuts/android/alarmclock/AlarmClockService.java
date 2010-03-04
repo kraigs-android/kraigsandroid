@@ -107,9 +107,7 @@ public class AlarmClockService extends Service {
   public void createAlarm(Calendar calendar) {
     // TODO(cgallek): validate params??
     // Store the alarm in the persistent database.
-    // TODO(cgallek) switch db to use seconds after midnight.
-    int minutesAfterMidnight = TimeUtil.minutesAfterMidnight(calendar);
-    long alarmId = db.newAlarm(minutesAfterMidnight);
+    long alarmId = db.newAlarm(calendar);
     scheduleAlarm(alarmId);
   }
 
@@ -120,11 +118,11 @@ public class AlarmClockService extends Service {
 
   public void scheduleAlarm(long alarmId) {
     // Schedule the next alarm.
-    int minutesAfterMidnight = db.alarmTime(alarmId);
-    if (minutesAfterMidnight < 0) {
+    int secondsAfterMidnight = db.alarmTime(alarmId);
+    if (secondsAfterMidnight < 0) {
       throw new IllegalStateException("Invalid timestamp stored in DB.");
     }
-    long alarmTime = TimeUtil.nextLocalOccuranceInUTC(minutesAfterMidnight);
+    long alarmTime = TimeUtil.nextLocalOccuranceInUTC(secondsAfterMidnight);
     setAlarm(alarmId, alarmTime);
 
     // Mark the alarm as enabled in the database.

@@ -100,7 +100,7 @@ public class AlarmNotificationActivity extends Activity {
       e.printStackTrace();
     }
 
-    Calendar c = TimeUtil.minutesAfterMidnightToLocalCalendar(db.alarmTime(alarmId));
+    Calendar c = TimeUtil.secondsAfterMidnightToLocalCalendar(db.alarmTime(alarmId));
     String info = TimeUtil.calendarToClockString(c);
     info += " [" + alarmId + "]";
     TextView alarmInfo = (TextView) findViewById(R.id.alarm_info);
