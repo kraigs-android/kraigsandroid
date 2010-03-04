@@ -4,19 +4,29 @@
   android:layout_width="fill_parent"
   android:layout_height="fill_parent">
 
-<TextView android:text="Alarm Notification"
-  android:id="@+id/TextView01"
-  android:layout_width="wrap_content"
-  android:layout_height="wrap_content" />
+  <Button android:text="@string/snooze"
+    android:id="@+id/notify_snooze"
+    android:layout_weight="3"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" />
 
-<Button android:text="OK"
-  android:id="@+id/notify_ok"
-  android:layout_width="wrap_content"
-  android:layout_height="wrap_content" />
 
-<Button android:text="@string/snooze"
-  android:id="@+id/notify_snooze"
-  android:layout_width="wrap_content"
-  android:layout_height="wrap_content" />
+  <TextView android:text="Alarm Notification"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" />
+
+  <TextView android:id="@+id/clock"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" />
+
+  <TextView android:id="@+id/alarm_info"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" />
+
+  <Button android:text="@string/dismiss"
+    android:id="@+id/notify_dismiss"
+    android:layout_weight="1"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" />
 
 </LinearLayout>

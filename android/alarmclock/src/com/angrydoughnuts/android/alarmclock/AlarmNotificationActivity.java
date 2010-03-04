@@ -1,5 +1,7 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import java.util.Calendar;
+
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardLock;
@@ -9,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class AlarmNotificationActivity extends Activity {
   private long alarmId;
@@ -35,20 +38,6 @@ public class AlarmNotificationActivity extends Activity {
     screenLock = screenLockManager.newKeyguardLock(
         "AlarmNotification screen lock");
 
-    Button okButton = (Button) findViewById(R.id.notify_ok);
-    okButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        // TODO(cgallek):  Currently the alarm will only be acknowledged if the ok
-        // button is pressed.  However, this dialog can be closed in other ways.
-        // figure out how to handle acknowledgements in those cases.  Maybe
-        // a notification item?
-        service.dismissAlarm(alarmId);
-        AlarmBroadcastReceiver.wakeLock().release();
-        finish();
-      }
-    });
-
     Button snoozeButton = (Button) findViewById(R.id.notify_snooze);
     snoozeButton.setOnClickListener(new View.OnClickListener() {
       @Override
@@ -59,6 +48,20 @@ public class AlarmNotificationActivity extends Activity {
         // a notification item?
         // TODO(cgallek): make snooze time configurable.
         service.snoozeAlarm(alarmId, 10);
+        AlarmBroadcastReceiver.wakeLock().release();
+        finish();
+      }
+    });
+
+    Button okButton = (Button) findViewById(R.id.notify_dismiss);
+    okButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        // TODO(cgallek):  Currently the alarm will only be acknowledged if the ok
+        // button is pressed.  However, this dialog can be closed in other ways.
+        // figure out how to handle acknowledgements in those cases.  Maybe
+        // a notification item?
+        service.dismissAlarm(alarmId);
         AlarmBroadcastReceiver.wakeLock().release();
         finish();
       }
@@ -83,6 +86,11 @@ public class AlarmNotificationActivity extends Activity {
       // TODO(cgallek): Come up with a better failure mode.
       e.printStackTrace();
     }
+
+    TextView clock = (TextView) findViewById(R.id.clock);
+    clock.setText(Calendar.getInstance().toString());
+    TextView alarmInfo = (TextView) findViewById(R.id.alarm_info);
+    alarmInfo.setText("Alarm id: " + alarmId);
   }
 
   @Override

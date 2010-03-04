@@ -6,5 +6,6 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="delete">Delete...</string>
-    <string name="snooze">Snooze</string>
+    <string name="snooze">SNOOZE</string>
+    <string name="dismiss">DISMISS</string>
 </resources>
