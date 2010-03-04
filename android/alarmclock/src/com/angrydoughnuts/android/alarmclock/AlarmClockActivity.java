@@ -3,15 +3,20 @@ package com.angrydoughnuts.android.alarmclock;
 import java.util.Calendar;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.app.TimePickerDialog;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TimePicker;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class AlarmClockActivity extends Activity {
+  private final int TIME_PICKER_DIALOG_ID = 1;
+
   private AlarmClockServiceBinder service;
   private DbAccessor db;
   private Cursor alarmListCursor;
@@ -29,14 +34,7 @@ public class AlarmClockActivity extends Activity {
     Button setBtn = (Button) findViewById(R.id.set_alarm);
     setBtn.setOnClickListener(new View.OnClickListener() {
       public void onClick(View view) {
-        Calendar now = Calendar.getInstance();
-        now.add(Calendar.SECOND, 5);
-        int hour = now.get(Calendar.HOUR_OF_DAY);
-        int minute = now.get(Calendar.MINUTE);
-        int second = now.get(Calendar.SECOND);
-        int minutesAfterMidnight = TimeUtil.minutesAfterMidnight(hour, minute, second);
-        service.newAlarm(minutesAfterMidnight);
-        alarmListCursor.requery();
+        showDialog(TIME_PICKER_DIALOG_ID);
       }
     });
 
@@ -54,6 +52,32 @@ public class AlarmClockActivity extends Activity {
         alarmListCursor.requery();
       }
     });
+  }
+
+  @Override
+  protected Dialog onCreateDialog(int id) {
+    switch (id) {
+      case TIME_PICKER_DIALOG_ID:
+        Calendar now = Calendar.getInstance();
+        // TODO(cgallek): replace this with default alarm time.
+        int hour = now.get(Calendar.HOUR_OF_DAY);
+        int minute = now.get(Calendar.MINUTE);
+
+        // TODO(cgallek): set 12hr/24hr based off of locale settings.
+        return new TimePickerDialog(this,
+            new TimePickerDialog.OnTimeSetListener() {
+              @Override
+              public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                int minutesAfterMidnight =
+                  TimeUtil.minutesAfterMidnight(hourOfDay, minute, 0);
+                service.newAlarm(minutesAfterMidnight);
+                alarmListCursor.requery();
+              }
+            },
+            hour, minute, false);
+      default:
+        return super.onCreateDialog(id);
+    }
   }
 
   @Override
