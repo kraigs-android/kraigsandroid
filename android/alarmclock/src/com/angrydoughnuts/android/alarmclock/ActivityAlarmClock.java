@@ -1,3 +1,18 @@
+/****************************************************************************
+ * Copyright 2010 kraigs.android@gmail.com
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. 
+ ****************************************************************************/
+
 package com.angrydoughnuts.android.alarmclock;
 
 import java.util.Calendar;
@@ -24,7 +39,14 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.AdapterView.OnItemClickListener;
 
-public class ActivityAlarmClock extends Activity {
+/**
+ * This is the main Activity for the application.  It contains a ListView
+ * for displaying all alarms, a simple clock, and a button for adding new
+ * alarms.  The context menu allows the user to edit default settings.  Long-
+ * clicking on the clock will trigger a dialog for enabling/disabling 'debug
+ * mode.'
+ */
+public final class ActivityAlarmClock extends Activity {
   private enum Dialogs { DEBUG, TIME_PICKER };
   private enum Menus { DEFAULT_SETTINGS };
 
@@ -42,10 +64,13 @@ public class ActivityAlarmClock extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
 
+    // Access to in-memory and persistent data structures.
     service = new AlarmClockServiceBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
     handler = new Handler();
 
+    // Setup individual UI elements.
+    // A simple clock.
     clock = (TextView) findViewById(R.id.clock);
     clock.setOnLongClickListener(new OnLongClickListener() {
       @Override
@@ -55,6 +80,8 @@ public class ActivityAlarmClock extends Activity {
       }
     });
 
+    // Used in debug mode.  Schedules an alarm for 5 seconds in the future
+    // when clicked.
     testBtn = (Button) findViewById(R.id.test_alarm);
     testBtn.setOnClickListener(new OnClickListener() {
       public void onClick(View view) {
@@ -68,6 +95,7 @@ public class ActivityAlarmClock extends Activity {
       }
     });
 
+    // Displays a list of pending alarms (only visible in debug mode).
     pendingBtn = (Button) findViewById(R.id.pending_alarms);
     pendingBtn.setOnClickListener(new OnClickListener() {
       @Override
@@ -77,6 +105,7 @@ public class ActivityAlarmClock extends Activity {
       }
     });
 
+    // Opens the time picker dialog and allows the user to schedule a new alarm.
     Button addBtn = (Button) findViewById(R.id.add_alarm);
     addBtn.setOnClickListener(new View.OnClickListener() {
       public void onClick(View view) {
@@ -84,19 +113,23 @@ public class ActivityAlarmClock extends Activity {
       }
     });
 
+    // Setup the alarm list and the underlying adapter.  Clicking an individual
+    // item will start the settings activity.
     final ListView alarmList = (ListView) findViewById(R.id.alarm_list);
     adapter = new AlarmViewAdapter(getApplicationContext(), service);
     alarmList.setAdapter(adapter);
     alarmList.setOnItemClickListener(new OnItemClickListener() {
       @Override
       public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
-        AlarmInfo info = (AlarmInfo) adapter.getItemAtPosition(position);
-        Intent i = new Intent(getApplicationContext(), ActivitySettings.class);
+        final AlarmInfo info = (AlarmInfo) adapter.getItemAtPosition(position);
+        final Intent i = new Intent(getApplicationContext(), ActivitySettings.class);
         i.putExtra(ActivitySettings.EXTRAS_ALARM_ID, info.getAlarmId());
         startActivity(i);
       }
     });
 
+    // This is a self-scheduling callback that is responsible for refreshing
+    // the screen.  It is started in onResume() and stopped in onPause().
     tickCallback = new Runnable() {
       @Override
       public void run() {
@@ -155,7 +188,7 @@ public class ActivityAlarmClock extends Activity {
     return super.onOptionsItemSelected(item);
   }
 
-  private void redraw() {
+  private final void redraw() {
     // Show/hide debug buttons.
     if (DebugUtil.isDebugMode(getApplicationContext())) {
       testBtn.setVisibility(View.VISIBLE);
@@ -185,10 +218,17 @@ public class ActivityAlarmClock extends Activity {
         int hour = now.get(Calendar.HOUR_OF_DAY);
         int minute = now.get(Calendar.MINUTE);
         boolean is24Hour = DateFormat.is24HourFormat(getApplicationContext());
+        // TODO(cgallek): replace this time picker with a custom dialog that
+        // shows how far in the future the displayed time is.
+        // The current version also seems to remain 'persistent' for too long.
+        // The time always displays the last selected time rather than the
+        // current time.
         return new TimePickerDialog(this,
             new TimePickerDialog.OnTimeSetListener() {
               @Override
               public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                // When a time is selected, create it via the service and
+                // force the list view to re-query the alarm list. 
                 service.createAlarm(new AlarmTime(hourOfDay, minute, 0));
                 adapter.requery();
               }
