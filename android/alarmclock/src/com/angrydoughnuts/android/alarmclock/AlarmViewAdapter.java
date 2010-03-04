@@ -26,6 +26,7 @@ class AlarmViewAdapter extends ResourceCursorAdapter {
   @Override
   public void bindView(View view, Context context, Cursor cursor) {
     TextView timeView = (TextView) view.findViewById(R.id.alarm_time);
+    TextView nextView = (TextView) view.findViewById(R.id.next_alarm);
     CheckBox enabledView = (CheckBox) view.findViewById(R.id.alarm_enabled);
 
     AlarmTime time = new AlarmTime(cursor.getInt(timeIndex));
@@ -35,6 +36,10 @@ class AlarmViewAdapter extends ResourceCursorAdapter {
     }
     timeView.setText(label);
     enabledView.setChecked(cursor.getInt(enabledIndex) != 0);
+    // TODO(cgallek): This doesn't account for snoozed alarms :-\
+    // Figure out how to get this information back from the service based
+    // on actual scheduled times.
+    nextView.setText(time.nextLocalOccuranceAsString());
     final long id = cursor.getLong(idIndex);
     enabledView.setOnClickListener(new OnClickListener() {
       @Override

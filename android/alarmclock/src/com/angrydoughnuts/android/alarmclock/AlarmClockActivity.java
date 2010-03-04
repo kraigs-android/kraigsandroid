@@ -8,6 +8,7 @@ import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,6 +25,8 @@ public class AlarmClockActivity extends Activity {
   private AlarmClockServiceBinder service;
   private DbAccessor db;
   private Cursor alarmListCursor;
+  private Handler handler;
+  private Runnable refreshCallback;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +37,20 @@ public class AlarmClockActivity extends Activity {
     db = new DbAccessor(getApplicationContext());
     alarmListCursor = db.getAlarmList();
     startManagingCursor(alarmListCursor);
+
+    // TODO(cgallek): Replace this refresh loop with something that is triggered by
+    // the time tick notification.  That will also be useful when a clock is added
+    // to this activity and will align updates with the minute boundaries.
+    handler = new Handler();
+    refreshCallback = new Runnable() {
+      @Override
+      public void run() {
+        if (alarmListCursor != null) {
+          alarmListCursor.requery();
+        }
+        handler.postDelayed(refreshCallback, 60 *1000);
+      }
+    };
 
     Button testBtn = (Button) findViewById(R.id.test_alarm);
     if (!AlarmClockService.debug(getApplicationContext())) {
@@ -127,11 +144,13 @@ public class AlarmClockActivity extends Activity {
     super.onResume();
     service.bind();
     alarmListCursor.requery();
+    handler.postDelayed(refreshCallback, 60 * 1000);
   }
 
   @Override
   protected void onPause() {
     super.onPause();
+    handler.removeCallbacks(refreshCallback);
     service.unbind();
   }
 

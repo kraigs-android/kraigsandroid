@@ -41,11 +41,42 @@ public class AlarmTime implements Parcelable {
 
   public long nextLocalOccuranceInMillisUTC() {
     Calendar now = Calendar.getInstance();
-    // TODO(cgallek): It might be a bad idea to modify asCalendar...
-    if (asCalendar.before(now)) {
-      asCalendar.add(Calendar.DATE, 1);
+    Calendar then = Calendar.getInstance();
+    then.setTimeInMillis(asCalendar.getTimeInMillis());
+
+    if (then.before(now)) {
+      then.add(Calendar.DATE, 1);
     }
-    return asCalendar.getTimeInMillis();
+    return then.getTimeInMillis();
+  }
+
+  public String nextLocalOccuranceAsString() {
+    long now_min = Calendar.getInstance().getTimeInMillis() / 1000 / 60;
+    long then_min = nextLocalOccuranceInMillisUTC() / 1000 / 60;
+    long difference_minutes = then_min - now_min;
+    long days = difference_minutes / (60 * 24);
+    long hours = difference_minutes % (60 * 24);
+    long minutes = hours % 60;
+    hours = hours / 60;
+
+    // TODO(cgallek) extract these strings to strings.xml.
+    String value = "";
+    if (days == 1) {
+      value += days + " day ";
+    } else if (days > 1) {
+      value += days + " days ";
+    }
+    if (hours == 1) {
+      value += hours + " hour ";
+    } else if (hours > 1) {
+      value += hours + " hours ";
+    }
+    if (minutes == 1) {
+      value += minutes + " minute";
+    } else if (minutes > 1) {
+      value += minutes + " minutes";
+    }
+    return value;
   }
 
   public static AlarmTime snoozeInMillisUTC(int minutes) {
