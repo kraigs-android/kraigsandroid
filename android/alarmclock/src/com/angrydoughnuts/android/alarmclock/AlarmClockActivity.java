@@ -7,20 +7,20 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 public class AlarmClockActivity extends Activity {
-  // TODO(cgallek): replace this with a data provider.
-  private static boolean alarmOn = false;
-  public static boolean getAlarmOn() { return alarmOn; }
 
+  private AlarmClockInterface clock;
   final private ServiceConnection serviceConnection = new ServiceConnection() {
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
       Toast.makeText(getApplicationContext(), "Service Connected " + name,
           Toast.LENGTH_SHORT).show();
+      clock = AlarmClockInterface.Stub.asInterface(service);
     }
     @Override
     public void onServiceDisconnected(ComponentName name) {
@@ -28,6 +28,7 @@ public class AlarmClockActivity extends Activity {
       // crashes.  Consider throwing an exception here.
       Toast.makeText(getApplicationContext(), "Service Disconnected " + name,
           Toast.LENGTH_SHORT).show();
+      clock = null;
     }
   };
 
@@ -41,12 +42,22 @@ public class AlarmClockActivity extends Activity {
 
     setBtn.setOnClickListener(new View.OnClickListener() {
       public void onClick(View view) {
-        alarmOn = true;
+        try {
+          clock.alarmOn();
+        } catch (RemoteException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
       }
     });
     clearBtn.setOnClickListener(new View.OnClickListener() {
       public void onClick(View view) {
-        alarmOn = false;
+        try {
+          clock.alarmOff();
+        } catch (RemoteException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
       }
     });
   }
