@@ -7,6 +7,7 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
@@ -22,6 +23,8 @@ public class AlarmNotificationActivity extends Activity {
   private DbAccessor db;
   private KeyguardLock screenLock;
   private MediaPlayer mediaPlayer;
+  private Handler handler;
+  private VolumeIncreaser volumeIncreaseCallback; 
 
   // TODO(cgallek): This doesn't seem to handle the case when a second alarm
   // fires while the first has not yet been acked.
@@ -36,6 +39,9 @@ public class AlarmNotificationActivity extends Activity {
     service = AlarmClockServiceBinder.newBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
     mediaPlayer = new MediaPlayer();
+
+    handler = new Handler();
+    volumeIncreaseCallback = new VolumeIncreaser();
 
     KeyguardManager screenLockManager =
       (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
@@ -86,6 +92,9 @@ public class AlarmNotificationActivity extends Activity {
     try {
       mediaPlayer.setDataSource(getApplicationContext(), tone);
       mediaPlayer.prepare();
+      // The following 'post' can be delayed, so set a low volume to start.
+      mediaPlayer.setVolume((float)0.10, (float)0.10);
+      handler.post(volumeIncreaseCallback);
       mediaPlayer.start();
     } catch (Exception e) {
       // TODO(cgallek): Come up with a better failure mode.
@@ -114,6 +123,7 @@ public class AlarmNotificationActivity extends Activity {
   protected void onDestroy() {
     super.onDestroy();
     db.closeConnections();
+    handler.removeCallbacks(volumeIncreaseCallback);
     mediaPlayer.release();
     if (ackState == AckStates.UNACKED) {
       throw new IllegalStateException(
@@ -145,6 +155,27 @@ public class AlarmNotificationActivity extends Activity {
         break;
       default:
         throw new IllegalStateException("Unknow alarm notification state.");
+    }
+  }
+
+  // TODO(cgallek): make this configurable.
+  private class VolumeIncreaser implements Runnable {
+    float value;
+
+    public VolumeIncreaser() {
+      // TODO(cgallek): Do we need to make sure that the system media volume
+      // is on?? See AudioManager.
+      value = (float) 0.10;
+    }
+
+    @Override
+    public void run() {
+      mediaPlayer.setVolume(value, value);
+      if (value >= 1) {
+        return;
+      }
+      value += 0.05;
+      handler.postDelayed(volumeIncreaseCallback, 1000);
     }
   }
 }
