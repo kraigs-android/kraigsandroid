@@ -8,6 +8,7 @@ import android.provider.Settings;
 public class AlarmSettings {
   static public final long DEFAULT_SETTINGS_ID = -1;
 
+  private boolean dirty;
   private Uri tone;
   private String toneName;
   private int snoozeMinutes;
@@ -43,6 +44,7 @@ public class AlarmSettings {
   }
 
   public AlarmSettings() {
+    dirty = false;
     tone = Settings.System.DEFAULT_ALARM_ALERT_URI;
     toneName = "Default";
     snoozeMinutes = 10;
@@ -53,6 +55,7 @@ public class AlarmSettings {
   }
 
   public AlarmSettings(Cursor cursor) {
+    dirty = false;
     cursor.moveToFirst();
     tone = Uri.parse(cursor.getString(cursor.getColumnIndex(DbHelper.SETTINGS_COL_TONE_URL)));
     toneName = cursor.getString(cursor.getColumnIndex(DbHelper.SETTINGS_COL_TONE_NAME));
@@ -63,11 +66,20 @@ public class AlarmSettings {
     volumeChangeTimeSec = cursor.getInt(cursor.getColumnIndex(DbHelper.SETTINGS_COL_VOLUME_TIME));
   }
 
+  // TODO(cgallek): this is a silly way of dirty-ing... Do something smarter in
+  // the settings activity.
+  public boolean dirty() {
+    return dirty;
+  }
+
   public Uri getTone() {
     return tone;
   }
 
   public void setTone(Uri tone, String name) {
+    if (this.tone != tone || this.toneName != name) {
+      dirty = true;
+    }
     this.tone = tone;
     this.toneName = name;
   }
@@ -81,6 +93,9 @@ public class AlarmSettings {
   }
 
   public void setSnoozeMinutes(int minutes) {
+    if (this.snoozeMinutes != minutes) {
+      dirty = true;
+    }
     // TODO(cgallek): These all need validation checks.  Add validation
     // checks and then update all internal modifiers to use setters.
     this.snoozeMinutes = minutes;
@@ -91,6 +106,9 @@ public class AlarmSettings {
   }
 
   public void setVibrate(boolean vibrate) {
+    if (this.vibrate != vibrate) {
+      dirty = true;
+    }
     this.vibrate = vibrate;
   }
 
@@ -99,6 +117,9 @@ public class AlarmSettings {
   }
 
   public void setVolumeStartPercent(int volumeStartPercent) {
+    if (this.volumeStartPercent != volumeStartPercent) {
+      dirty = true;
+    }
     this.volumeStartPercent = volumeStartPercent;
   }
 
@@ -107,6 +128,9 @@ public class AlarmSettings {
   }
 
   public void setVolumeEndPercent(int volumeEndPercent) {
+    if (this.volumeEndPercent != volumeEndPercent) {
+      dirty = true;
+    }
     this.volumeEndPercent = volumeEndPercent;
   }
 
@@ -115,6 +139,9 @@ public class AlarmSettings {
   }
 
   public void setVolumeChangeTimeSec(int volumeChangeTimeSec) {
+    if (this.volumeChangeTimeSec != volumeChangeTimeSec) {
+      dirty = true;
+    }
     this.volumeChangeTimeSec = volumeChangeTimeSec;
   }
 }

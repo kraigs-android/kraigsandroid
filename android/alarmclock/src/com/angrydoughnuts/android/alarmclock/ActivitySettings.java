@@ -72,12 +72,12 @@ public class ActivitySettings extends Activity {
         // than directly writing to the database (unschedule old alarm, schedule new if enabled).
         // It should be fine to leave the settings write directly to the db.  They are not
         // maintained in memory anywhere.
-        if (info != null) {
+        if (info != null && info.dirty()) {
           db.writeAlarmInfo(alarmId, info);
         }
-        // TODO(cgallek): figure out a way to write alarm settings only if they changed.
-        // This will avoid creating alarm settings for alarms when only time information is changed.
-        db.writeAlarmSettings(alarmId, settings);
+        if (settings.dirty()) {
+          db.writeAlarmSettings(alarmId, settings);
+        }
         finish();
       }
     });

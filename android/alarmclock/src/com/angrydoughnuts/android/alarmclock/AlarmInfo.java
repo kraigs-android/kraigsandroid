@@ -130,6 +130,7 @@ public class AlarmInfo {
     }
   }
 
+  private boolean dirty;
   private long alarmId;
   private AlarmTime time;
   private boolean enabled;
@@ -137,6 +138,7 @@ public class AlarmInfo {
   private Week daysOfWeek;
 
   public AlarmInfo(Cursor cursor) {
+    dirty = false;
     alarmId = cursor.getLong(cursor.getColumnIndex(DbHelper.ALARMS_COL__ID));
     time = IntegerToAlarmTime(cursor.getInt(cursor.getColumnIndex(DbHelper.ALARMS_COL_TIME)));
     enabled = cursor.getInt(cursor.getColumnIndex(DbHelper.ALARMS_COL_ENABLED)) == 1;
@@ -145,6 +147,7 @@ public class AlarmInfo {
   }
 
   public AlarmInfo() {
+    dirty = false;
     alarmId = -69;  // initially invalid.
     time = new AlarmTime(0, 0, 0);
     enabled = false;
@@ -171,6 +174,10 @@ public class AlarmInfo {
     };
   }
 
+  public boolean dirty() {
+    return dirty;
+  }
+
   public long getAlarmId() {
     return alarmId;
   }
@@ -180,6 +187,10 @@ public class AlarmInfo {
   }
 
   public void setTime(AlarmTime time) {
+    // TODO(cgallek) is this equals() implemented?
+    if (!this.time.equals(time)) {
+      dirty = true;
+    }
     this.time = time;
   }
 
@@ -188,6 +199,9 @@ public class AlarmInfo {
   }
 
   public void setEnabled(boolean enabled) {
+    if (this.enabled != enabled) {
+      dirty = true;
+    }
     this.enabled = enabled;
   }
 
@@ -196,6 +210,9 @@ public class AlarmInfo {
   }
 
   public void setName(String name) {
+    if (!this.name.equals(name)) {
+      dirty = true;
+    }
     this.name = name;
   }
 
@@ -204,6 +221,9 @@ public class AlarmInfo {
   }
 
   public void setDow(Week week) {
+    if (!this.daysOfWeek.equals(week)) {
+      dirty = true;
+    }
     this.daysOfWeek = week;
   }
 
