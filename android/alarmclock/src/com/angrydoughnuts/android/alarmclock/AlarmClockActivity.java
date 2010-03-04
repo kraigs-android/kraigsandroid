@@ -52,8 +52,9 @@ public class AlarmClockActivity extends Activity {
         alarmListCursor.moveToPosition(position);
         long alarmId = alarmListCursor.getLong(
             alarmListCursor.getColumnIndex(DbHelper.ALARMS_COL__ID));
-        service.deleteAlarm(alarmId);
-        alarmListCursor.requery();
+        Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
+        i.putExtra(SettingsActivity.EXTRAS_ALARM_ID, alarmId);
+        startActivity(i);
       }
     });
   }
@@ -108,13 +109,13 @@ public class AlarmClockActivity extends Activity {
   protected void onResume() {
     super.onResume();
     service.bind();
+    alarmListCursor.requery();
   }
 
   @Override
   protected void onPause() {
     super.onPause();
     service.unbind();
-    finish();
   }
 
   @Override

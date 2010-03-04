@@ -72,6 +72,19 @@ public class SettingsActivity extends Activity {
         finish();
       }
     });
+    Button deleteButton = (Button) findViewById(R.id.settings_delete);
+    if (alarmId == AlarmSettings.DEFAULT_SETTINGS_ID) {
+      deleteButton.setVisibility(View.GONE);
+    }
+    deleteButton.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        // TODO(cgallek): Add confirmation dialog.
+        db.deleteAlarm(alarmId);
+        finish();
+      }
+    });
+
   }
 
   @Override

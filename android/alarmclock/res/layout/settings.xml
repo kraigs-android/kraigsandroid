@@ -32,4 +32,11 @@
       android:layout_height="wrap_content" />
 
   </LinearLayout>
+
+  <Button android:text="@string/delete"
+    android:id="@+id/settings_delete"
+    android:layout_weight="1"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" />
+  
 </LinearLayout>
