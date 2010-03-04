@@ -23,7 +23,7 @@ public class LoggingUncaughtExceptionHandler implements UncaughtExceptionHandler
   public void uncaughtException(Thread thread, Throwable ex) {
     try {
       String timestamp = new SimpleDateFormat("yyyyMMdd_kkmmss.SSSS").format(Calendar.getInstance().getTime());
-      String filename = timestamp + "-alarmclock.stack";
+      String filename = timestamp + "-alarmclock.txt";
 
       Writer stacktrace = new StringWriter();
       ex.printStackTrace(new PrintWriter(stacktrace));
