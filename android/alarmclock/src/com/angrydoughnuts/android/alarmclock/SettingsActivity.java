@@ -213,6 +213,7 @@ public class SettingsActivity extends Activity {
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALL);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
+          i.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, Settings.System.DEFAULT_ALARM_ALERT_URI);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_INCLUDE_DRM, true);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Default Alarm Tone");
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, current_tone);
