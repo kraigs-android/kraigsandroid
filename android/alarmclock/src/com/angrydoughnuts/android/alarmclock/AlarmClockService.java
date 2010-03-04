@@ -158,19 +158,17 @@ public class AlarmClockService extends Service {
 
   public void dismissAlarm(long alarmId) {
     db.enableAlarm(alarmId, false);
-    PendingIntent alarm = pendingAlarms.remove(alarmId);
-    if (alarm != null) {
-      AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-      alarmManager.cancel(alarm);
-      alarm.cancel();
-    }
+    clearAlarm(alarmId);
     refreshNotification();
   }
 
   public void snoozeAlarm(long alarmId) {
     AlarmTime time = AlarmTime.snoozeInMillisUTC(db.readAlarmSettings(alarmId).getSnoozeMinutes());
+    clearAlarm(alarmId);
     setAlarm(alarmId, time);
   }
+
+  // In-memory only operations from here on...
 
   private void setAlarm(long alarmId, AlarmTime time) {
     // Intents are considered equal if they have the same action, data, type,
@@ -190,5 +188,14 @@ public class AlarmClockService extends Service {
     // Keep track of all scheduled alarms.
     pendingAlarms.put(alarmId, time, scheduleIntent);
     refreshNotification();
+  }
+
+  private void clearAlarm(long alarmId) {
+    PendingIntent alarm = pendingAlarms.remove(alarmId);
+    if (alarm != null) {
+      AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+      alarmManager.cancel(alarm);
+      alarm.cancel();
+    }    
   }
 }
