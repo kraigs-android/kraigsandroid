@@ -1,6 +1,7 @@
 package com.angrydoughnuts.android.alarmclock;
 
 import android.content.Context;
+import android.os.RemoteException;
 import android.widget.Toast;
 
 // TODO(cgallek): Remove these toasts.
@@ -13,6 +14,12 @@ public class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
   AlarmClockInterfaceStub(Context context, AlarmClockService service) {
     this.context = context;
     this.service = service;
+  }
+
+  @Override
+  public void newAlarm(int minutesAfterMidnight) throws RemoteException {
+    Toast.makeText(context, "SCHEDULE ALARM! " + minutesAfterMidnight, Toast.LENGTH_SHORT).show();
+    service.newAlarm(minutesAfterMidnight);
   }
 
   @Override

@@ -1,5 +1,6 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import java.util.Calendar;
 import java.util.TreeMap;
 
 import android.app.AlarmManager;
@@ -79,12 +80,43 @@ public class AlarmClockService extends Service {
     }
   }
 
+  // TODO(cgallek): Remove this.
   private TreeMap<Long, PendingIntent> taskList = new TreeMap<Long, PendingIntent>();
 
   public int alarmCount() {
     return taskList.size();
   }
 
+  public void newAlarm(int minutesAfterMidnight) {
+    // TODO(cgallek): validate params??
+    long alarmId = db.newAlarm(minutesAfterMidnight);
+    // TODO(cgallek): this is actually interpreted as seconds after midnight right
+    // now (for testing).  Switch it to minutes eventually.
+    int hour = minutesAfterMidnight % 3600;
+    int minutes = (minutesAfterMidnight - (hour * 3600)) % 60;
+    int seconds = (minutesAfterMidnight- (hour * 3600 + minutes * 60));
+    Calendar schedule = Calendar.getInstance();
+    schedule.set(Calendar.HOUR_OF_DAY, hour);
+    schedule.set(Calendar.MINUTE, minutes);
+    schedule.set(Calendar.SECOND, seconds);
+
+    Calendar now = Calendar.getInstance();
+    if (schedule.before(now)) {
+      schedule.add(Calendar.DATE, 1);
+    }
+
+    Intent notifyIntent = new Intent(getApplicationContext(), AlarmBroadcastReceiver.class);
+    notifyIntent.putExtra("task_id", alarmId);
+    PendingIntent scheduleIntent =
+      PendingIntent.getBroadcast(getApplicationContext(), 0, notifyIntent, 0);
+
+    AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+    alarmManager.set(AlarmManager.RTC_WAKEUP, schedule.getTimeInMillis(), scheduleIntent);
+    // TODO(cgallek): make sure ID doesn't exist yet?
+    taskList.put(alarmId, scheduleIntent);
+  }
+
+  // TODO(cgallek): remove this method.
   public void scheduleAlarmIn(int seconds) {
     // TODO(cgallek): seconds is the wrong thing to pass in here.
     long alarmId = db.newAlarm(seconds);

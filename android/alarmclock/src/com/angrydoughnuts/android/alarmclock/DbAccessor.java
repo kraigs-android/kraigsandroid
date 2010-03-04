@@ -32,10 +32,10 @@ public class DbAccessor {
         DbHelper.ALARMS_COL_TIME + " DESC");
   }
 
-  public long newAlarm(int time) {
+  public long newAlarm(int minutesAfterMidnight) {
     // TODO(cgallek) make sure this time doesn't exist yet.
     ContentValues values = new ContentValues(2);
-    values.put(DbHelper.ALARMS_COL_TIME, time);
+    values.put(DbHelper.ALARMS_COL_TIME, minutesAfterMidnight);
     values.put(DbHelper.ALARMS_COL_ENABLED, true);
     long id = rwDb.insert(DbHelper.DB_TABLE_ALARMS, null, values);
     if (id < 0) {

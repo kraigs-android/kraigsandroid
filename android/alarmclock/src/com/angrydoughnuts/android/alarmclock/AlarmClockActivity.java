@@ -1,5 +1,7 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import java.util.Calendar;
+
 import android.app.Activity;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -28,7 +30,12 @@ public class AlarmClockActivity extends Activity {
 
     setBtn.setOnClickListener(new View.OnClickListener() {
       public void onClick(View view) {
-        service.scheduleAlarmIn(5);
+        Calendar trigger = Calendar.getInstance();
+        trigger.add(Calendar.SECOND, 5);
+        // TODO(cgallek): actually using seconds since midnight right now for testing.
+        // Change back to minutes.
+        int minutesAfterMidnight = trigger.get(Calendar.HOUR_OF_DAY) * 3600 + trigger.get(Calendar.MINUTE) * 60 + trigger.get(Calendar.SECOND);
+        service.newAlarm(minutesAfterMidnight);
         alarmListCursor.requery();
       }
     });
