@@ -119,7 +119,7 @@ public class SettingsActivity extends Activity {
     };
     
     ListView settingsList = (ListView) findViewById(R.id.settings_list);
-    adapter = new SettingsAdapter(getApplicationContext(), R.layout.settings_item, settingsObjects);
+    adapter = new SettingsAdapter(getApplicationContext(), settingsObjects);
     settingsList.setAdapter(adapter);
     settingsList.setOnItemClickListener(new SettingsListClickListener());
   }
@@ -261,9 +261,8 @@ public class SettingsActivity extends Activity {
   }
 
   private class SettingsAdapter extends ArrayAdapter<Setting> {
-    public SettingsAdapter(Context context, int textViewResourceId,
-        Setting[] settingsObjects) {
-      super(context, textViewResourceId, settingsObjects);
+    public SettingsAdapter(Context context, Setting[] settingsObjects) {
+      super(context, 0, settingsObjects);
     }
 
     @Override
