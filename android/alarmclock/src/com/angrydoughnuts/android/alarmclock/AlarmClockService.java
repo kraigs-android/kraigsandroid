@@ -10,19 +10,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.PowerManager;
-import android.os.RemoteException;
-import android.widget.Toast;
   
   public class AlarmClockService extends Service {
     private final int NOTIFICATION_ID = 1;
 
     // TODO(cgallek): replace this with a data provider.
     private static boolean alarmOn = false;
-    private static boolean getAlarmOn() { return alarmOn; }
-    private static void setAlarmOn(boolean state) { alarmOn = state; }
+    public static synchronized boolean getAlarmOn() { return alarmOn; }
+    public static synchronized void setAlarmOn(boolean state) { alarmOn = state; }
 
-    private Timer timer;
+    private Timer timerThread;
+    private Handler uiHandler;
   
     @Override
     public void onStart(Intent intent, int startId) {
@@ -32,7 +30,10 @@ import android.widget.Toast;
     @Override
     public void onCreate() {
       super.onCreate();
-      timer = new Timer();
+      timerThread = new Timer();
+      // TODO(cgallek): This must be created in the main thread. Is there a way
+      // to ensure this?
+      uiHandler = new Handler();
 
       final NotificationManager manager =
         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -55,7 +56,7 @@ import android.widget.Toast;
     @Override
     public void onDestroy() {
       super.onDestroy();
-      timer.cancel();  // Just in case OnUnbind was never called.
+      timerThread.cancel();  // Just in case OnUnbind was never called.
 
       final NotificationManager manager =
         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -69,58 +70,8 @@ import android.widget.Toast;
       final Intent selfIntent = new Intent(getApplication(), AlarmClockService.class);
       startService(selfIntent);
 
-      final AlarmClockInterface.Stub binder = new AlarmClockInterface.Stub() {
-        // TODO(cgallek) make this object a constructor parameter and ensure
-        // that the handler is constructed in the UI thread.
-        private final Handler uiHandler = new Handler();
-        private AlarmClockTimerTask task = null;
-        @Override
-        public void fire() throws RemoteException {
-          Toast.makeText(getApplicationContext(), "FIRE ALARM!", Toast.LENGTH_SHORT).show();
-          Intent notifyIntent = new Intent(getApplicationContext(), AlarmNotificationActivity.class);
-          notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-          // TODO(cgallek) Currently, both this service and the Notification
-          // Activity manage power settings.  It might make sense to move all
-          // power management into the service.  This would require a callback
-          // from the Notification application.  I'm not sure how to get a
-          // response from an activity started from a service...
-          // I think there also might be a race condition between the
-          // startActivity call and the wake lock release call below (ie if
-          // the lock is released before the activity actually starts).  Moving
-          // all locking to this service would also fix that problem.
-          PowerManager manager =
-            (PowerManager) getSystemService(Context.POWER_SERVICE);
-          PowerManager.WakeLock wakeLock = manager.newWakeLock(
-              PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
-              "Alarm Service CPU wake lock");
-          wakeLock.acquire();
-
-          startActivity(notifyIntent);
-
-          wakeLock.release();
-        }
-        @Override
-        public void alarmOn() throws RemoteException {
-          // TODO(cgallek): This is just a test timer task.  Remove it.
-          // Also, this is not the correct context to use.
-          Toast.makeText(getApplicationContext(), "SCHEDULE ALARM!", Toast.LENGTH_SHORT).show();
-          setAlarmOn(true);
-          if (task == null) {
-            task = new AlarmClockTimerTask(getApplicationContext(), uiHandler);
-            timer.schedule(task, 5000, 5000);
-          }
-        }
-        @Override
-        public void alarmOff() throws RemoteException {
-          Toast.makeText(getApplicationContext(), "UNSCHEDULE ALARM!", Toast.LENGTH_SHORT).show();
-          setAlarmOn(false);
-            if (task != null) {
-            task.cancel();
-            task = null;
-          }
-        }};
-      return binder;
+      return new AlarmClockInterfaceStub(
+          getApplicationContext(), uiHandler, timerThread);
     }
 
     @Override
@@ -134,7 +85,7 @@ import android.widget.Toast;
         // true so that onRebind is called instead of onBind.
         return true;
       } else {
-        timer.cancel();
+        timerThread.cancel();
         stopSelf();
         return false;
       }
