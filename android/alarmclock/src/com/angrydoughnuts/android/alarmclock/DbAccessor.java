@@ -82,7 +82,7 @@ public class DbAccessor {
 
     boolean success = false;
     if (cursor.getCount() < 1) {
-      success = rwDb.insert(DbHelper.DB_TABLE_SETTINGS, null, settings.contentValues(alarmId)) > 0;
+      success = rwDb.insert(DbHelper.DB_TABLE_SETTINGS, null, settings.contentValues(alarmId)) >= 0;
     } else {
       success = rwDb.update(DbHelper.DB_TABLE_SETTINGS, settings.contentValues(alarmId),
           DbHelper.SETTINGS_COL_ID + " = " + alarmId, null) == 1;
