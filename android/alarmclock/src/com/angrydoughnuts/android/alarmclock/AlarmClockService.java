@@ -1,3 +1,18 @@
+/****************************************************************************
+ * Copyright 2010 kraigs.android@gmail.com
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. 
+ ****************************************************************************/
+
 package com.angrydoughnuts.android.alarmclock;
 
 import android.app.Notification;
@@ -13,7 +28,7 @@ import android.os.IBinder;
 import android.provider.Settings;
 import android.widget.Toast;
 
-public class AlarmClockService extends Service {
+public final class AlarmClockService extends Service {
   public final static String COMMAND_EXTRA = "command";
   public final static int COMMAND_UNKNOWN = 1;
   public final static int COMMAND_NOTIFICATION_REFRESH = 2;
@@ -28,6 +43,9 @@ public class AlarmClockService extends Service {
   @Override
   public void onCreate() {
     super.onCreate();
+    // Registers an exception handler of capable of writing the stack trace
+    // to the device's SD card.  This is only possible if the proper
+    // permissions are available.
     if (getPackageManager().checkPermission(
         "android.permission.WRITE_EXTERNAL_STORAGE", getPackageName()) ==
           PackageManager.PERMISSION_GRANTED) {
@@ -35,6 +53,7 @@ public class AlarmClockService extends Service {
           new LoggingUncaughtExceptionHandler("/sdcard"));
     }
 
+    // Access to in-memory and persistent data structures.
     db = new DbAccessor(getApplicationContext());
     pendingAlarms = new PendingAlarmList(getApplicationContext());
 
