@@ -239,6 +239,9 @@ public final class ActivityAlarmNotification extends Activity {
     handler.post(timeTick);
 
     redraw();
+    // TODO(cgallek): This notification will continue forever unless the user
+    // dismisses it.  Consider adding a timeout that dismisses it automatically
+    // after some large amount of time.
   }
 
   @Override
