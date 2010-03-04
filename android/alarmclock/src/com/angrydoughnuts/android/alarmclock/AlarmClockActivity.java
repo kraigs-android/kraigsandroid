@@ -139,7 +139,7 @@ public class AlarmClockActivity extends Activity {
             },
             hour, minute, is24Hour);
       case DEBUG_DIALOG_ID:
-        ArrayAdapter<AlarmClockService.DebugMode> adapter = new ArrayAdapter<AlarmClockService.DebugMode>(getApplicationContext(), R.layout.empty_text_view, AlarmClockService.DebugMode.values());
+        ArrayAdapter<AlarmClockService.DebugMode> adapter = new ArrayAdapter<AlarmClockService.DebugMode>(getApplicationContext(), R.layout.dialog_item, AlarmClockService.DebugMode.values());
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         // TODO(cgallek): move this to strings.xml
         builder.setTitle("Debug Mode");
