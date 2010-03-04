@@ -151,4 +151,16 @@ public class Util {
     // TODO(cgallek): Implement this.
     return false;
   }
+
+  // TODO(cgallek) remove this boolean.
+  static private boolean autoBrightnessEnabled = true;
+  static boolean getAutoBrightnessEnabled() {
+    // TODO(cgallek): Implement this.
+    return autoBrightnessEnabled;
+  }
+
+  static void setAutoBrightnessEnabled(boolean enabled) {
+    // TODO(cgallek): Implement this.
+    autoBrightnessEnabled = enabled;
+  }
 }

@@ -28,6 +28,7 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.SimpleCursorAdapter;
@@ -69,6 +70,16 @@ public class BrightnessProfiles extends Activity {
       public void onClick(View view) {
         Intent i = new Intent(getApplication(), EditActivity.class);
         startActivityForResult(i, ACTIVITY_EDIT);
+      }
+    });
+
+    // Setup auto brightness checkbox handler.
+    CheckBox checkbox = (CheckBox) findViewById(R.id.auto_brightness);
+    checkbox.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
+      public void onCheckedChanged(
+          CompoundButton buttonView, boolean isChecked) {
+        Util.setAutoBrightnessEnabled(isChecked);
+        lockBrightnessControls(isChecked);
       }
     });
 
@@ -239,9 +250,17 @@ public class BrightnessProfiles extends Activity {
     CheckBox checkbox = (CheckBox) findViewById(R.id.auto_brightness);
     if (Util.supportsAutoBrightness()) {
       checkbox.setVisibility(View.VISIBLE);
+      if (Util.getAutoBrightnessEnabled()) {
+        checkbox.setChecked(true);
+        lockBrightnessControls(true);
+      } else {
+        checkbox.setChecked(false);
+        lockBrightnessControls(false);
+      }
     } else {
-    checkbox.setVisibility(View.GONE);
-  }
+      checkbox.setVisibility(View.GONE);
+      lockBrightnessControls(false);
+    }
   }
 
   private int getBrightness() {
@@ -258,5 +277,17 @@ public class BrightnessProfiles extends Activity {
     }
     Util.setPhoneBrightness(this, dbAccessor, appBrightness);
     refreshDisplay();
+  }
+
+  private void lockBrightnessControls(boolean lock) {
+    boolean enabled = !lock;
+    SeekBar slider = (SeekBar) findViewById(R.id.slider);
+    ListView profileList = (ListView) findViewById(R.id.profile_list);
+
+    slider.setEnabled(enabled);
+    // TODO(cgallek): This doesn't work for some reason... fix it.
+    profileList.setEnabled(enabled);
+
+    // TODO(cgallek): figure out how to disable the OptionsMenu.
   }
 }
