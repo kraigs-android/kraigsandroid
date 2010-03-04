@@ -84,17 +84,6 @@ public class AlarmClockServiceBinder {
     });
   }
 
-  /*
-  public void newAlarm(final int minutesAfterMidnight) {
-    runOrDefer(new ServiceCallback() {
-      @Override
-      public void run() throws RemoteException {
-        clock.newAlarm(minutesAfterMidnight);
-      }
-    });
-  }
-  */
-
   public void createAlarm(final Calendar calendar) {
     runOrDefer(new ServiceCallback() {
       @Override
