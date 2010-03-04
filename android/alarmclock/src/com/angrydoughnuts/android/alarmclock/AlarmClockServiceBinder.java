@@ -34,7 +34,6 @@ public class AlarmClockServiceBinder {
         try {
           callback.run();
         } catch (RemoteException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         }
       }
@@ -58,7 +57,6 @@ public class AlarmClockServiceBinder {
       try {
         callback.run();
       } catch (RemoteException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     } else {

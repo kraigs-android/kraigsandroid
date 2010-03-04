@@ -120,9 +120,7 @@ public class SettingsActivity extends Activity {
         if (uri == null) {
           // This should never happen, but fall back to the phone ringer just
           // in case.
-          // TODO(cgallek): this url doesn't actually resolve in the media
-          // player.  Change it.
-          uri = Settings.System.DEFAULT_RINGTONE_URI;
+          uri = Settings.System.DEFAULT_ALARM_ALERT_URI;
         }
         adapter.notifyDataSetChanged();
         settings.setTone(uri);
@@ -165,7 +163,6 @@ public class SettingsActivity extends Activity {
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
       switch (position) {
         case TONE_SETTING:
-          // TODO(cgallek): this is the wrong ringtone.
           Uri current_tone = settings.getTone();
           Intent i = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALL);
