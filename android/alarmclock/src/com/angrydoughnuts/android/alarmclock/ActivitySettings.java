@@ -46,7 +46,6 @@ public class ActivitySettings extends Activity {
   private AlarmInfo info;
   private AlarmSettings originalSettings;
   private AlarmSettings settings;
-  SettingsAdapter alarmInfoAdapter;
   SettingsAdapter settingsAdapter;
 
   @Override
@@ -235,7 +234,7 @@ public class ActivitySettings extends Activity {
               @Override
               public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                 info.setTime(new AlarmTime(hourOfDay, minute, 0));
-                alarmInfoAdapter.notifyDataSetChanged();
+                settingsAdapter.notifyDataSetChanged();
               }
             },
             hour, minute, is24Hour);
@@ -250,7 +249,7 @@ public class ActivitySettings extends Activity {
           @Override
           public void onClick(DialogInterface dialog, int which) {
             info.setName(label.getEditableText().toString());
-            alarmInfoAdapter.notifyDataSetChanged();
+            settingsAdapter.notifyDataSetChanged();
             dismissDialog(Dialogs.NAME_PICKER.ordinal());
           }
         });
@@ -280,7 +279,7 @@ public class ActivitySettings extends Activity {
         dowBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
-            alarmInfoAdapter.notifyDataSetChanged();
+            settingsAdapter.notifyDataSetChanged();
             dismissDialog(Dialogs.DOW_PICKER.ordinal());
           }
         });
