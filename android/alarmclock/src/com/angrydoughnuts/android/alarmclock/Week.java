@@ -27,6 +27,10 @@ public class Week implements Parcelable {
     bitmask = new boolean[Day.values().length];
   }
 
+  public Week(Week rhs) {
+    bitmask = rhs.bitmask.clone();
+  }
+
   public Week(boolean[] bitmask) {
     if (bitmask.length != Day.values().length) {
       throw new IllegalArgumentException("Wrong sized bitmask: " + bitmask.length);

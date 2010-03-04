@@ -14,6 +14,11 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
   private Calendar calendar;
   private Week daysOfWeek;
 
+  public AlarmTime(AlarmTime rhs) {
+    calendar = (Calendar) rhs.calendar.clone();
+    daysOfWeek = new Week(rhs.daysOfWeek);
+  }
+
   public AlarmTime(int hourOfDay, int minute, int second) {
     this(hourOfDay, minute, second, new Week());
   }

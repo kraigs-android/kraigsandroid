@@ -41,7 +41,9 @@ public class ActivitySettings extends Activity {
   private long alarmId;
   private AlarmClockServiceBinder service;
   private DbAccessor db;
+  private AlarmInfo originalInfo;
   private AlarmInfo info;
+  private AlarmSettings originalSettings;
   private AlarmSettings settings;
   SettingsAdapter alarmInfoAdapter;
   SettingsAdapter settingsAdapter;
@@ -59,20 +61,25 @@ public class ActivitySettings extends Activity {
     service = AlarmClockServiceBinder.newBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
 
-    info = db.readAlarmInfo(alarmId);
-    settings = db.readAlarmSettings(alarmId);
+    // TODO(cgallek): Is there a way to make the originals final??
+    originalInfo = db.readAlarmInfo(alarmId);
+    if (originalInfo != null) {
+      info = new AlarmInfo(originalInfo);
+    }
+    originalSettings = db.readAlarmSettings(alarmId);
+    settings = new AlarmSettings(originalSettings);
 
     Button okButton = (Button) findViewById(R.id.settings_ok);
     okButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
-        if (info != null && info.dirty()) {
+        if (originalInfo != null && !originalInfo.equals(info)) {
           db.writeAlarmInfo(alarmId, info);
           if (info.enabled()) {
             service.scheduleAlarm(alarmId);
           }
         }
-        if (settings.dirty()) {
+        if (!originalSettings.equals(settings)) {
           db.writeAlarmSettings(alarmId, settings);
         }
         finish();
@@ -261,10 +268,8 @@ public class ActivitySettings extends Activity {
               public void onClick(DialogInterface dialog, int which, boolean isChecked) {
                 if (isChecked) {
                   info.getTime().getDaysOfWeek().addDay(Week.Day.values()[which]);
-                  info.makeDirty();
                 } else {
                   info.getTime().getDaysOfWeek().removeDay(Week.Day.values()[which]);
-                  info.makeDirty();
                 }
               }
         });

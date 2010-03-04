@@ -9,14 +9,12 @@ import android.database.Cursor;
 
 public class AlarmInfo {
 
-  private boolean dirty;
   private long alarmId;
   private AlarmTime time;
   private boolean enabled;
   private String name;
 
   public AlarmInfo(Cursor cursor) {
-    dirty = false;
     alarmId = cursor.getLong(cursor.getColumnIndex(DbHelper.ALARMS_COL__ID));
     enabled = cursor.getInt(cursor.getColumnIndex(DbHelper.ALARMS_COL_ENABLED)) == 1;
     name = cursor.getString(cursor.getColumnIndex(DbHelper.ALARMS_COL_NAME));
@@ -26,11 +24,29 @@ public class AlarmInfo {
   }
 
   public AlarmInfo() {
-    dirty = false;
     alarmId = -69;  // initially invalid.
     time = new AlarmTime(0, 0, 0);
     enabled = false;
     name = "";
+  }
+
+  public AlarmInfo(AlarmInfo rhs) {
+    alarmId = rhs.alarmId;
+    time = new AlarmTime(rhs.time);
+    enabled = rhs.enabled;
+    name = rhs.name;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof AlarmInfo)) {
+      return false;
+    }
+    AlarmInfo rhs = (AlarmInfo) o;
+    return alarmId == rhs.alarmId
+      && time.equals(rhs.time)
+      && enabled == rhs.enabled
+      && name.equals(rhs.name);
   }
 
   public ContentValues contentValues() {
@@ -52,15 +68,6 @@ public class AlarmInfo {
     };
   }
 
-  public boolean dirty() {
-    return dirty;
-  }
-
-  // TODO(cgallek): dirty hack. come up with a better way of tracking dirt.
-  public void makeDirty() {
-    dirty = true;
-  }
-
   public long getAlarmId() {
     return alarmId;
   }
@@ -70,9 +77,6 @@ public class AlarmInfo {
   }
 
   public void setTime(AlarmTime time) {
-    if (!this.time.equals(time)) {
-      dirty = true;
-    }
     this.time = time;
   }
 
@@ -81,9 +85,6 @@ public class AlarmInfo {
   }
 
   public void setEnabled(boolean enabled) {
-    if (this.enabled != enabled) {
-      dirty = true;
-    }
     this.enabled = enabled;
   }
 
@@ -92,9 +93,6 @@ public class AlarmInfo {
   }
 
   public void setName(String name) {
-    if (!this.name.equals(name)) {
-      dirty = true;
-    }
     this.name = name;
   }
 
