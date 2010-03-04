@@ -4,11 +4,11 @@ import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardLock;
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
@@ -20,14 +20,26 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
+// NOTE: This class assumes that it will never be instantiated nor active
+// more than once at the same time. (ie, it assumes
+// android:launchMode="singleInstance" is set in the manifest file).
+// Current reasons for this assumption:
+//  - The broadcast receiver that triggers the activity has a single global
+//    wake lock.
+//  - It does not support more than one active alarm at a time.  If a second
+//    alarm triggers while this Activity is running, it will silently snooze
+//    the first alarm and start the second.
 public class AlarmNotificationActivity extends Activity {
   enum AckStates { UNACKED, ACKED, SNOOZED }
 
+  // Per-intent members.
   private long alarmId;
+  private AlarmSettings settings;
   private AckStates ackState;
+
+  // Per-instance members.
   private AlarmClockServiceBinder service;
   private DbAccessor db;
-  private AlarmSettings settings;
   private KeyguardLock screenLock;
   private MediaPlayer mediaPlayer;
   private Ringtone fallbackSound;
@@ -36,19 +48,17 @@ public class AlarmNotificationActivity extends Activity {
   private VolumeIncreaser volumeIncreaseCallback; 
   private Runnable timeTick;
 
-  // TODO(cgallek): This doesn't seem to handle the case when a second alarm
-  // fires while the first has not yet been acked.
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.notification);
 
-    alarmId = AlarmClockService.alarmUriToId(getIntent().getData());
-    ackState = AckStates.UNACKED;
-
     service = AlarmClockServiceBinder.newBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
+
+    alarmId = AlarmClockService.alarmUriToId(getIntent().getData());
     settings = db.readAlarmSettings(alarmId);
+    ackState = AckStates.UNACKED;
 
     AudioManager audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
     audio.setStreamVolume(AudioManager.STREAM_ALARM, audio.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
@@ -140,21 +150,40 @@ public class AlarmNotificationActivity extends Activity {
     });
   }
 
+  // If a second alarm fires while this activity is active, a cycle through
+  // onPause(), onNewIntent(), to onResume() will be triggered.
+  // This call to onNewIntent() swaps out the per-intent member variables
+  // for those associated with the new alarm.
+  // Each of these cycles should represent a single call to lock on the
+  // wake lock in the alarm receiver, and one unlock call via the ack method.
+  @Override
+  protected void onNewIntent(Intent intent) {
+    alarmId = AlarmClockService.alarmUriToId(intent.getData());
+    settings = db.readAlarmSettings(alarmId);
+    ackState = AckStates.UNACKED;
+    volumeIncreaseCallback.reset();
+    redraw();
+    super.onNewIntent(intent);
+  }
+
+  @Override
+  protected void onStart() {
+    super.onStart();
+    screenLock.disableKeyguard();
+    service.bind();
+  }
+
   @Override
   protected void onResume() {
     super.onResume();
-    screenLock.disableKeyguard();
-    service.bind();
-
     if (settings.getVibrate()) {
       vibrator.vibrate(new long[] {500, 500}, 0);
     }
 
-    Uri tone = settings.getTone();
     mediaPlayer.reset();
     mediaPlayer.setLooping(true);
     try {
-      mediaPlayer.setDataSource(getApplicationContext(), tone);
+      mediaPlayer.setDataSource(getApplicationContext(), settings.getTone());
       mediaPlayer.prepare();
       mediaPlayer.start();
     } catch (Exception e) {
@@ -178,8 +207,14 @@ public class AlarmNotificationActivity extends Activity {
     vibrator.cancel();
     mediaPlayer.stop();
     fallbackSound.stop();
+  }
+
+  @Override
+  protected void onStop() {
+    super.onStop();
     service.unbind();
     screenLock.reenableKeyguard();
+    finish();
   }
 
   @Override
@@ -209,12 +244,6 @@ public class AlarmNotificationActivity extends Activity {
         + settings.getSnoozeMinutes() + " " + getString(R.string.minutes));
   }
 
-  // TODO(cgallek): this wake lock must be released once and exactly once
-  // for every lock that is acquired in the BroadcastReceiver.  This
-  // method should make sure it's released for every instance of this
-  // Activity, but I don't think that there is necessarily a one to one mappeing
-  // between broadcast events and instances of this activity.  Figure out how
-  // to handle this.
   private void ack(AckStates ack) {
     if (ackState != AckStates.UNACKED) {
       return;
@@ -242,6 +271,10 @@ public class AlarmNotificationActivity extends Activity {
     float increment;
 
     public VolumeIncreaser() {
+      reset();
+    }
+
+    public void reset() {
       start = (float) (settings.getVolumeStartPercent() / 100.0);
       end = (float) (settings.getVolumeEndPercent() / 100.0);
       increment = (end - start) / (float) settings.getVolumeChangeTimeSec();
