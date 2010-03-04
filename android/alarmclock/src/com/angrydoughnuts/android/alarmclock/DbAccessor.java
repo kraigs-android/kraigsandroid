@@ -43,4 +43,12 @@ public class DbAccessor {
     }
     return id;
   }
+
+  public boolean enableAlarm(long alarmId, boolean enabled) {
+    ContentValues values = new ContentValues(1);
+    values.put(DbHelper.ALARMS_COL_ENABLED, enabled);
+    int count = rwDb.update(DbHelper.DB_TABLE_ALARMS, values,
+        DbHelper.ALARMS_COL_ID + " = " + alarmId, null);
+    return count != 0;
+  }
 }

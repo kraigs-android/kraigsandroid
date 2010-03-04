@@ -123,6 +123,7 @@ public class AlarmClockService extends Service {
     PendingIntent alarm = pendingAlarms.remove(alarmId);
     if (alarm != null) {
       alarm.cancel();
+      db.enableAlarm(alarmId, false);
       return true;
     } else {
       return false;
