@@ -42,7 +42,6 @@ public class AlarmSettings {
     };
   }
 
-  // TODO(cgallek): default constructor to initialize defaults.
   public AlarmSettings() {
     tone = Settings.System.DEFAULT_ALARM_ALERT_URI;
     toneName = "Default";

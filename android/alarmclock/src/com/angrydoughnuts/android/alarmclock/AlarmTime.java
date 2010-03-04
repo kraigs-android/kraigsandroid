@@ -64,10 +64,10 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
     return calendar;
   }
 
-  public String timeUntilString() {
+  public String timeUntilString(Context c) {
     Calendar now = Calendar.getInstance();
     if (calendar.before(now)) {
-      return "Alarm has occurred.";
+      return c.getString(R.string.alarm_has_occurred);
     }
     long now_min = now.getTimeInMillis() / 1000 / 60;
     long then_min = calendar.getTimeInMillis() / 1000 / 60;
@@ -77,22 +77,21 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
     long minutes = hours % 60;
     hours = hours / 60;
 
-    // TODO(cgallek) extract these strings to strings.xml.
     String value = "";
     if (days == 1) {
-      value += days + " day ";
+      value += c.getString(R.string.day, days) + " ";
     } else if (days > 1) {
-      value += days + " days ";
+      value += c.getString(R.string.days, days) + " ";
     }
     if (hours == 1) {
-      value += hours + " hour ";
+      value += c.getString(R.string.hour, hours) + " ";
     } else if (hours > 1) {
-      value += hours + " hours ";
+      value += c.getString(R.string.hours, hours) + " ";
     }
     if (minutes == 1) {
-      value += minutes + " minute";
+      value += c.getString(R.string.minute, minutes) + " ";
     } else if (minutes > 1) {
-      value += minutes + " minutes";
+      value += c.getString(R.string.minutes, minutes) + " ";
     }
     return value;
   }

@@ -124,7 +124,7 @@ public class AlarmClockService extends Service {
     String nextString;
     if (nextTime != null) {
       nextString = getApplicationContext().getString(R.string.next_alarm)
-        + " " + nextTime.timeUntilString();
+        + " " + nextTime.timeUntilString(getApplicationContext());
     } else {
       nextString = getApplicationContext().getString(R.string.no_pending_alarms);
     }

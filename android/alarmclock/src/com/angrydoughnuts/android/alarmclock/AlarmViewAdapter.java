@@ -71,7 +71,7 @@ class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
     timeView.setText(timeStr + alarmId);
     enabledView.setChecked(info.enabled());
 
-    nextView.setText(time.timeUntilString());
+    nextView.setText(time.timeUntilString(getContext()));
     labelView.setText(info.getName());
     repeatView.setText(info.getDaysOfWeek().toString(getContext()));
     enabledView.setOnClickListener(new OnClickListener() {

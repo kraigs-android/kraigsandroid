@@ -131,7 +131,6 @@ public class AlarmInfo {
   }
 
   private long alarmId;
-  // TODO(cgallek): Move the AlarmTime class in here and replace this integer.
   private AlarmTime time;
   private boolean enabled;
   private String name;
