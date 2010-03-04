@@ -9,7 +9,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public class AlarmNotificationActivity extends Activity {
   private long alarmId;
@@ -50,17 +53,29 @@ public class AlarmNotificationActivity extends Activity {
       }
     });
 
-    Button okButton = (Button) findViewById(R.id.notify_dismiss);
-    okButton.setOnClickListener(new View.OnClickListener() {
+    // TODO(cgallek) replace this with a different object that implements
+    // the AbsSeekBar interface?  The current version works even if you simply
+    // tap the right side.
+    SeekBar dismiss = (SeekBar) findViewById(R.id.dismiss_slider);
+    dismiss.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
       @Override
-      public void onClick(View v) {
-        // TODO(cgallek):  Currently the alarm will only be acknowledged if the ok
-        // button is pressed.  However, this dialog can be closed in other ways.
-        // figure out how to handle acknowledgements in those cases.  Maybe
-        // a notification item?
-        service.dismissAlarm(alarmId);
-        AlarmBroadcastReceiver.wakeLock().release();
-        finish();
+      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+      }
+      @Override
+      public void onStartTrackingTouch(SeekBar seekBar) {
+      }
+      @Override
+      public void onStopTrackingTouch(SeekBar seekBar) {
+        if (seekBar.getProgress() > 75) {
+          // TODO(cgallek):  Currently the alarm will only be acknowledged if the ok
+          // button is pressed.  However, this dialog can be closed in other ways.
+          // figure out how to handle acknowledgements in those cases.  Maybe
+          // a notification item?
+          service.dismissAlarm(alarmId);
+          AlarmBroadcastReceiver.wakeLock().release();
+          finish();
+        }
+        seekBar.setProgress(0);
       }
     });
   }
