@@ -43,6 +43,12 @@ public class PendingAlarmList {
     return alarmTimes.firstKey();
   }
 
+  public AlarmTime[] pendingTimes() {
+    AlarmTime[] times = new AlarmTime[alarmTimes.size()];
+    alarmTimes.keySet().toArray(times);
+    return times;
+  }
+
   private class PendingAlarm {
     private AlarmTime time;
     private PendingIntent pendingIntent;

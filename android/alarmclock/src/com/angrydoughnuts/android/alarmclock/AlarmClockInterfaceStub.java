@@ -17,6 +17,11 @@ public class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
   }
 
   @Override
+  public AlarmTime[] pendingAlarmTimes() throws RemoteException {
+    return service.pendingAlarmTimes();
+  }
+
+  @Override
   public void createAlarm(AlarmTime time) throws RemoteException {
     Toast.makeText(context, "SCHEDULE ALARM! " + time.toString(), Toast.LENGTH_SHORT).show();
     service.createAlarm(time);

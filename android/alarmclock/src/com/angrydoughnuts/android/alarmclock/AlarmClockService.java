@@ -130,6 +130,10 @@ public class AlarmClockService extends Service {
     manager.notify(NOTIFICATION_ID, notification);
   }
 
+  public AlarmTime[] pendingAlarmTimes() {
+    return pendingAlarms.pendingTimes();
+  }
+
   public void createAlarm(AlarmTime time) {
     // TODO(cgallek): validate params??
     // Store the alarm in the persistent database.
@@ -180,7 +184,7 @@ public class AlarmClockService extends Service {
     // Previous instances of this intent will be overwritten in both
     // the alarm manager and the pendingAlarms list.
     AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-    alarmManager.set(AlarmManager.RTC_WAKEUP, time.nextLocalOccuranceInMillisUTC(), scheduleIntent);
+    alarmManager.set(AlarmManager.RTC_WAKEUP, time.nextLocalOccurance().getTimeInMillis(), scheduleIntent);
     // Keep track of all scheduled alarms.
     pendingAlarms.put(alarmId, time, scheduleIntent);
     refreshNotification();

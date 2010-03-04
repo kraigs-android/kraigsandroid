@@ -40,8 +40,8 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
   }
 
   public String toString() {
-    SimpleDateFormat formatter = new SimpleDateFormat("HH:mm.ss");
-    return formatter.format(asCalendar.getTime());
+    SimpleDateFormat formatter = new SimpleDateFormat("HH:mm.ss MMMM dd yyyy");
+    return formatter.format(nextLocalOccurance().getTimeInMillis());
   }
 
   public String localizedString(Context context) {
@@ -65,7 +65,7 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
     return secondsAfterMidnight;
   }
 
-  public long nextLocalOccuranceInMillisUTC() {
+  public Calendar nextLocalOccurance() {
     Calendar now = Calendar.getInstance();
     Calendar then = Calendar.getInstance();
     then.setTimeInMillis(asCalendar.getTimeInMillis());
@@ -73,12 +73,15 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
     if (then.before(now)) {
       then.add(Calendar.DATE, 1);
     }
-    return then.getTimeInMillis();
+    if (then.before(now)) {
+      throw new IllegalStateException("Inconsistent calendar.");
+    }
+    return then;
   }
 
   public String nextLocalOccuranceAsString() {
     long now_min = Calendar.getInstance().getTimeInMillis() / 1000 / 60;
-    long then_min = nextLocalOccuranceInMillisUTC() / 1000 / 60;
+    long then_min = nextLocalOccurance().getTimeInMillis() / 1000 / 60;
     long difference_minutes = then_min - now_min;
     long days = difference_minutes / (60 * 24);
     long hours = difference_minutes % (60 * 24);

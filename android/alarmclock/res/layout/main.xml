@@ -17,6 +17,13 @@
 
   <Button android:text="Test Alarm"
     android:id="@+id/test_alarm"
+    android:visibility="gone"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" />
+
+  <Button android:text="Pending Alarms..."
+    android:id="@+id/pending_alarms"
+    android:visibility="gone"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
 

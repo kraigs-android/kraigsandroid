@@ -13,6 +13,7 @@ import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
@@ -65,17 +66,24 @@ public class AlarmClockActivity extends Activity {
     };
 
     Button testBtn = (Button) findViewById(R.id.test_alarm);
-    if (!AlarmClockService.debug(getApplicationContext())) {
-      testBtn.setVisibility(View.GONE);
+    Button pendingBtn = (Button) findViewById(R.id.pending_alarms);
+    if (AlarmClockService.debug(getApplicationContext())) {
+      testBtn.setVisibility(View.VISIBLE);
+      pendingBtn.setVisibility(View.VISIBLE);
     }
-    testBtn.setOnClickListener(new View.OnClickListener() {
+    testBtn.setOnClickListener(new OnClickListener() {
       public void onClick(View view) {
         Calendar testTime = Calendar.getInstance();
         testTime.add(Calendar.SECOND, 5);
-        // TODO(cgallek): this is going to break if seconds are removed
-        // from this service method.
         service.createAlarm(new AlarmTime(testTime));
         alarmListCursor.requery();
+      }
+    });
+    pendingBtn.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        Intent i = new Intent(getApplicationContext(), PendingAlarmsActivity.class);
+        startActivity(i);
       }
     });
 
