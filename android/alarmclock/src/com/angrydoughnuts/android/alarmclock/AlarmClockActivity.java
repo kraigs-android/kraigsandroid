@@ -29,11 +29,12 @@ public class AlarmClockActivity extends Activity {
     Button setBtn = (Button) findViewById(R.id.set_alarm);
     setBtn.setOnClickListener(new View.OnClickListener() {
       public void onClick(View view) {
-        Calendar trigger = Calendar.getInstance();
-        trigger.add(Calendar.SECOND, 5);
-        // TODO(cgallek): actually using seconds since midnight right now for testing.
-        // Change back to minutes.
-        int minutesAfterMidnight = trigger.get(Calendar.HOUR_OF_DAY) * 3600 + trigger.get(Calendar.MINUTE) * 60 + trigger.get(Calendar.SECOND);
+        Calendar now = Calendar.getInstance();
+        now.add(Calendar.SECOND, 5);
+        int hour = now.get(Calendar.HOUR_OF_DAY);
+        int minute = now.get(Calendar.MINUTE);
+        int second = now.get(Calendar.SECOND);
+        int minutesAfterMidnight = TimeUtil.minutesAfterMidnight(hour, minute, second);
         service.newAlarm(minutesAfterMidnight);
         alarmListCursor.requery();
       }

@@ -28,7 +28,7 @@ class AlarmViewAdapter extends ResourceCursorAdapter {
     TextView timeView = (TextView) view.findViewById(R.id.alarm_time);
     CheckBox enabledView = (CheckBox) view.findViewById(R.id.alarm_enabled);
 
-    timeView.setText(cursor.getLong(idIndex) + " " + cursor.getString(timeIndex));
+    timeView.setText(cursor.getLong(idIndex) + " " + TimeUtil.minutesAfterMidnightToString(cursor.getInt(timeIndex)));
     enabledView.setChecked(cursor.getInt(enabledIndex) != 0);
     final long id = cursor.getLong(idIndex);
     enabledView.setOnClickListener(new OnClickListener() {

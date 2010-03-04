@@ -1,6 +1,5 @@
 package com.angrydoughnuts.android.alarmclock;
 
-import java.util.Calendar;
 import java.util.TreeMap;
 
 import android.app.AlarmManager;
@@ -104,20 +103,7 @@ public class AlarmClockService extends Service {
     if (minutesAfterMidnight < 0) {
       throw new IllegalStateException("Invalid timestamp stored in DB.");
     }
-    // TODO(cgallek): this is actually interpreted as seconds after midnight right
-    // now (for testing).  Switch it to minutes eventually.
-    int hour = minutesAfterMidnight % 3600;
-    int minutes = (minutesAfterMidnight - (hour * 3600)) % 60;
-    int seconds = (minutesAfterMidnight- (hour * 3600 + minutes * 60));
-    Calendar schedule = Calendar.getInstance();
-    schedule.set(Calendar.HOUR_OF_DAY, hour);
-    schedule.set(Calendar.MINUTE, minutes);
-    schedule.set(Calendar.SECOND, seconds);
-
-    Calendar now = Calendar.getInstance();
-    if (schedule.before(now)) {
-      schedule.add(Calendar.DATE, 1);
-    }
+    long alarmTime = TimeUtil.nextLocalOccuranceInUTC(minutesAfterMidnight);
 
     Intent notifyIntent = new Intent(getApplicationContext(), AlarmBroadcastReceiver.class);
     notifyIntent.putExtra("task_id", alarmId);
@@ -125,7 +111,7 @@ public class AlarmClockService extends Service {
       PendingIntent.getBroadcast(getApplicationContext(), 0, notifyIntent, 0);
 
     AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-    alarmManager.set(AlarmManager.RTC_WAKEUP, schedule.getTimeInMillis(), scheduleIntent);
+    alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, scheduleIntent);
     // TODO(cgallek): make sure ID doesn't exist yet?
     // Keep track of all scheduled alarms.
     pendingAlarms.put(alarmId, scheduleIntent);
