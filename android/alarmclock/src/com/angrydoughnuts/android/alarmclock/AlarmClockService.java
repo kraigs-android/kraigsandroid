@@ -53,7 +53,7 @@ import android.widget.Toast;
       final AlarmClockInterface.Stub binder = new AlarmClockInterface.Stub() {};
       return binder;
     }
-  
+
     @Override
     public boolean onUnbind(Intent intent) {
       // Decide if we need to explicitly shut down this service.  Normally,
@@ -62,7 +62,11 @@ import android.widget.Toast;
       // we must explicitly stop here when there are no alarms set.
       if (!AlarmClockActivity.getAlarmOn()) {
         stopSelf();
+        return false;
+      } else {
+        // Since we want the service to continue running in this case, return
+        // true so that onRebind is called instead of onBind.
+        return true;
       }
-      return super.onUnbind(intent);
     }
   }

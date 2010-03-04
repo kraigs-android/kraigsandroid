@@ -15,6 +15,7 @@ public class AlarmClockActivity extends Activity {
   // TODO(cgallek): replace this with a data provider.
   private static boolean alarmOn = false;
   public static boolean getAlarmOn() { return alarmOn; }
+  // TODO(cgallek): make these final.
   private Intent serviceIntent;
   private ServiceConnection serviceConnection;
 
