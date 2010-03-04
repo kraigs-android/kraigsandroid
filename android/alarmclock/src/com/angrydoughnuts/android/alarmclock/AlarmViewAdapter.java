@@ -33,9 +33,9 @@ class AlarmViewAdapter extends ResourceCursorAdapter {
     String timeStr = time.localizedString(context);
     String alarmId = "";
     if (AlarmClockService.debug(context)) {
-      alarmId = " [" + cursor.getLong(idIndex) + "] ";
+      alarmId = " [" + cursor.getLong(idIndex) + "]";
     }
-    timeView.setText(alarmId + timeStr);
+    timeView.setText(timeStr + alarmId);
     enabledView.setChecked(cursor.getInt(enabledIndex) != 0);
     // TODO(cgallek): This doesn't account for snoozed alarms :-\
     // Figure out how to get this information back from the service based
