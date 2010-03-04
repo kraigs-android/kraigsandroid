@@ -48,6 +48,9 @@ public class DbAccessor {
   public boolean deleteAlarm(long alarmId) {
     int count = rDb.delete(DbHelper.DB_TABLE_ALARMS,
         DbHelper.ALARMS_COL__ID + " = " + alarmId, null);
+    // This may or may not exist.  We don't care about the return value.
+    rDb.delete(DbHelper.DB_TABLE_SETTINGS,
+        DbHelper.SETTINGS_COL_ID + " = " + alarmId, null);
     return count > 0;
   }
 
@@ -101,7 +104,7 @@ public class DbAccessor {
       if (alarmId == AlarmSettings.DEFAULT_SETTINGS_ID) {
         // TODO(cgallek): Make sure this isn't possible.  The default
         // settings should always be available.
-        return null;
+        return new AlarmSettings();
       }
       return readAlarmSettings(AlarmSettings.DEFAULT_SETTINGS_ID);
     }
