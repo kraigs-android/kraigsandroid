@@ -6,7 +6,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class AlarmSettings implements Parcelable {
-  static public final int DEFAULT_SETTINGS_ID = -1;
+  static public final long DEFAULT_SETTINGS_ID = -1;
 
   private Uri tone;
 

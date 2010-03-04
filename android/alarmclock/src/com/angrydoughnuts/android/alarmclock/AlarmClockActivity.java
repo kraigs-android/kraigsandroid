@@ -97,6 +97,7 @@ public class AlarmClockActivity extends Activity {
     switch (item.getItemId()) {
       case DEFAULT_SETTINGS_MENU:
         Intent i = new Intent(getApplicationContext(), DefaultSettingsActivity.class);
+        i.putExtra(DefaultSettingsActivity.EXTRAS_ALARM_ID, AlarmSettings.DEFAULT_SETTINGS_ID);
         startActivity(i);
     }
     // TODO(cgallek): Should this still call the parent??

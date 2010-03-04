@@ -12,8 +12,12 @@ import android.widget.Button;
 import android.widget.TextView;
 
 public class DefaultSettingsActivity extends Activity {
+  static public final String EXTRAS_ALARM_ID = "alarm_id";
+
+  private final int MISSING_EXTRAS = -69;
   private final int TONE_PICK_ID = 1;
 
+  private long alarmId;
   private DbAccessor db;
   private AlarmSettings settings;
   private TextView tone;
@@ -22,11 +26,15 @@ public class DefaultSettingsActivity extends Activity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.default_settings);
+
+    alarmId = getIntent().getExtras().getLong(EXTRAS_ALARM_ID, MISSING_EXTRAS);
+    if (alarmId == MISSING_EXTRAS) {
+      throw new IllegalStateException("EXTRAS_ALARM_ID not supplied in intent.");
+    }
+
     db = new DbAccessor(getApplicationContext());
 
-    // TODO(cgallek) make this more generic by reading an alarm id from the
-    // supplied intent.
-    settings = db.readDefaultAlarmSettings();
+    settings = db.readAlarmSettings(alarmId);
 
     tone = (TextView) findViewById(R.id.tone);
     tone.setText(db.readDefaultAlarmSettings().getTone().toString());
@@ -53,8 +61,7 @@ public class DefaultSettingsActivity extends Activity {
     okButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
-        // TODO(cgallek): this shouldn't always write the default settings.
-        db.writeAlarmSettings(AlarmSettings.DEFAULT_SETTINGS_ID, settings);
+        db.writeAlarmSettings(alarmId, settings);
         finish();
       }
     });
