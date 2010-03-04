@@ -4,9 +4,6 @@ import android.content.Context;
 import android.os.RemoteException;
 import android.widget.Toast;
 
-// TODO(cgallek): Remove these toasts.
-// TODO(cgallek): This class can probably move as an inner class
-// of AlarmClockService.
 public class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
   private Context context;
   private AlarmClockService service;
@@ -23,31 +20,37 @@ public class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
 
   @Override
   public void createAlarm(AlarmTime time) throws RemoteException {
-    Toast.makeText(context, "SCHEDULE ALARM! " + time.toString(), Toast.LENGTH_SHORT).show();
+    debugToast("CREATE ALARM " + time.toString());
     service.createAlarm(time);
   }
 
   @Override
   public void deleteAlarm(long alarmId) throws RemoteException {
-    Toast.makeText(context, "DELETE ALARM! " + alarmId, Toast.LENGTH_SHORT).show();
+    debugToast("DELETE ALARM " + alarmId);
     service.deleteAlarm(alarmId);
   }
 
   @Override
   public void scheduleAlarm(long alarmId) throws RemoteException {
-    Toast.makeText(context, "SCHEDULE ALARM " + alarmId, Toast.LENGTH_SHORT).show();
+    debugToast("SCHEDULE ALARM " + alarmId);
     service.scheduleAlarm(alarmId);
   }
 
   @Override
   public void dismissAlarm(long alarmId) {
-    Toast.makeText(context, "DISMISS ALARM " + alarmId, Toast.LENGTH_SHORT).show();
+    debugToast("DISMISS ALARM " + alarmId);
     service.dismissAlarm(alarmId);
   }
 
   @Override
   public void snoozeAlarm(long alarmId) throws RemoteException {
-    Toast.makeText(context, "SNOOZE ALARM " + alarmId, Toast.LENGTH_SHORT).show();
+    debugToast("SNOOZE ALARM " + alarmId);
     service.snoozeAlarm(alarmId);
+  }
+
+  private void debugToast(String message) {
+    if (AlarmClockService.debug(context)) {
+      Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+    }
   }
 }

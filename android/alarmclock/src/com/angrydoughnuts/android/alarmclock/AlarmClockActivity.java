@@ -26,10 +26,8 @@ import android.widget.TimePicker;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class AlarmClockActivity extends Activity {
-  private final int TIME_PICKER_DIALOG_ID = 1;
-  private final int DEBUG_DIALOG_ID = 2;
-
-  private final int DEFAULT_SETTINGS_MENU = 1;
+  private enum Dialogs { DEBUG, TIME_PICKER };
+  private enum Menus { DEFAULT_SETTINGS };
 
   private AlarmClockServiceBinder service;
   private DbAccessor db;
@@ -55,7 +53,7 @@ public class AlarmClockActivity extends Activity {
     clock.setOnLongClickListener(new OnLongClickListener() {
       @Override
       public boolean onLongClick(View v) {
-        showDialog(DEBUG_DIALOG_ID);
+        showDialog(Dialogs.DEBUG.ordinal());
         return true;
       }
     });
@@ -63,9 +61,12 @@ public class AlarmClockActivity extends Activity {
     testBtn = (Button) findViewById(R.id.test_alarm);
     testBtn.setOnClickListener(new OnClickListener() {
       public void onClick(View view) {
-        Calendar testTime = Calendar.getInstance();
+        final Calendar testTime = Calendar.getInstance();
         testTime.add(Calendar.SECOND, 5);
-        service.createAlarm(new AlarmTime(testTime.get(Calendar.HOUR_OF_DAY), testTime.get(Calendar.MINUTE), testTime.get(Calendar.SECOND)));
+        service.createAlarm(new AlarmTime(testTime.get(
+            Calendar.HOUR_OF_DAY),
+            testTime.get(Calendar.MINUTE),
+            testTime.get(Calendar.SECOND)));
         redraw();
       }
     });
@@ -74,25 +75,26 @@ public class AlarmClockActivity extends Activity {
     pendingBtn.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
-        Intent i = new Intent(getApplicationContext(), PendingAlarmsActivity.class);
-        startActivity(i);
+        startActivity(
+            new Intent(getApplicationContext(), PendingAlarmsActivity.class));
       }
     });
 
     Button addBtn = (Button) findViewById(R.id.add_alarm);
     addBtn.setOnClickListener(new View.OnClickListener() {
       public void onClick(View view) {
-        showDialog(TIME_PICKER_DIALOG_ID);
+        showDialog(Dialogs.TIME_PICKER.ordinal());
       }
     });
 
-    AlarmViewAdapter adapter = new AlarmViewAdapter(getApplicationContext(), R.layout.alarm_description, alarmListCursor, service);
-    ListView alarmList = (ListView) findViewById(R.id.alarm_list);
+    final AlarmViewAdapter adapter =
+      new AlarmViewAdapter(getApplicationContext(), R.layout.alarm_description,
+          alarmListCursor, service);
+    final ListView alarmList = (ListView) findViewById(R.id.alarm_list);
     alarmList.setAdapter(adapter);
     alarmList.setOnItemClickListener(new OnItemClickListener() {
       @Override
-      public void onItemClick(AdapterView<?> adapter, View view, int position,
-          long id) {
+      public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
         alarmListCursor.moveToPosition(position);
         long alarmId = alarmListCursor.getLong(
             alarmListCursor.getColumnIndex(DbHelper.ALARMS_COL__ID));
@@ -121,63 +123,6 @@ public class AlarmClockActivity extends Activity {
   }
 
   @Override
-  protected Dialog onCreateDialog(int id) {
-    switch (id) {
-      case TIME_PICKER_DIALOG_ID:
-        Calendar now = Calendar.getInstance();
-        // TODO(cgallek): replace this with default alarm time.
-        int hour = now.get(Calendar.HOUR_OF_DAY);
-        int minute = now.get(Calendar.MINUTE);
-        boolean is24Hour = DateFormat.is24HourFormat(getApplicationContext());
-        return new TimePickerDialog(this,
-            new TimePickerDialog.OnTimeSetListener() {
-              @Override
-              public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                service.createAlarm(new AlarmTime(hourOfDay, minute, 0));
-                redraw();
-              }
-            },
-            hour, minute, is24Hour);
-      case DEBUG_DIALOG_ID:
-        ArrayAdapter<AlarmClockService.DebugMode> adapter = new ArrayAdapter<AlarmClockService.DebugMode>(getApplicationContext(), R.layout.dialog_item, AlarmClockService.DebugMode.values());
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        // TODO(cgallek): move this to strings.xml
-        builder.setTitle("Debug Mode");
-        builder.setSingleChoiceItems(adapter, 0, new DialogInterface.OnClickListener() {
-          public void onClick(DialogInterface dialog, int item) {
-            AlarmClockService.mode = AlarmClockService.DebugMode.values()[item];
-            redraw();
-            dismissDialog(DEBUG_DIALOG_ID);
-          }
-        });
-        return builder.create();
-
-      default:
-        return super.onCreateDialog(id);
-    }
-  }
-
-  @Override
-  public boolean onCreateOptionsMenu(Menu menu) {
-    MenuItem defaults = menu.add(0, DEFAULT_SETTINGS_MENU, 0, R.string.default_settings);
-    defaults.setIcon(android.R.drawable.ic_lock_idle_alarm);
-    // TODO(cgallek): Should this still call the parent??
-    return super.onCreateOptionsMenu(menu);
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    switch (item.getItemId()) {
-      case DEFAULT_SETTINGS_MENU:
-        Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
-        i.putExtra(SettingsActivity.EXTRAS_ALARM_ID, AlarmSettings.DEFAULT_SETTINGS_ID);
-        startActivity(i);
-    }
-    // TODO(cgallek): Should this still call the parent??
-    return super.onOptionsItemSelected(item);
-  }
-
-  @Override
   protected void onResume() {
     super.onResume();
     service.bind();
@@ -197,6 +142,28 @@ public class AlarmClockActivity extends Activity {
     db.closeConnections();
   }
 
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    MenuItem defaults =
+      menu.add(0, Menus.DEFAULT_SETTINGS.ordinal(), 0, R.string.default_settings);
+    defaults.setIcon(android.R.drawable.ic_lock_idle_alarm);
+    // TODO(cgallek): Should this still call the parent??
+    return super.onCreateOptionsMenu(menu);
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    switch (Menus.values()[item.getItemId()]) {
+      case DEFAULT_SETTINGS:
+        Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
+        i.putExtra(
+            SettingsActivity.EXTRAS_ALARM_ID, AlarmSettings.DEFAULT_SETTINGS_ID);
+        startActivity(i);
+    }
+    // TODO(cgallek): Should this still call the parent??
+    return super.onOptionsItemSelected(item);
+  }
+
   private void redraw() {
     // Show/hide debug buttons.
     if (AlarmClockService.debug(getApplicationContext())) {
@@ -209,10 +176,55 @@ public class AlarmClockActivity extends Activity {
 
     // Update clock
     Calendar c = Calendar.getInstance();
-    AlarmTime time = new AlarmTime(c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND));
+    AlarmTime time = new AlarmTime(
+        c.get(Calendar.HOUR_OF_DAY),
+        c.get(Calendar.MINUTE),
+        c.get(Calendar.SECOND));
     clock.setText(time.localizedString(getApplicationContext()));
 
     // Update the alarm list.
     alarmListCursor.requery();
+  }
+
+  @Override
+  protected Dialog onCreateDialog(int id) {
+    switch (Dialogs.values()[id]) {
+      case TIME_PICKER:
+        Calendar now = Calendar.getInstance();
+        // TODO(cgallek): replace this with default alarm time.
+        int hour = now.get(Calendar.HOUR_OF_DAY);
+        int minute = now.get(Calendar.MINUTE);
+        boolean is24Hour = DateFormat.is24HourFormat(getApplicationContext());
+        return new TimePickerDialog(this,
+            new TimePickerDialog.OnTimeSetListener() {
+              @Override
+              public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                service.createAlarm(new AlarmTime(hourOfDay, minute, 0));
+                redraw();
+              }
+            },
+            hour, minute, is24Hour);
+
+      case DEBUG:
+        ArrayAdapter<AlarmClockService.DebugMode> adapter =
+          new ArrayAdapter<AlarmClockService.DebugMode>(
+              getApplicationContext(), R.layout.dialog_item,
+              AlarmClockService.DebugMode.values());
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // TODO(cgallek): move this to strings.xml
+        builder.setTitle("Debug Mode");
+        builder.setSingleChoiceItems(adapter, 0,
+            new DialogInterface.OnClickListener() {
+             public void onClick(DialogInterface dialog, int item) {
+               AlarmClockService.mode = AlarmClockService.DebugMode.values()[item];
+               redraw();
+               dismissDialog(Dialogs.DEBUG.ordinal());
+             }
+          });
+        return builder.create();
+
+      default:
+        return super.onCreateDialog(id);
+    }
   }
 }

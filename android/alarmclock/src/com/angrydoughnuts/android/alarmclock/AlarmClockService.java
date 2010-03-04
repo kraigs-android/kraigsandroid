@@ -50,8 +50,11 @@ public class AlarmClockService extends Service {
   @Override
   public void onCreate() {
     super.onCreate();
-    if (getPackageManager().checkPermission("android.permission.WRITE_EXTERNAL_STORAGE", getPackageName()) == PackageManager.PERMISSION_GRANTED) {
-      Thread.setDefaultUncaughtExceptionHandler(new LoggingUncaughtExceptionHandler("/sdcard"));
+    if (getPackageManager().checkPermission(
+        "android.permission.WRITE_EXTERNAL_STORAGE", getPackageName()) ==
+          PackageManager.PERMISSION_GRANTED) {
+      Thread.setDefaultUncaughtExceptionHandler(
+          new LoggingUncaughtExceptionHandler("/sdcard"));
     }
 
     db = new DbAccessor(getApplicationContext());
@@ -61,8 +64,47 @@ public class AlarmClockService extends Service {
     notification = new Notification(R.drawable.icon, null, 0);
     notification.flags |= Notification.FLAG_ONGOING_EVENT;
 
-    refreshNotification();
     NotificationRefreshReceiver.startRefreshing(getApplicationContext());
+  }
+
+  // TODO(cgallek): This method breaks compatibility with SDK version < 5.
+  // Is there anyway around this?
+  @Override
+  public int onStartCommand(Intent intent, int flags, int startId) {
+    if (intent != null && intent.hasExtra(COMMAND_EXTRA)) {
+      Bundle extras = intent.getExtras();
+      int command = extras.getInt(COMMAND_EXTRA, COMMAND_UNKNOWN);
+      switch (command) {
+        case COMMAND_NOTIFICATION_REFRESH:
+          refreshNotification();
+      }
+    }
+    return super.onStartCommand(intent, flags, startId);
+  }
+
+  private void refreshNotification() {
+    AlarmTime nextTime = pendingAlarms.nextAlarmTime();
+    String nextString;
+    // TODO(cgallek): move these to strings.xml
+    if (nextTime != null) {
+      nextString = "Next Alarm: " + nextTime.timeUntilString();
+    } else {
+      nextString = "No Alarms Pending";
+    }
+
+    // Make the notification launch the UI Activity when clicked.
+    final Intent notificationIntent = new Intent(this, AlarmClockActivity.class);
+    final PendingIntent launch = PendingIntent.getActivity(this, 0,
+        notificationIntent, 0);
+
+    // TODO(cgallek); Figure out how to get the application name
+    // programatically.
+    notification.setLatestEventInfo(
+        getApplicationContext(), "Alarm Clock", nextString, launch);
+
+    final NotificationManager manager =
+      (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    manager.notify(NOTIFICATION_ID, notification);
   }
 
   @Override
@@ -72,7 +114,8 @@ public class AlarmClockService extends Service {
 
     NotificationRefreshReceiver.stopRefreshing(getApplicationContext());
 
-    final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    final NotificationManager manager =
+      (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     manager.cancel(NOTIFICATION_ID);
 
     if (pendingAlarms.size() != 0) {
@@ -106,44 +149,6 @@ public class AlarmClockService extends Service {
       return true;
 
     }
-  }
-
-  // TODO(cgallek): This method breaks compatibility with SDK version < 5.
-  // Is there anyway around this?
-  @Override
-  public int onStartCommand(Intent intent, int flags, int startId) {
-    if (intent != null && intent.hasExtra(COMMAND_EXTRA)) {
-      Bundle extras = intent.getExtras();
-      int command = extras.getInt(COMMAND_EXTRA, COMMAND_UNKNOWN);
-      switch (command) {
-        case COMMAND_NOTIFICATION_REFRESH:
-          refreshNotification();
-      }
-    }
-    return super.onStartCommand(intent, flags, startId);
-  }
-
-  private void refreshNotification() {
-    AlarmTime nextTime = pendingAlarms.nextAlarmTime();
-    String nextString;
-    if (nextTime != null) {
-      nextString = "Next Alarm: " + nextTime.timeUntilString();
-    } else {
-      nextString = "No Alarms Pending";
-    }
-
-    // Make the notification launch the UI Activity when clicked.
-    Intent notificationIntent = new Intent(this, AlarmClockActivity.class);
-    final PendingIntent launch = PendingIntent.getActivity(this, 0,
-        notificationIntent, 0);
-
-    // TODO(cgallek); Figure out how to get the application name
-    // programatically.
-    notification.setLatestEventInfo(
-        getApplicationContext(), "Alarm Clock", nextString, launch);
-
-    final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    manager.notify(NOTIFICATION_ID, notification);
   }
 
   public AlarmTime[] pendingAlarmTimes() {
