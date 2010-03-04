@@ -35,7 +35,7 @@ public class ActivitySettings extends Activity {
   private enum SettingType { TONE, SNOOZE, VIBRATE, VOLUME_FADE; }
 
   private final int MISSING_EXTRAS = -69;
-  private enum Dialogs { TIME_PICKER, TONE_PICKER, SNOOZE_PICKER, VOLUME_FADE_PICKER }
+  private enum Dialogs { TIME_PICKER, NAME_PICKER, TONE_PICKER, SNOOZE_PICKER, VOLUME_FADE_PICKER }
 
   private long alarmId;
   private AlarmClockServiceBinder service;
@@ -231,6 +231,29 @@ public class ActivitySettings extends Activity {
               }
             },
             hour, minute, is24Hour);
+      case NAME_PICKER:
+        AlertDialog.Builder nameBuilder = new AlertDialog.Builder(this);
+        // TODO(cgallek): move this to strings.xml
+        nameBuilder.setTitle("Alarm Label");
+        View nameView = getLayoutInflater().inflate(R.layout.name_settings_dialog, null);
+        final TextView label = (TextView) nameView.findViewById(R.id.name_label);
+        label.setText(info.getName());
+        nameBuilder.setView(nameView);
+        nameBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            info.setName(label.getEditableText().toString());
+            alarmInfoAdapter.notifyDataSetChanged();
+            dismissDialog(Dialogs.NAME_PICKER.ordinal());
+          }
+        });
+        nameBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            dismissDialog(Dialogs.NAME_PICKER.ordinal());
+          }
+        });
+        return nameBuilder.create();
       case SNOOZE_PICKER:
         // TODO(cgallek): this is silly...
         final CharSequence[] items = {
@@ -256,14 +279,14 @@ public class ActivitySettings extends Activity {
         AlertDialog.Builder fadeBuilder = new AlertDialog.Builder(this);
         // TODO(cgallek): move this to strings.xml
         fadeBuilder.setTitle("Alarm Volume Fade");
-        View view = getLayoutInflater().inflate(R.layout.fade_settings_dialog, null);
-        final EditText volumeStart = (EditText) view.findViewById(R.id.volume_start);
+        View fadeView = getLayoutInflater().inflate(R.layout.fade_settings_dialog, null);
+        final EditText volumeStart = (EditText) fadeView.findViewById(R.id.volume_start);
         volumeStart.setText("" + settings.getVolumeStartPercent());
-        final EditText volumeEnd = (EditText) view.findViewById(R.id.volume_end);
+        final EditText volumeEnd = (EditText) fadeView.findViewById(R.id.volume_end);
         volumeEnd.setText("" + settings.getVolumeEndPercent());
-        final EditText volumeDuration = (EditText) view.findViewById(R.id.volume_duration);
+        final EditText volumeDuration = (EditText) fadeView.findViewById(R.id.volume_duration);
         volumeDuration.setText("" + settings.getVolumeChangeTimeSec());
-        fadeBuilder.setView(view);
+        fadeBuilder.setView(fadeView);
         fadeBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
@@ -294,6 +317,7 @@ public class ActivitySettings extends Activity {
           showDialog(Dialogs.TIME_PICKER.ordinal());
           break;
         case NAME:
+          showDialog(Dialogs.NAME_PICKER.ordinal());
           break;
         case DAYS_OF_WEEK:
           break;
