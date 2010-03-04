@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.widget.Toast;
 
 public class AlarmClockService extends Service {
   // TODO(cgallek): Move this to a utility file?
@@ -68,6 +69,14 @@ public class AlarmClockService extends Service {
 
     db = new DbAccessor(getApplicationContext());
     pendingAlarms = new PendingAlarmList(getApplicationContext());
+
+    // Schedule enabled alarms during initial startup.
+    for (Long alarmId : db.getEnabledAlarms()) {
+      if (debug(getApplicationContext())) {
+        Toast.makeText(getApplicationContext(), "RENABLE " + alarmId, Toast.LENGTH_SHORT).show();
+      }
+      pendingAlarms.put(alarmId, db.alarmTime(alarmId));
+    }
 
     // TODO(cgallek): add a better notification icon.
     notification = new Notification(R.drawable.icon, null, 0);

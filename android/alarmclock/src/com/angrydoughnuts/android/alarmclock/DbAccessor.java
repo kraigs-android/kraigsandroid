@@ -1,5 +1,8 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -59,6 +62,19 @@ public class DbAccessor {
     int count = rwDb.update(DbHelper.DB_TABLE_ALARMS, values,
         DbHelper.ALARMS_COL__ID + " = " + alarmId, null);
     return count != 0;
+  }
+
+  public List<Long> getEnabledAlarms() {
+    LinkedList<Long> enabled = new LinkedList<Long>();
+    Cursor cursor = rDb.query(DbHelper.DB_TABLE_ALARMS,
+        new String[] { DbHelper.ALARMS_COL__ID },
+        DbHelper.ALARMS_COL_ENABLED + " = 1", null, null, null, null);
+    while (cursor.moveToNext()) {
+      long alarmId = cursor.getLong(cursor.getColumnIndex(DbHelper.ALARMS_COL__ID));
+      enabled.add(alarmId);
+    }
+    cursor.close();
+    return enabled;
   }
 
   public AlarmTime alarmTime(long alarmId) {
