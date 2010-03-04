@@ -116,9 +116,14 @@ public class AlarmClockActivity extends Activity {
   }
 
   @Override
+  protected void onStart() {
+    super.onStart();
+    service.bind();
+  }
+
+  @Override
   protected void onResume() {
     super.onResume();
-    service.bind();
     handler.post(tickCallback);
     adapter.requery();
   }
@@ -127,6 +132,11 @@ public class AlarmClockActivity extends Activity {
   protected void onPause() {
     super.onPause();
     handler.removeCallbacks(tickCallback);
+  }
+
+  @Override
+  protected void onStop() {
+    super.onStop();
     service.unbind();
   }
 

@@ -126,14 +126,14 @@ public class SettingsActivity extends Activity {
   }
 
   @Override
-  protected void onResume() {
-    super.onResume();
+  protected void onStart() {
+    super.onStart();
     service.bind();
   }
 
   @Override
-  protected void onPause() {
-    super.onPause();
+  protected void onStop() {
+    super.onStop();
     service.unbind();
   }
 
