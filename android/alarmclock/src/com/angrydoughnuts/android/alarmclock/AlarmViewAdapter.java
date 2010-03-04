@@ -2,13 +2,8 @@ package com.angrydoughnuts.android.alarmclock;
 
 import java.util.LinkedList;
 
-import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.database.Cursor;
-import android.os.IBinder;
 import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,7 +18,6 @@ class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
   private LayoutInflater inflater;
   private DbAccessor db;
   private Cursor cursor;
-  private AlarmClockInterface clock;
 
   public AlarmViewAdapter(Context context, LayoutInflater inflater, AlarmClockServiceBinder service) {
     super(context, 0, new LinkedList<AlarmInfo>());
@@ -32,10 +26,6 @@ class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
     this.db = new DbAccessor(context);
     this.cursor = db.readAlarmInfo();
     loadData();
-
-    this.clock = null;
-    Intent i = new Intent(context, AlarmClockService.class);
-    context.bindService(i, connection, Service.BIND_AUTO_CREATE);
   }
 
   private void loadData() {
@@ -62,9 +52,9 @@ class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
 
     AlarmTime time = null;
     // See if there is an instance of this alarm scheduled.
-    if (clock != null) {
+    if (service.clock() != null) {
       try {
-        time = clock.pendingAlarm(info.getAlarmId());
+        time = service.clock().pendingAlarm(info.getAlarmId());
       } catch (RemoteException e) {}
     }
     // If we couldn't find a pending alarm, display the configured time.
@@ -96,23 +86,9 @@ class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
     return view;
   }
 
-  private ServiceConnection connection = new ServiceConnection() {
-    @Override
-    public void onServiceConnected(ComponentName name, IBinder service) {
-      clock = AlarmClockInterface.Stub.asInterface(service);
-      notifyDataSetChanged();
-    }
-
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-      clock = null;
-    }
-  };
-
   protected void finalize() throws Throwable {
     cursor.close();
     db.closeConnections();
-    getContext().unbindService(connection);
     super.finalize();
   }
 }

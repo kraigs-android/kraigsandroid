@@ -64,6 +64,10 @@ public class AlarmClockServiceBinder {
     }
   }
 
+  public AlarmClockInterface clock() {
+    return clock;
+  }
+
   public void bind() {
     final Intent serviceIntent = new Intent(context, AlarmClockService.class);
     if (!context.bindService(serviceIntent, serviceConnection, bindFlags)) {
