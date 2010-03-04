@@ -4,10 +4,14 @@ import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardLock;
 import android.content.Context;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -22,11 +26,13 @@ public class AlarmNotificationActivity extends Activity {
   private AckStates ackState;
   private AlarmClockServiceBinder service;
   private DbAccessor db;
-  AlarmSettings settings;
+  private AlarmSettings settings;
   private KeyguardLock screenLock;
   private MediaPlayer mediaPlayer;
+  private Ringtone fallbackSound;
   private Handler handler;
   private VolumeIncreaser volumeIncreaseCallback; 
+  private Runnable timeTick;
 
   // TODO(cgallek): This doesn't seem to handle the case when a second alarm
   // fires while the first has not yet been acked.
@@ -41,10 +47,33 @@ public class AlarmNotificationActivity extends Activity {
     service = AlarmClockServiceBinder.newBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
     settings = db.readAlarmSettings(alarmId);
+
+    AudioManager audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+    audio.setStreamVolume(AudioManager.STREAM_ALARM, audio.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
     mediaPlayer = new MediaPlayer();
+    mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+    fallbackSound = RingtoneManager.getRingtone(getApplicationContext(),
+        Settings.System.DEFAULT_ALARM_ALERT_URI); 
+    fallbackSound.setStreamType(AudioManager.STREAM_ALARM);
 
     handler = new Handler();
     volumeIncreaseCallback = new VolumeIncreaser();
+
+    timeTick = new Runnable() {
+      @Override
+      public void run() {
+        // TODO(cgallek): Make this control a custom clock too.
+        // Some sound should always be playing.
+        if (!mediaPlayer.isPlaying() && !fallbackSound.isPlaying()) {
+          fallbackSound.play();
+        }
+
+        int intervalMillis = 1000;  // every second
+        long now = System.currentTimeMillis();
+        long next = intervalMillis - now % intervalMillis;
+        handler.postDelayed(timeTick, next);
+      }
+    };
 
     KeyguardManager screenLockManager =
       (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
@@ -116,18 +145,17 @@ public class AlarmNotificationActivity extends Activity {
 
     Uri tone = settings.getTone();
     mediaPlayer.reset();
-    // TODO(cgallek): figure out how to make sure the volume is appropriate.
     mediaPlayer.setLooping(true);
     try {
       mediaPlayer.setDataSource(getApplicationContext(), tone);
       mediaPlayer.prepare();
       mediaPlayer.start();
     } catch (Exception e) {
-      // TODO(cgallek): Come up with a better failure mode.
       e.printStackTrace();
     }
 
     handler.post(volumeIncreaseCallback);
+    handler.post(timeTick);
 
     redraw();
   }
@@ -138,7 +166,10 @@ public class AlarmNotificationActivity extends Activity {
     // If the user did not explicitly dismiss or snooze this alarm, snooze
     // it as a default.
     ack(AckStates.SNOOZED);
+    handler.removeCallbacks(volumeIncreaseCallback);
+    handler.removeCallbacks(timeTick);
     mediaPlayer.stop();
+    fallbackSound.stop();
     service.unbind();
     screenLock.reenableKeyguard();
   }
@@ -147,7 +178,6 @@ public class AlarmNotificationActivity extends Activity {
   protected void onDestroy() {
     super.onDestroy();
     db.closeConnections();
-    handler.removeCallbacks(volumeIncreaseCallback);
     mediaPlayer.release();
     if (ackState == AckStates.UNACKED) {
       throw new IllegalStateException(
@@ -203,9 +233,6 @@ public class AlarmNotificationActivity extends Activity {
     float value;
 
     public VolumeIncreaser() {
-      // TODO(cgallek): Do we need to make sure that the system media volume
-      // is on?? See AudioManager.
-      // TODO(cgallek): Do these need to check for error state first?
       mediaPlayer.setVolume((float)0.10, (float)0.10);
       value = (float) 0.10;
     }
