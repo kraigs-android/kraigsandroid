@@ -27,6 +27,8 @@ import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.SimpleCursorAdapter;
@@ -68,6 +70,20 @@ public class BrightnessProfiles extends Activity {
       public void onClick(View view) {
         Intent i = new Intent(getApplication(), EditActivity.class);
         startActivityForResult(i, ACTIVITY_EDIT);
+      }
+    });
+
+    // Setup auto brightness checkbox handler.
+    CheckBox checkbox = (CheckBox) findViewById(R.id.auto_brightness);
+    checkbox.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
+      public void onCheckedChanged(
+          CompoundButton buttonView, boolean isChecked) {
+        Util.setAutoBrightnessEnabled(getContentResolver(), isChecked);
+        lockBrightnessControls(isChecked);
+        // Update the app brightness in case auto brightness changed it.
+        appBrightness = Util.getPhoneBrighness(getContentResolver(), dbAccessor);
+        setBrightness(appBrightness);
+        refreshDisplay();
       }
     });
 
@@ -125,7 +141,7 @@ public class BrightnessProfiles extends Activity {
   protected void onResume() {
     // Lookup the initial system brightness and set our app's brightness
     // percentage appropriately.
-    appBrightness = Util.getPhoneBrighness(this, dbAccessor);
+    appBrightness = Util.getPhoneBrighness(getContentResolver(), dbAccessor);
     // Set the value for the brightness text field and slider.
     refreshDisplay();
 
@@ -173,6 +189,21 @@ public class BrightnessProfiles extends Activity {
     boolean result = super.onCreateOptionsMenu(menu);
     MenuItem calibrate = menu.add(0, OPTION_CALIBRATE, 0, R.string.calibrate);
     calibrate.setIcon(android.R.drawable.ic_menu_preferences);
+    return result;
+  }
+
+  @Override
+  public boolean onPrepareOptionsMenu(Menu menu) {
+    boolean result = super.onPrepareOptionsMenu(menu);
+    // Don't setup the calibrate menu item if auto brightness is enabled.
+    // Trying to calibrate while it's on is weird...
+    MenuItem calibrate = menu.findItem(OPTION_CALIBRATE);
+    if (Util.supportsAutoBrightness(getContentResolver()) &&
+        Util.getAutoBrightnessEnabled(getContentResolver())) {
+      calibrate.setEnabled(false);
+    } else {
+      calibrate.setEnabled(true);
+    }
     return result;
   }
 
@@ -233,6 +264,22 @@ public class BrightnessProfiles extends Activity {
 
     SeekBar slider = (SeekBar) findViewById(R.id.slider);
     slider.setProgress(getBrightness());
+ 
+    // Show/Hide the auto brightness check box.
+    CheckBox checkbox = (CheckBox) findViewById(R.id.auto_brightness);
+    if (Util.supportsAutoBrightness(getContentResolver())) {
+      checkbox.setVisibility(View.VISIBLE);
+      if (Util.getAutoBrightnessEnabled(getContentResolver())) {
+        checkbox.setChecked(true);
+        lockBrightnessControls(true);
+      } else {
+        checkbox.setChecked(false);
+        lockBrightnessControls(false);
+      }
+    } else {
+      checkbox.setVisibility(View.GONE);
+      lockBrightnessControls(false);
+    }
   }
 
   private int getBrightness() {
@@ -240,6 +287,12 @@ public class BrightnessProfiles extends Activity {
   }
 
   private void setBrightness(int brightness) {
+    // Don't try to adjust brightness if auto brightness is enabled.
+    if (Util.supportsAutoBrightness(getContentResolver()) &&
+        Util.getAutoBrightnessEnabled(getContentResolver())) {
+      return;
+    }
+
     if (brightness < 0) {
       appBrightness = 0;
     } else if (brightness > 100) {
@@ -247,7 +300,25 @@ public class BrightnessProfiles extends Activity {
     } else {
       appBrightness = brightness;
     }
-    Util.setPhoneBrightness(this, dbAccessor, appBrightness);
+    Util.setPhoneBrightness(getContentResolver(), getWindow(), dbAccessor,
+        appBrightness);
     refreshDisplay();
+  }
+
+  private void lockBrightnessControls(boolean lock) {
+    SeekBar slider = (SeekBar) findViewById(R.id.slider);
+    ListView profileList = (ListView) findViewById(R.id.profile_list);
+
+    // Note: setEnabled() doesn't seem to work with this ListView, nor does
+    // calling setEnabled() on the individual children of the ListView.
+    // The items become grayed out, but the click handlers are still registered.
+    // As a work around, simply hide the entire list view.
+    if (lock) {
+      profileList.setVisibility(View.GONE);
+      slider.setEnabled(false);
+    } else {
+      profileList.setVisibility(View.VISIBLE);
+      slider.setEnabled(true);
+    }
   }
 }
