@@ -189,6 +189,20 @@ public class BrightnessProfiles extends Activity {
   }
 
   @Override
+  public boolean onPrepareOptionsMenu(Menu menu) {
+    boolean result = super.onPrepareOptionsMenu(menu);
+    // Don't setup the calibrate menu item if auto brightness is enabled.
+    // Trying to calibrate while it's on is weird...
+    MenuItem calibrate = menu.findItem(OPTION_CALIBRATE);
+    if (Util.supportsAutoBrightness() && Util.getAutoBrightnessEnabled()) {
+      calibrate.setEnabled(false);
+    } else {
+      calibrate.setEnabled(true);
+    }
+    return result;
+  }
+
+  @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
       case OPTION_CALIBRATE:
@@ -280,13 +294,20 @@ public class BrightnessProfiles extends Activity {
   }
 
   private void lockBrightnessControls(boolean lock) {
-    boolean enabled = !lock;
     SeekBar slider = (SeekBar) findViewById(R.id.slider);
     ListView profileList = (ListView) findViewById(R.id.profile_list);
 
-    slider.setEnabled(enabled);
-    // TODO(cgallek): This doesn't work for some reason... fix it.
-    profileList.setEnabled(enabled);
+    // Note: setEnabled() doesn't seem to work with this ListView, nor does
+    // calling setEnabled() on the individual children of the ListView.
+    // The items become grayed out, but the click handlers are still registered.
+    // As a work around, simply hide the entire list view.
+    if (lock) {
+      profileList.setVisibility(View.GONE);
+      slider.setEnabled(false);
+    } else {
+      profileList.setVisibility(View.VISIBLE);
+      slider.setEnabled(true);
+    }
 
     // TODO(cgallek): figure out how to disable the OptionsMenu.
   }
