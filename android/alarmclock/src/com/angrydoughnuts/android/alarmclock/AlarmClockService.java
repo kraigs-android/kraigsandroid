@@ -45,6 +45,7 @@ public class AlarmClockService extends Service {
   @Override
   public void onDestroy() {
     super.onDestroy();
+    db.closeConnections();
 
     final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     manager.cancel(NOTIFICATION_ID);

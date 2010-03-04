@@ -16,6 +16,11 @@ public class DbAccessor {
     rwDb = db.getWritableDatabase();
   }
 
+  public void closeConnections() {
+    rDb.close();
+    rwDb.close();
+  }
+
   public Cursor getAlarmList() {
     return rDb.query(
         DbHelper.DB_TABLE_ALARMS,
