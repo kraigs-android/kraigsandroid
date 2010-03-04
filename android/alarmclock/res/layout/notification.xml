@@ -10,6 +10,7 @@
     <Button android:text="@string/minus_five"
       android:id="@+id/notify_snooze_minus_five"
       android:layout_weight="1"
+      android:textSize="24sp"
       android:layout_width="wrap_content"
       android:layout_height="fill_parent" />
 
@@ -17,13 +18,14 @@
       android:layout_weight="1"
       android:gravity="center"
       android:inputType="textMultiLine"
-      android:textSize="18sp"
+      android:textSize="24sp"
       android:layout_width="wrap_content"
       android:layout_height="fill_parent" />
 
     <Button android:text="@string/plus_five"
       android:id="@+id/notify_snooze_plus_five"
       android:layout_weight="1"
+      android:textSize="24sp"
       android:layout_width="wrap_content"
       android:layout_height="fill_parent" />
   </LinearLayout>
@@ -37,6 +39,7 @@
   <Button android:text="@string/snooze"
     android:id="@+id/notify_snooze"
     android:layout_weight="2"
+    android:textSize="32sp"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
 
@@ -51,6 +54,7 @@
     android:layout_height="wrap_content" />
 
   <TextView android:text="@string/slide_to_dismiss"
+    android:textSize="24sp"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
 
