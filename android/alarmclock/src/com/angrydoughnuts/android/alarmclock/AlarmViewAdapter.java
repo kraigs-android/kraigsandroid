@@ -46,6 +46,8 @@ class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
     View view = inflater.inflate(R.layout.alarm_description, null);
     TextView timeView = (TextView) view.findViewById(R.id.alarm_time);
     TextView nextView = (TextView) view.findViewById(R.id.next_alarm);
+    TextView labelView = (TextView) view.findViewById(R.id.alarm_label);
+    TextView repeatView = (TextView) view.findViewById(R.id.alarm_repeat);
     CheckBox enabledView = (CheckBox) view.findViewById(R.id.alarm_enabled);
 
     final AlarmInfo info = getItem(position);
@@ -70,6 +72,8 @@ class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
     enabledView.setChecked(info.enabled());
 
     nextView.setText(time.timeUntilString());
+    labelView.setText(info.getName());
+    repeatView.setText(info.getDaysOfWeek().toString(getContext()));
     enabledView.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {

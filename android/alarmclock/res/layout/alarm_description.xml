@@ -6,26 +6,58 @@
 
   <LinearLayout android:orientation="vertical"
     android:layout_weight="1"
+    android:paddingRight="24px"
     android:focusable="false"
+    android:gravity="center_vertical"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
 
-    <TextView android:id="@+id/alarm_time"
-      android:focusable="false"
-      android:textSize="24sp"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content" />
+    <LinearLayout android:focusable="false"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content">
+      <TextView android:id="@+id/alarm_time"
+        android:focusable="false"
+        android:gravity="top|left"
+        android:singleLine="true"
+        android:layout_weight="1"
+        android:textSize="24sp"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent" />
 
-    <TextView android:id="@+id/next_alarm"
-      android:focusable="false"
-      android:textStyle="italic"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content" />
+      <TextView android:id="@+id/alarm_label"
+        android:focusable="false"
+        android:gravity="top|right"
+        android:singleLine="true"
+        android:textSize="20sp"
+        android:maxEms="6"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent" />
+    </LinearLayout>
 
+    <LinearLayout android:focusable="false"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content">
+      <TextView android:id="@+id/next_alarm"
+        android:focusable="false"
+        android:gravity="top|left"
+        android:singleLine="true"
+        android:layout_weight="1"
+        android:textStyle="italic"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent" />
+
+      <TextView android:id="@+id/alarm_repeat"
+        android:focusable="false"
+        android:gravity="top|right"
+        android:singleLine="true"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent" />
+    </LinearLayout>
   </LinearLayout>
 
   <CheckBox android:id="@+id/alarm_enabled"
     android:focusable="false"
+    android:gravity="center_vertical"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
 

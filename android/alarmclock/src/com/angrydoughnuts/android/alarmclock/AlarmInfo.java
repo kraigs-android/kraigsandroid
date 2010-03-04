@@ -44,6 +44,22 @@ public class AlarmInfo {
         }
       }
     }
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof Week)) {
+        return false;
+      }
+      Week rhs = (Week) o;
+      if (bitmask.length != rhs.bitmask.length) {
+        return false;
+      }
+      for (Day day : Day.values()) {
+        if (bitmask[day.ordinal()] != rhs.bitmask[day.ordinal()]) {
+          return false;
+        }
+      }
+      return true;
+    }
     public boolean[] bitmask() {
       return bitmask;
     }
@@ -66,6 +82,19 @@ public class AlarmInfo {
       return dow;
     }
     public String toString(Context context) {
+      final Week everyday = new Week(127);
+      final Week weekdays = new Week(62);
+      final Week weekends = new Week(65);
+
+      if (this.equals(everyday)) {
+        return context.getString(R.string.everyday);
+      }
+      if (this.equals(weekdays)) {
+        return context.getString(R.string.weekdays);
+      }
+      if (this.equals(weekends)) {
+        return context.getString(R.string.weekends);
+      }
       String list = "";
       for (Day day : Day.values()) {
         if (!bitmask[day.ordinal()]) {
@@ -73,25 +102,25 @@ public class AlarmInfo {
         }
         switch (day) {
           case SUN:
-            list += context.getString(R.string.dow_sun_short) + " ";
+            list += " " + context.getString(R.string.dow_sun_short);
             break;
           case MON:
-            list += context.getString(R.string.dow_mon_short) + " ";
+            list += " " + context.getString(R.string.dow_mon_short);
             break;
           case TUE:
-            list += context.getString(R.string.dow_tue_short) + " ";
+            list += " " + context.getString(R.string.dow_tue_short);
             break;
           case WED:
-            list += context.getString(R.string.dow_wed_short) + " ";
+            list += " " + context.getString(R.string.dow_wed_short);
             break;
           case THU:
-            list += context.getString(R.string.dow_thu_short) + " ";
+            list += " " + context.getString(R.string.dow_thu_short);
             break;
           case FRI:
-            list += context.getString(R.string.dow_fri_short) + " ";
+            list += " " + context.getString(R.string.dow_fri_short);
             break;
           case SAT:
-            list += context.getString(R.string.dow_sat_short) + " ";
+            list += " " + context.getString(R.string.dow_sat_short);
             break;
         }
       }
