@@ -141,7 +141,6 @@ public class ActivityAlarmClock extends Activity {
     MenuItem defaults =
       menu.add(0, Menus.DEFAULT_SETTINGS.ordinal(), 0, R.string.default_settings);
     defaults.setIcon(android.R.drawable.ic_lock_idle_alarm);
-    // TODO(cgallek): Should this still call the parent??
     return super.onCreateOptionsMenu(menu);
   }
 
@@ -154,7 +153,6 @@ public class ActivityAlarmClock extends Activity {
             ActivitySettings.EXTRAS_ALARM_ID, AlarmSettings.DEFAULT_SETTINGS_ID);
         startActivity(i);
     }
-    // TODO(cgallek): Should this still call the parent??
     return super.onOptionsItemSelected(item);
   }
 
@@ -185,7 +183,6 @@ public class ActivityAlarmClock extends Activity {
     switch (Dialogs.values()[id]) {
       case TIME_PICKER:
         Calendar now = Calendar.getInstance();
-        // TODO(cgallek): replace this with default alarm time.
         int hour = now.get(Calendar.HOUR_OF_DAY);
         int minute = now.get(Calendar.MINUTE);
         boolean is24Hour = DateFormat.is24HourFormat(getApplicationContext());

@@ -116,8 +116,6 @@ public class DbAccessor {
     if (cursor.getCount() != 1) {
       cursor.close();
       if (alarmId == AlarmSettings.DEFAULT_SETTINGS_ID) {
-        // TODO(cgallek): Make sure this isn't possible.  The default
-        // settings should always be available.
         return new AlarmSettings();
       }
       return readAlarmSettings(AlarmSettings.DEFAULT_SETTINGS_ID);

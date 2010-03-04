@@ -187,7 +187,6 @@ public class AlarmInfo {
   }
 
   public void setTime(AlarmTime time) {
-    // TODO(cgallek) is this equals() implemented?
     if (!this.time.equals(time)) {
       dirty = true;
     }

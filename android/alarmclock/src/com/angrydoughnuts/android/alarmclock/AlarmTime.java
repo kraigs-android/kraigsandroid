@@ -38,6 +38,11 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
     return calendar.compareTo(another.calendar);
   }
 
+  @Override
+  public boolean equals(Object o) {
+    return calendar.equals(o);
+  }
+
   public String toString() {
     SimpleDateFormat formatter = new SimpleDateFormat("HH:mm.ss MMMM dd yyyy");
     return formatter.format(calendar.getTimeInMillis());

@@ -40,8 +40,6 @@ public class AlarmClockServiceBinder {
     }
     @Override
     public void onServiceDisconnected(ComponentName name) {
-      // TODO(cgallek): This should only happen if the AlarmClockService
-      // crashes.  Consider throwing an exception here.
       clock = null;
     }
   };
