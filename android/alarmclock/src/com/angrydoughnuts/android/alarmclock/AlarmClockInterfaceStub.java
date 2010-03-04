@@ -65,7 +65,7 @@ public class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
   }
 
   private void debugToast(String message) {
-    if (AlarmClockService.debug(context)) {
+    if (DebugUtil.isDebugMode(context)) {
       Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
     }
   }

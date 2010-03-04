@@ -78,7 +78,7 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
     boolean is24HourFormat = DateFormat.is24HourFormat(context);
     String format = "";
     String second = "";
-    if (AlarmClockService.debug(context)) {
+    if (DebugUtil.isDebugMode(context)) {
       second = ".ss";
     }
     if (is24HourFormat) {

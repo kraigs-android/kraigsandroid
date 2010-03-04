@@ -134,7 +134,7 @@ public class ActivitySettings extends Activity {
       @Override
       public String value() {
         String value = settings.getToneName();
-        if (AlarmClockService.debug(getApplicationContext())) {
+        if (DebugUtil.isDebugMode(getApplicationContext())) {
           value += " " + settings.getTone().toString();
         }
         return value;

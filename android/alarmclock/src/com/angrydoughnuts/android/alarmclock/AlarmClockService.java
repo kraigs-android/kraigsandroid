@@ -6,9 +6,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,29 +14,6 @@ import android.os.IBinder;
 import android.widget.Toast;
 
 public class AlarmClockService extends Service {
-  // TODO(cgallek): Move this to a utility file?
-  private static String APP_PREFS = "AlarmClockPreferences";
-  private static String DEBUG_PREF = "debug";
-  public enum DebugMode { DEFAULT, DEBUG, NO_DEBUG };
-  static public void setDebug(Context c, DebugMode mode) {
-    SharedPreferences prefs = c.getSharedPreferences(APP_PREFS, 0);
-    Editor editor = prefs.edit();
-    editor.putInt(DEBUG_PREF, mode.ordinal());
-    editor.commit();
-  }
-  static public boolean debug(Context c) {
-    SharedPreferences prefs = c.getSharedPreferences(APP_PREFS, 0);
-    int value = prefs.getInt(DEBUG_PREF, DebugMode.DEFAULT.ordinal());
-    switch (DebugMode.values()[value]) {
-      case DEBUG:
-        return true;
-      case NO_DEBUG:
-        return false;
-      default:
-        return (c.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) > 0;
-    }
-  }
-
   public final static String COMMAND_EXTRA = "command";
   public final static int COMMAND_UNKNOWN = 1;
   public final static int COMMAND_NOTIFICATION_REFRESH = 2;
@@ -73,7 +47,7 @@ public class AlarmClockService extends Service {
 
     // Schedule enabled alarms during initial startup.
     for (Long alarmId : db.getEnabledAlarms()) {
-      if (debug(getApplicationContext())) {
+      if (DebugUtil.isDebugMode(getApplicationContext())) {
         Toast.makeText(getApplicationContext(), "RENABLE " + alarmId, Toast.LENGTH_SHORT).show();
       }
       pendingAlarms.put(alarmId, db.readAlarmInfo(alarmId).getTime());

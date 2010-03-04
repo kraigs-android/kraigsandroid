@@ -239,7 +239,7 @@ public class ActivityAlarmNotification extends Activity {
   void redraw() {
     AlarmInfo alarmInfo = db.readAlarmInfo(alarmId);
     String info = alarmInfo.getTime().toString() + "\n" + alarmInfo.getName();
-    if (AlarmClockService.debug(getApplicationContext())) {
+    if (DebugUtil.isDebugMode(getApplicationContext())) {
       info += " [" + alarmId + "]";
       findViewById(R.id.volume).setVisibility(View.VISIBLE);
     } else {

@@ -105,7 +105,7 @@ public class ActivityAlarmClock extends Activity {
 
         // Schedule the next update on the next interval boundary.
         int intervalMillis = 60 * 1000;  // every minute
-        if (AlarmClockService.debug(getApplicationContext())) {
+        if (DebugUtil.isDebugMode(getApplicationContext())) {
           intervalMillis = 1000;  // every second
         }
         long now = System.currentTimeMillis();
@@ -158,7 +158,7 @@ public class ActivityAlarmClock extends Activity {
 
   private void redraw() {
     // Show/hide debug buttons.
-    if (AlarmClockService.debug(getApplicationContext())) {
+    if (DebugUtil.isDebugMode(getApplicationContext())) {
       testBtn.setVisibility(View.VISIBLE);
       pendingBtn.setVisibility(View.VISIBLE);
     } else {
@@ -197,17 +197,16 @@ public class ActivityAlarmClock extends Activity {
             hour, minute, is24Hour);
 
       case DEBUG:
-        ArrayAdapter<AlarmClockService.DebugMode> adapter =
-          new ArrayAdapter<AlarmClockService.DebugMode>(
-              getApplicationContext(), R.layout.dialog_item,
-              AlarmClockService.DebugMode.values());
+        ArrayAdapter<DebugUtil.DebugMode> adapter =
+          new ArrayAdapter<DebugUtil.DebugMode>(getApplicationContext(),
+              R.layout.dialog_item, DebugUtil.DebugMode.values());
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Debug Mode");
         builder.setSingleChoiceItems(adapter, 0,
             new DialogInterface.OnClickListener() {
              public void onClick(DialogInterface dialog, int item) {
-               AlarmClockService.setDebug(getApplicationContext(),
-                   AlarmClockService.DebugMode.values()[item]);
+               DebugUtil.setDebugMode(getApplicationContext(),
+                   DebugUtil.DebugMode.values()[item]);
                redraw();
                dismissDialog(Dialogs.DEBUG.ordinal());
              }
