@@ -69,7 +69,7 @@ public final class AlarmClockService extends Service {
     }
 
     // TODO(cgallek): add a better notification icon.
-    notification = new Notification(R.drawable.icon, null, 0);
+    notification = new Notification(R.drawable.alarmclock, null, 0);
     notification.flags |= Notification.FLAG_ONGOING_EVENT;
 
     ReceiverNotificationRefresh.startRefreshing(getApplicationContext());
