@@ -36,7 +36,7 @@ public class AlarmClockService extends Service {
     PowerManager powerManager =
       (PowerManager) getSystemService(Context.POWER_SERVICE);
     wakeLock = powerManager.newWakeLock(
-        PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
+        PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
         "Alarm Notification Wake Lock");
     wakeLock.setReferenceCounted(false);
 
@@ -135,11 +135,14 @@ public class AlarmClockService extends Service {
   }
 
   public void notifyDialog(int alarmId) {
-    Intent notifyIntent = new Intent(getApplicationContext(),
+    final Intent notifyIntent = new Intent(getApplicationContext(),
         AlarmNotificationActivity.class);
     notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     notifyIntent.putExtra("task_id", alarmId);
 
+    // TODO(cgallek): I don't think this function actually gets called
+    // unless the phone is connected to power.  Might have to replace the
+    // thread wakeup thing.
     wakeLock.acquire();
 
     startActivity(notifyIntent);
