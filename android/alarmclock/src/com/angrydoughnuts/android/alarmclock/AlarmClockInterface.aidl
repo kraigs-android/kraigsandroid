@@ -5,4 +5,5 @@ interface AlarmClockInterface {
   void deleteAlarm(long alarmId);
   void scheduleAlarm(long alarmId);
   void dismissAlarm(long alarmId);
+  void snoozeAlarm(long alarmId, int minutes);
 }

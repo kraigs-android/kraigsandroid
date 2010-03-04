@@ -113,22 +113,8 @@ public class AlarmClockService extends Service {
       throw new IllegalStateException("Invalid timestamp stored in DB.");
     }
     long alarmTime = TimeUtil.nextLocalOccuranceInUTC(minutesAfterMidnight);
+    setAlarm(alarmId, alarmTime);
 
-    // Intents are considered equal if they have the same action, data, type,
-    // class, and categories.  In order to schedule multiple alarms, every
-    // pending intent must be different.  This means that we must encode
-    // the alarm id in the data section of the intent rather than in
-    // the extras bundle.
-    Intent notifyIntent = new Intent(getApplicationContext(), AlarmBroadcastReceiver.class);
-    notifyIntent.setData(alarmIdToUri(alarmId));
-    PendingIntent scheduleIntent =
-      PendingIntent.getBroadcast(getApplicationContext(), 0, notifyIntent, 0);
-
-    AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-    alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, scheduleIntent);
-    // TODO(cgallek): make sure ID doesn't exist yet?
-    // Keep track of all scheduled alarms.
-    pendingAlarms.put(alarmId, scheduleIntent);
     // Mark the alarm as enabled in the database.
     db.enableAlarm(alarmId, true);
   }
@@ -142,5 +128,29 @@ public class AlarmClockService extends Service {
     } else {
       return false;
     }
+  }
+
+  public void snoozeAlarm(long alarmId, int minutes) {
+    long alarmTime = TimeUtil.snoozeInUTC(minutes);
+    setAlarm(alarmId, alarmTime);
+  }
+
+  private void setAlarm(long alarmId, long millisUtc) {
+    // Intents are considered equal if they have the same action, data, type,
+    // class, and categories.  In order to schedule multiple alarms, every
+    // pending intent must be different.  This means that we must encode
+    // the alarm id in the data section of the intent rather than in
+    // the extras bundle.
+    Intent notifyIntent = new Intent(getApplicationContext(), AlarmBroadcastReceiver.class);
+    notifyIntent.setData(alarmIdToUri(alarmId));
+    PendingIntent scheduleIntent =
+      PendingIntent.getBroadcast(getApplicationContext(), 0, notifyIntent, 0);
+
+    AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+    alarmManager.set(AlarmManager.RTC_WAKEUP, millisUtc, scheduleIntent);
+    // TODO(cgallek): make sure ID doesn't exist yet?
+    // Keep track of all scheduled alarms.
+    pendingAlarms.put(alarmId, scheduleIntent);
+    
   }
 }

@@ -48,6 +48,21 @@ public class AlarmNotificationActivity extends Activity {
         finish();
       }
     });
+
+    Button snoozeButton = (Button) findViewById(R.id.notify_snooze);
+    snoozeButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        // TODO(cgallek):  Currently the alarm will only be acknowledged if the ok
+        // button is pressed.  However, this dialog can be closed in other ways.
+        // figure out how to handle acknowledgements in those cases.  Maybe
+        // a notification item?
+        // TODO(cgallek): make snooze time configurable.
+        service.snoozeAlarm(alarmId, 10);
+        AlarmBroadcastReceiver.wakeLock().release();
+        finish();
+      }
+    });
   }
 
   @Override

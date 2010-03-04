@@ -38,4 +38,11 @@ public class TimeUtil {
     }
     return c.getTimeInMillis();
   }
+
+  public static long snoozeInUTC(int minutes) {
+    Calendar now = Calendar.getInstance();
+    now.set(Calendar.SECOND, 0);
+    now.add(Calendar.MINUTE, minutes);
+    return now.getTimeInMillis();
+  }
 }
