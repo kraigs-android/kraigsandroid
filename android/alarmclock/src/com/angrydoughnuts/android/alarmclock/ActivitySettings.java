@@ -115,7 +115,7 @@ public class ActivitySettings extends Activity {
         @Override
         public String name() { return getString(R.string.label); }
         @Override
-        public String value() { return info.getName(); }
+        public String value() { return info.getName().equals("") ? getString(R.string.none) : info.getName(); }
         @Override
         public SettingType type() { return SettingType.NAME; }
       });

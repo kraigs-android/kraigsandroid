@@ -7,6 +7,7 @@
   <string name="time">Time</string>
   <string name="label">Label</string>
   <string name="alarm_label">Alarm label</string>
+  <string name="none">None</string>
   <string name="repeat">Repeat</string>
   <string name="scheduled_days">Scheduled days</string>
   <string name="tone">Tone</string>
