@@ -17,6 +17,7 @@ import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -169,8 +170,33 @@ public class SettingsActivity extends Activity {
         });
         return snoozeBuilder.create();
       case VOLUME_FADE_PICK_ID:
-        // TODO(cgallek) make this a real dialog.
         AlertDialog.Builder fadeBuilder = new AlertDialog.Builder(this);
+        // TODO(cgallek): move this to strings.xml
+        fadeBuilder.setTitle("Alarm Volume Fade");
+        View view = getLayoutInflater().inflate(R.layout.fade_settings_dialog, null);
+        final EditText volumeStart = (EditText) view.findViewById(R.id.volume_start);
+        volumeStart.setText("" + settings.getVolumeStartPercent());
+        final EditText volumeEnd = (EditText) view.findViewById(R.id.volume_end);
+        volumeEnd.setText("" + settings.getVolumeEndPercent());
+        final EditText volumeDuration = (EditText) view.findViewById(R.id.volume_duration);
+        volumeDuration.setText("" + settings.getVolumeChangeTimeSec());
+        fadeBuilder.setView(view);
+        fadeBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            settings.setVolumeStartPercent(Integer.parseInt(volumeStart.getText().toString()));
+            settings.setVolumeEndPercent(Integer.parseInt(volumeEnd.getText().toString()));
+            settings.setVolumeChangeTimeSec(Integer.parseInt(volumeDuration.getText().toString()));
+            adapter.notifyDataSetChanged();
+            dismissDialog(VOLUME_FADE_PICK_ID);
+          }
+        });
+        fadeBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            dismissDialog(VOLUME_FADE_PICK_ID);
+          }
+        });
         return fadeBuilder.create();
       default:
         return super.onCreateDialog(id);

@@ -250,14 +250,17 @@ public class AlarmNotificationActivity extends Activity {
 
     @Override
     public void run() {
+      start += increment;
+      if (start > end) {
+        start = end;
+      }
       mediaPlayer.setVolume(start, start);
       TextView volume = (TextView) findViewById(R.id.volume);
       volume.setText("Volume: " + start);
-      if (start >= end) {
-        return;
+
+      if (Math.abs(start - end) > (float) 0.0001) {
+        handler.postDelayed(volumeIncreaseCallback, 1000);
       }
-      start += increment;
-      handler.postDelayed(volumeIncreaseCallback, 1000);
     }
   }
 }

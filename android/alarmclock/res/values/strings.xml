@@ -11,4 +11,7 @@
     <string name="plus_five">+5</string>
     <string name="minus_five">-5</string>
     <string name="minutes">minutes</string>
+    <string name="volume_start">Start volume (percent)</string>
+    <string name="volume_end">End volume (percent)</string>
+    <string name="volume_duration">Fade duration (seconds)</string>
 </resources>
