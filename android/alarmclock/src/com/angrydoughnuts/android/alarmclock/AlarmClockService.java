@@ -97,6 +97,9 @@ public class AlarmClockService extends Service {
           }
           for (long alarmId : pendingAlarms.pendingAlarms()) {
             scheduleAlarm(alarmId);
+            if (DebugUtil.isDebugMode(getApplicationContext())) {
+              Toast.makeText(getApplicationContext(), "ALARM " + alarmId, Toast.LENGTH_SHORT).show();
+            }
           }
           handler.post(maybeShutdown);
           break;
