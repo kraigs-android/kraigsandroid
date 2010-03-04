@@ -9,8 +9,9 @@
         <category android:name="android.intent.category.LAUNCHER"></category>
       </intent-filter>
     </activity>
-    <service android:name="AlarmClockService"></service>
     <activity android:name="AlarmNotificationActivity"></activity>
+    <activity android:name="DefaultSettingsActivity"></activity>
+    <service android:name="AlarmClockService"></service>
     <receiver android:name="AlarmBroadcastReceiver"></receiver>
   </application>
 

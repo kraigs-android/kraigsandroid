@@ -5,8 +5,11 @@ import java.util.Calendar;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -16,6 +19,7 @@ import android.widget.AdapterView.OnItemClickListener;
 
 public class AlarmClockActivity extends Activity {
   private final int TIME_PICKER_DIALOG_ID = 1;
+  private final int DEFAULT_SETTINGS_MENU = 2;
 
   private AlarmClockServiceBinder service;
   private DbAccessor db;
@@ -78,6 +82,25 @@ public class AlarmClockActivity extends Activity {
       default:
         return super.onCreateDialog(id);
     }
+  }
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    MenuItem defaults = menu.add(0, DEFAULT_SETTINGS_MENU, 0, R.string.default_settings);
+    defaults.setIcon(android.R.drawable.ic_lock_idle_alarm);
+    // TODO(cgallek): Should this still call the parent??
+    return super.onCreateOptionsMenu(menu);
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    switch (item.getItemId()) {
+      case DEFAULT_SETTINGS_MENU:
+        Intent i = new Intent(getApplicationContext(), DefaultSettingsActivity.class);
+        startActivity(i);
+    }
+    // TODO(cgallek): Should this still call the parent??
+    return super.onOptionsItemSelected(item);
   }
 
   @Override
