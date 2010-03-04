@@ -11,9 +11,6 @@ import android.view.View;
 import android.widget.Button;
 
 public class AlarmNotificationActivity extends Activity {
-  static public final String EXTRAS_ALARM_ID = "alarm_id";
-  private final int MISSING_EXTRAS = -69;
-
   private long alarmId;
   private AlarmClockServiceBinder service;
   private DbAccessor db;
@@ -27,10 +24,7 @@ public class AlarmNotificationActivity extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.notification);
 
-    alarmId = getIntent().getExtras().getLong(EXTRAS_ALARM_ID, MISSING_EXTRAS);
-    if (alarmId == MISSING_EXTRAS) {
-      throw new IllegalStateException("EXTRAS_ALARM_ID not supplied in intent.");
-    }
+    alarmId = AlarmClockService.alarmUriToId(getIntent().getData());
 
     service = AlarmClockServiceBinder.newBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());

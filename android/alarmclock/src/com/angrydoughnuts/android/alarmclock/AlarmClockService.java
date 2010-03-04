@@ -9,12 +9,21 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.IBinder;
 
 public class AlarmClockService extends Service {
   private final int NOTIFICATION_ID = 1;
   private DbAccessor db;
   private TreeMap<Long, PendingIntent> pendingAlarms;
+
+  public static Uri alarmIdToUri(long alarmId) {
+    return Uri.parse("alarm_id:" + alarmId);
+  }
+
+  public static long alarmUriToId(Uri uri) {
+    return Long.parseLong(uri.getSchemeSpecificPart());
+  }
 
   @Override
   public void onStart(Intent intent, int startId) {
@@ -105,8 +114,13 @@ public class AlarmClockService extends Service {
     }
     long alarmTime = TimeUtil.nextLocalOccuranceInUTC(minutesAfterMidnight);
 
+    // Intents are considered equal if they have the same action, data, type,
+    // class, and categories.  In order to schedule multiple alarms, every
+    // pending intent must be different.  This means that we must encode
+    // the alarm id in the data section of the intent rather than in
+    // the extras bundle.
     Intent notifyIntent = new Intent(getApplicationContext(), AlarmBroadcastReceiver.class);
-    notifyIntent.putExtra(AlarmNotificationActivity.EXTRAS_ALARM_ID, alarmId);
+    notifyIntent.setData(alarmIdToUri(alarmId));
     PendingIntent scheduleIntent =
       PendingIntent.getBroadcast(getApplicationContext(), 0, notifyIntent, 0);
 

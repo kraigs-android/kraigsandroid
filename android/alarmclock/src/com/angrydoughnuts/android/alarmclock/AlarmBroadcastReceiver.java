@@ -5,7 +5,7 @@ import com.angrydoughnuts.android.alarmclock.AlarmNotificationActivity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
+import android.net.Uri;
 import android.os.PowerManager;
 
 
@@ -19,8 +19,7 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
 
   @Override
   public void onReceive(Context context, Intent recvIntent) {
-    Bundle input = recvIntent.getExtras();
-    long alarmId = input.getLong(AlarmNotificationActivity.EXTRAS_ALARM_ID);
+    Uri alarmUri = recvIntent.getData();
 
     if (wakeLock == null) {
       PowerManager powerManager =
@@ -34,7 +33,7 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
 
     Intent notifyIntent = new Intent(context, AlarmNotificationActivity.class);
     notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    notifyIntent.putExtra(AlarmNotificationActivity.EXTRAS_ALARM_ID, alarmId);
+    notifyIntent.setData(alarmUri);
 
     context.startActivity(notifyIntent);
   }
