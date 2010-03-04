@@ -10,6 +10,7 @@ import android.text.format.DateFormat;
 
 public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
   private Calendar calendar;
+  private Week daysOfWeek;
 
   public AlarmTime(int hourOfDay, int minute, int second) {
     this.calendar = Calendar.getInstance();
@@ -110,11 +111,13 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
 
   private AlarmTime(Parcel source) {
     this.calendar = (Calendar) source.readSerializable();
+    this.daysOfWeek = source.readParcelable(null);
   }
 
   @Override
   public void writeToParcel(Parcel dest, int flags) {
     dest.writeSerializable(calendar);
+    dest.writeParcelable(daysOfWeek, 0);
   }
 
   public static final Parcelable.Creator<AlarmTime> CREATOR =
