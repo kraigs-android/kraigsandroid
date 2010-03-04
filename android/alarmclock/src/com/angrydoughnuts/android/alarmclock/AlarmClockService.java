@@ -76,6 +76,9 @@ import android.widget.Toast;
         @Override
         public void fire() throws RemoteException {
           Toast.makeText(getApplicationContext(), "FIRE ALARM!", Toast.LENGTH_SHORT).show();
+          Intent notifyIntent = new Intent(getApplicationContext(), AlarmNotificationActivity.class);
+          notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+          startActivity(notifyIntent);
         }
         @Override
         public void alarmOn() throws RemoteException {

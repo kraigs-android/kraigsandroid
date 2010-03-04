@@ -64,7 +64,7 @@ public class AlarmClockActivity extends Activity {
 
   @Override
   protected void onResume() {
-    super.onStart();
+    super.onResume();
     final Intent serviceIntent =
       new Intent(getApplicationContext(), AlarmClockService.class);
     if (!bindService(
@@ -75,7 +75,8 @@ public class AlarmClockActivity extends Activity {
 
   @Override
   protected void onPause() {
-    super.onStop();
+    super.onPause();
     unbindService(serviceConnection);
+    finish();
   }
 }
