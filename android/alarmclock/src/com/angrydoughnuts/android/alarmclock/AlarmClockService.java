@@ -51,10 +51,20 @@ public class AlarmClockService extends Service {
     ReceiverNotificationRefresh.startRefreshing(getApplicationContext());
   }
 
-  // TODO(cgallek): This method breaks compatibility with SDK version < 5.
-  // Is there anyway around this?
+  // OnStart was depreciated in SDK 5.  It is here for backwards compatibility.
+  // http://android-developers.blogspot.com/2010/02/service-api-changes-starting-with.html
+  @Override
+  public void onStart(Intent intent, int startId) {
+    handleStart(intent, startId);
+  }
+
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
+    handleStart(intent, startId);
+    return START_STICKY;
+  }
+
+  private void handleStart(Intent intent, int startId) {
     if (intent != null && intent.hasExtra(COMMAND_EXTRA)) {
       Bundle extras = intent.getExtras();
       int command = extras.getInt(COMMAND_EXTRA, COMMAND_UNKNOWN);
@@ -79,8 +89,6 @@ public class AlarmClockService extends Service {
           break;
       }
     }
-
-    return super.onStartCommand(intent, flags, startId);
   }
 
   private void refreshNotification() {

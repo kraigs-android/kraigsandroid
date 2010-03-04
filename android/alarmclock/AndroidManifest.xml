@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest package="com.angrydoughnuts.android.alarmclock"
-      android:versionCode="1" android:versionName="1.0.0" xmlns:android="http://schemas.android.com/apk/res/android">
+      android:versionCode="1" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.0">
 
   <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true">
     <activity android:name=".ActivityAlarmClock" android:clearTaskOnLaunch="true" android:launchMode="singleTask">
@@ -22,7 +22,7 @@
     </receiver>
   </application>
 
-  <uses-sdk android:minSdkVersion="5"/>
+  <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="5"/>
   <uses-permission android:name="android.permission.WAKE_LOCK"></uses-permission>
   <uses-permission android:name="android.permission.DISABLE_KEYGUARD"></uses-permission>
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"></uses-permission>
