@@ -93,25 +93,23 @@ public class AlarmClockService extends Service {
     if (intent != null && intent.hasExtra(COMMAND_EXTRA)) {
       Bundle extras = intent.getExtras();
       int command = extras.getInt(COMMAND_EXTRA, COMMAND_UNKNOWN);
+
+      final Handler handler = new Handler();
+      final Runnable maybeShutdown = new Runnable() {
+        @Override
+        public void run() {
+          if (pendingAlarms.size() == 0) {
+            stopSelf();
+          }
+        }
+      };
+
       switch (command) {
         case COMMAND_NOTIFICATION_REFRESH:
           refreshNotification();
           break;
         case COMMAND_DEVICE_BOOT:
-          // If we were started as a result of a phone reboot, terminate if there
-          // are now alarms scheduled.
-          // TODO(cgallek): This seems to work on the emulator, but not
-          // the actual phone :-(
-          if (pendingAlarms.size() == 0) {
-            // Can't call selfStop from within start, so make it happen soon.
-            Handler handler = new Handler();
-            handler.post(new Runnable() {
-              @Override
-              public void run() {
-                stopSelf();
-              }
-            });
-          }
+          handler.post(maybeShutdown);
           break;
       }
     }
