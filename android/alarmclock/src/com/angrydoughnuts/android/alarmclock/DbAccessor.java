@@ -27,11 +27,15 @@ public class DbAccessor {
         DbHelper.ALARMS_COL_TIME + " DESC");
   }
 
-  public void newAlarm(int time) {
+  public long newAlarm(int time) {
     // TODO(cgallek) make sure this time doesn't exist yet.
     ContentValues values = new ContentValues(2);
     values.put(DbHelper.ALARMS_COL_TIME, time);
     values.put(DbHelper.ALARMS_COL_ENABLED, true);
-    rwDb.insert(DbHelper.DB_TABLE_ALARMS, null, values);
+    long id = rwDb.insert(DbHelper.DB_TABLE_ALARMS, null, values);
+    if (id < 0) {
+      throw new IllegalStateException("Unable to insert into database");
+    }
+    return id;
   }
 }
