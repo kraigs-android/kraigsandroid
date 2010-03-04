@@ -12,6 +12,8 @@ public class DbHelper extends SQLiteOpenHelper {
   public static final String ALARMS_COL__ID = "_id";
   public static final String ALARMS_COL_TIME = "time";
   public static final String ALARMS_COL_ENABLED = "enabled";
+  public static final String ALARMS_COL_NAME = "name";
+  public static final String ALARMS_COL_DAY_OF_WEEK = "dow";
 
   public static final String DB_TABLE_SETTINGS = "settings";
   public static final String SETTINGS_COL_ID = "id";
@@ -30,11 +32,13 @@ public class DbHelper extends SQLiteOpenHelper {
   @Override
   public void onCreate(SQLiteDatabase db) {
     // Alarm metadata table:
-    // |(auto primary) | (0 to 86399) | (boolean) |
-    // |     _id       |    time      |  enabled  |
+    // |(auto primary) | (0 to 86399) | (boolean) | (string) | (bitmask(7)) |
+    // |     _id       |    time      |  enabled  |   name   |     dow      |
     // time is seconds past midnight.
     db.execSQL("CREATE TABLE " + DB_TABLE_ALARMS + " (" 
         + ALARMS_COL__ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+        + ALARMS_COL_NAME + " TEXT, "
+        + ALARMS_COL_DAY_OF_WEEK + " UNSIGNED INTEGER (0, 127), "
         + ALARMS_COL_TIME + " UNSIGNED INTEGER (0, 86399),"
         + ALARMS_COL_ENABLED + " UNSIGNED INTEGER (0, 1))");
     // |(primary) | (string) | (string)  | (1 to 60) | (boolean) | (0 to 100) | (0 to 100) | (0 to 60) |
