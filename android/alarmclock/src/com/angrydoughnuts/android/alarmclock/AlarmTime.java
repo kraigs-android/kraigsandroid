@@ -1,5 +1,6 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import android.content.Context;
@@ -39,35 +40,25 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
   }
 
   public String toString() {
-    return String.format("%02d", asCalendar.get(Calendar.HOUR_OF_DAY)) + ":"
-    + String.format("%02d", asCalendar.get(Calendar.MINUTE)) + ":" 
-    + String.format("%02d", asCalendar.get(Calendar.SECOND));
+    SimpleDateFormat formatter = new SimpleDateFormat("HH:mm.ss");
+    return formatter.format(asCalendar.getTime());
   }
 
   public String localizedString(Context context) {
     boolean is24HourFormat = DateFormat.is24HourFormat(context);
-
-    String hour;
-    String suffix;
-    if (is24HourFormat) {
-      hour = String.format("%02d", asCalendar.get(Calendar.HOUR_OF_DAY));
-      suffix = "";
-    } else {
-      hour = String.format("%d", asCalendar.get(Calendar.HOUR));
-      if (asCalendar.get(Calendar.AM_PM) == Calendar.AM) {
-        suffix = " AM";
-      } else {
-        suffix = " PM";
-      }
-    }
-
-    String minute = String.format(":%02d", asCalendar.get(Calendar.MINUTE));
+    String format = "";
     String second = "";
     if (AlarmClockService.debug(context)) {
-      second = String.format(".%02d", asCalendar.get(Calendar.SECOND));
+      second = ".ss";
+    }
+    if (is24HourFormat) {
+      format = "HH:mm" + second;
+    } else {
+      format = "h:mm" + second + " aaa";
     }
 
-    return hour + minute + second + suffix;
+    SimpleDateFormat formatter = new SimpleDateFormat(format);
+    return formatter.format(asCalendar.getTime());
   }
 
   public int secondsAfterMidnight() {
