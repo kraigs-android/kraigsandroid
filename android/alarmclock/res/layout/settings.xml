@@ -17,7 +17,8 @@
 
   <EditText android:text="Snooze"
     android:id="@+id/snooze"
-    android:digits="true"
+    android:inputType="number"
+    android:imeOptions="actionNext"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
 
