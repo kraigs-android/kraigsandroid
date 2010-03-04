@@ -73,8 +73,9 @@ public class DbAccessor {
 
   // TODO(cgallek): use a settings object instead of individual
   // parameters.
-  boolean writeAlarmSettings(long alarmId, String tone) {
-    ContentValues values = new ContentValues();
+  public boolean writeAlarmSettings(long alarmId, String tone) {
+    ContentValues values = new ContentValues(2);
+    values.put(DbHelper.SETTINGS_COL_ID, alarmId);
     values.put(DbHelper.SETTINGS_COL_TONE_URL, tone);
 
     Cursor cursor = rDb.query(DbHelper.DB_TABLE_SETTINGS,
@@ -85,14 +86,14 @@ public class DbAccessor {
     if (cursor.getCount() < 1) {
       count = rwDb.insert(DbHelper.DB_TABLE_SETTINGS, null, values);
     } else {
-      count = rwDb.update(DbHelper.DB_TABLE_SETTINGS, null,
+      count = rwDb.update(DbHelper.DB_TABLE_SETTINGS, values,
           DbHelper.SETTINGS_COL_ID + " = " + alarmId, null);
     }
     cursor.close();
     return count == 1;
   }
 
-  String readAlarmSettings(long alarmId) {
+  public String readAlarmSettings(long alarmId) {
     Cursor cursor = rDb.query(DbHelper.DB_TABLE_SETTINGS, 
         new String[] { DbHelper.SETTINGS_COL_ID, DbHelper.SETTINGS_COL_TONE_URL },
         DbHelper.SETTINGS_COL_ID + " = " + alarmId, null, null, null, null);
@@ -107,7 +108,7 @@ public class DbAccessor {
     return tone_url;
   }
 
-  String readDefaultAlarmSettings() {
+  public String readDefaultAlarmSettings() {
     return readAlarmSettings(-1);
   }
 }
