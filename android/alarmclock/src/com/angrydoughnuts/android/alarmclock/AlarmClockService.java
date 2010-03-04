@@ -201,7 +201,6 @@ public final class AlarmClockService extends Service {
   }
 
   public void createAlarm(AlarmTime time) {
-    // TODO(cgallek): validate params??
     // Store the alarm in the persistent database.
     long alarmId = db.newAlarm(time);
     scheduleAlarm(alarmId);
@@ -213,8 +212,12 @@ public final class AlarmClockService extends Service {
   }
 
   public void scheduleAlarm(long alarmId) {
+    AlarmInfo info = db.readAlarmInfo(alarmId);
+    if (info == null) {
+      return;
+    }
     // Schedule the next alarm.
-    pendingAlarms.put(alarmId, db.readAlarmInfo(alarmId).getTime());
+    pendingAlarms.put(alarmId, info.getTime());
 
     // Mark the alarm as enabled in the database.
     db.enableAlarm(alarmId, true);
@@ -228,9 +231,14 @@ public final class AlarmClockService extends Service {
   }
 
   public void acknowledgeAlarm(long alarmId) {
+    AlarmInfo info = db.readAlarmInfo(alarmId);
+    if (info == null) {
+      return;
+    }
+
     pendingAlarms.remove(alarmId);
 
-    AlarmTime time = db.readAlarmInfo(alarmId).getTime();
+    AlarmTime time = info.getTime();
     if (time.repeats()) {
       pendingAlarms.put(alarmId, time);
     } else {
@@ -240,6 +248,11 @@ public final class AlarmClockService extends Service {
   }
 
   public void dismissAlarm(long alarmId) {
+    AlarmInfo info = db.readAlarmInfo(alarmId);
+    if (info == null) {
+      return;
+    }
+
     pendingAlarms.remove(alarmId);
     db.enableAlarm(alarmId, false);
 

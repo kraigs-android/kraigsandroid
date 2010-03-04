@@ -128,8 +128,11 @@ public final class AlarmSettings {
   }
 
   public void setSnoozeMinutes(int minutes) {
-    // TODO(cgallek): These all need validation checks.  Add validation
-    // checks and then update all internal modifiers to use setters.
+    if (minutes < 1) {
+      minutes = 1;
+    } else if (minutes > 60) {
+      minutes = 60;
+    }
     this.snoozeMinutes = minutes;
   }
 
@@ -146,6 +149,11 @@ public final class AlarmSettings {
   }
 
   public void setVolumeStartPercent(int volumeStartPercent) {
+    if (volumeStartPercent < 0) {
+      volumeStartPercent = 0;
+    } else if (volumeStartPercent > 100) {
+      volumeStartPercent = 100;
+    }
     this.volumeStartPercent = volumeStartPercent;
   }
 
@@ -154,6 +162,11 @@ public final class AlarmSettings {
   }
 
   public void setVolumeEndPercent(int volumeEndPercent) {
+    if (volumeEndPercent < 0) {
+      volumeEndPercent = 0;
+    } else if (volumeEndPercent > 100) {
+      volumeEndPercent = 100;
+    }
     this.volumeEndPercent = volumeEndPercent;
   }
 
@@ -162,6 +175,11 @@ public final class AlarmSettings {
   }
 
   public void setVolumeChangeTimeSec(int volumeChangeTimeSec) {
+    if (volumeChangeTimeSec < 1) {
+      volumeChangeTimeSec = 1;
+    } else if (volumeChangeTimeSec > 600) {
+      volumeChangeTimeSec = 600;
+    }
     this.volumeChangeTimeSec = volumeChangeTimeSec;
   }
 }
