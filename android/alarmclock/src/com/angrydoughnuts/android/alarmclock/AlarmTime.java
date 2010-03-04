@@ -66,7 +66,14 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
 
   @Override
   public boolean equals(Object o) {
-    return calendar.equals(o);
+    if (!(o instanceof AlarmTime)) {
+      return false;
+    }
+    AlarmTime rhs = (AlarmTime) o;
+    if (!calendar.equals(rhs.calendar)) {
+      return false;
+    }
+    return this.daysOfWeek.equals(rhs.daysOfWeek);
   }
 
   public String toString() {
