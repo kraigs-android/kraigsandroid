@@ -29,7 +29,7 @@ public class DbAccessor {
           DbHelper.ALARMS_COL_TIME,
           DbHelper.ALARMS_COL_ENABLED
         }, null, null, null, null,
-        DbHelper.ALARMS_COL_TIME + " DESC");
+        DbHelper.ALARMS_COL_TIME + " ASC");
   }
 
   public long newAlarm(AlarmTime time) {
