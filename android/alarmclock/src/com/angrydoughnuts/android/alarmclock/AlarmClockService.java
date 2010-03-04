@@ -188,8 +188,11 @@ public final class AlarmClockService extends Service {
     // the service.
     if (pendingAlarms.size() == 0) {
       stopSelf();
+      return false;
     }
-    return false;
+    // Returning true causes the IBinder object to be re-used until the
+    // service is actually shutdown.
+    return true;
   }
 
   public AlarmTime pendingAlarm(long alarmId) {
