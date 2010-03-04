@@ -36,8 +36,9 @@ public class DbAccessor {
 
   public long newAlarm(Calendar calendar) {
     // TODO(cgallek) make sure this time doesn't exist yet.
+    AlarmTime time = new AlarmTime(calendar);
     ContentValues values = new ContentValues(2);
-    values.put(DbHelper.ALARMS_COL_TIME, TimeUtil.secondsAfterMidnight(calendar));
+    values.put(DbHelper.ALARMS_COL_TIME, time.secondsAfterMidnight());
     values.put(DbHelper.ALARMS_COL_ENABLED, false);
     long id = rwDb.insert(DbHelper.DB_TABLE_ALARMS, null, values);
     if (id < 0) {
@@ -63,16 +64,16 @@ public class DbAccessor {
     return count != 0;
   }
 
-  public int alarmTime(long alarmId) {
+  public AlarmTime alarmTime(long alarmId) {
     Cursor cursor = rDb.query(DbHelper.DB_TABLE_ALARMS,
         new String[] { DbHelper.ALARMS_COL_TIME },
         DbHelper.ALARMS_COL__ID + " = " + alarmId, null, null, null, null);
     if (cursor.getCount() != 1) {
       cursor.close();
-      return -1;
+      return null;
     }
     cursor.moveToFirst();
-    int time = cursor.getInt(0);
+    AlarmTime time = new AlarmTime(cursor.getInt(0));
     cursor.close();
     return time;
   }

@@ -1,7 +1,5 @@
 package com.angrydoughnuts.android.alarmclock;
 
-import java.util.Calendar;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.view.View;
@@ -30,8 +28,8 @@ class AlarmViewAdapter extends ResourceCursorAdapter {
     TextView timeView = (TextView) view.findViewById(R.id.alarm_time);
     CheckBox enabledView = (CheckBox) view.findViewById(R.id.alarm_enabled);
 
-    Calendar c = TimeUtil.secondsAfterMidnightToLocalCalendar(cursor.getInt(timeIndex));
-    String label = TimeUtil.calendarToClockString(c);
+    AlarmTime time = new AlarmTime(cursor.getInt(timeIndex));
+    String label = time.toString();
     if (AlarmClockService.debug(context)) {
       label += " [" + cursor.getLong(idIndex) + "]";
     }

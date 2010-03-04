@@ -118,12 +118,7 @@ public class AlarmClockService extends Service {
 
   public void scheduleAlarm(long alarmId) {
     // Schedule the next alarm.
-    int secondsAfterMidnight = db.alarmTime(alarmId);
-    if (secondsAfterMidnight < 0) {
-      throw new IllegalStateException("Invalid timestamp stored in DB.");
-    }
-    long alarmTime = TimeUtil.nextLocalOccuranceInUTC(secondsAfterMidnight);
-    setAlarm(alarmId, alarmTime);
+    setAlarm(alarmId, db.alarmTime(alarmId));
 
     // Mark the alarm as enabled in the database.
     db.enableAlarm(alarmId, true);
@@ -141,11 +136,11 @@ public class AlarmClockService extends Service {
   }
 
   public void snoozeAlarm(long alarmId) {
-    long alarmTime = TimeUtil.snoozeInUTC(db.readAlarmSettings(alarmId).getSnoozeMinutes());
-    setAlarm(alarmId, alarmTime);
+    AlarmTime time = AlarmTime.snoozeInMillisUTC(db.readAlarmSettings(alarmId).getSnoozeMinutes());
+    setAlarm(alarmId, time);
   }
 
-  private void setAlarm(long alarmId, long millisUtc) {
+  private void setAlarm(long alarmId, AlarmTime time) {
     // Intents are considered equal if they have the same action, data, type,
     // class, and categories.  In order to schedule multiple alarms, every
     // pending intent must be different.  This means that we must encode
@@ -157,7 +152,7 @@ public class AlarmClockService extends Service {
       PendingIntent.getBroadcast(getApplicationContext(), 0, notifyIntent, 0);
 
     AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-    alarmManager.set(AlarmManager.RTC_WAKEUP, millisUtc, scheduleIntent);
+    alarmManager.set(AlarmManager.RTC_WAKEUP, time.nextLocalOccuranceInMillisUTC(), scheduleIntent);
     // TODO(cgallek): make sure ID doesn't exist yet?
     // Keep track of all scheduled alarms.
     pendingAlarms.put(alarmId, scheduleIntent);
