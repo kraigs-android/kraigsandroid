@@ -8,7 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.net.Uri;
-import android.os.Handler;
+import android.os.Bundle;
 import android.os.IBinder;
 
 public class AlarmClockService extends Service {
@@ -17,12 +17,15 @@ public class AlarmClockService extends Service {
     return (c.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) > 0;
   }
 
+  public final static String COMMAND_EXTRA = "command";
+  public final static int COMMAND_UNKNOWN = 1;
+  public final static int COMMAND_NOTIFICATION_REFRESH = 1;
+
+
   private final int NOTIFICATION_ID = 1;
   private DbAccessor db;
   private PendingAlarmList pendingAlarms;
   private Notification notification;
-  private Handler handler;
-  private Runnable alarmStatusCallback;
 
   public static Uri alarmIdToUri(long alarmId) {
     return Uri.parse("alarm_id:" + alarmId);
@@ -30,11 +33,6 @@ public class AlarmClockService extends Service {
 
   public static long alarmUriToId(Uri uri) {
     return Long.parseLong(uri.getSchemeSpecificPart());
-  }
-
-  @Override
-  public void onStart(Intent intent, int startId) {
-    super.onStart(intent, startId);
   }
 
   @Override
@@ -51,18 +49,8 @@ public class AlarmClockService extends Service {
     notification = new Notification(R.drawable.icon, null, 0);
     notification.flags |= Notification.FLAG_ONGOING_EVENT;
 
-    handler = new Handler();
-    alarmStatusCallback = new Runnable() {
-      @Override
-      public void run() {
-        refreshNotification();
-        int intervalMillis = 1000 * 60;  // every minute
-        long now = System.currentTimeMillis();
-        long next = intervalMillis - now % intervalMillis;
-        handler.postDelayed(alarmStatusCallback, next);
-      }
-    };
-    handler.post(alarmStatusCallback);
+    refreshNotification();
+    NotificationRefreshReceiver.startRefreshing(getApplicationContext());
   }
 
   @Override
@@ -70,7 +58,7 @@ public class AlarmClockService extends Service {
     super.onDestroy();
     db.closeConnections();
 
-    handler.removeCallbacks(alarmStatusCallback);
+    NotificationRefreshReceiver.stopRefreshing(getApplicationContext());
 
     final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     manager.cancel(NOTIFICATION_ID);
@@ -84,7 +72,7 @@ public class AlarmClockService extends Service {
   public IBinder onBind(Intent intent) {
     // Explicitly start this service when a client binds. This will cause
     // the service to outlive all of its binders.
-    final Intent selfIntent = new Intent(getApplication(),
+    final Intent selfIntent = new Intent(getApplicationContext(),
         AlarmClockService.class);
     startService(selfIntent);
 
@@ -106,6 +94,21 @@ public class AlarmClockService extends Service {
       return true;
 
     }
+  }
+
+  // TODO(cgallek): This method breaks compatibility with SDK version < 5.
+  // Is there anyway around this?
+  @Override
+  public int onStartCommand(Intent intent, int flags, int startId) {
+    if (intent.hasExtra(COMMAND_EXTRA)) {
+      Bundle extras = intent.getExtras();
+      int command = extras.getInt(COMMAND_EXTRA, COMMAND_UNKNOWN);
+      switch (command) {
+        case COMMAND_NOTIFICATION_REFRESH:
+          refreshNotification();
+      }
+    }
+    return super.onStartCommand(intent, flags, startId);
   }
 
   private void refreshNotification() {
