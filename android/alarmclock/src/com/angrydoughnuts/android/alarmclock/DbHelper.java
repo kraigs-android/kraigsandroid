@@ -14,8 +14,8 @@ public class DbHelper extends SQLiteOpenHelper {
   public static final String ALARMS_COL_ENABLED = "enabled";
 
   public static final String DB_TABLE_SETTINGS = "settings";
-  public static final String ALARMS_COL_ID = "id";
-  public static final String ALARMS_COL_TONE_URL = "tone_url";
+  public static final String SETTINGS_COL_ID = "id";
+  public static final String SETTINGS_COL_TONE_URL = "tone_url";
 
   public DbHelper(Context context) {
     super(context, DB_NAME, null, DB_VERSION);
@@ -36,8 +36,8 @@ public class DbHelper extends SQLiteOpenHelper {
     // |   id     | tone_url |
     // time is seconds past midnight.
     db.execSQL("CREATE TABLE " + DB_TABLE_SETTINGS + " (" 
-        + ALARMS_COL_ID + " INTEGER PRIMARY KEY, "
-        + ALARMS_COL_TONE_URL + " TEXT)");
+        + SETTINGS_COL_ID + " INTEGER PRIMARY KEY, "
+        + SETTINGS_COL_TONE_URL + " TEXT)");
 
   }
 
