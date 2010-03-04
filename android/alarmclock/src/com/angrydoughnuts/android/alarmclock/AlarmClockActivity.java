@@ -8,7 +8,6 @@ import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.format.DateFormat;
@@ -31,7 +30,7 @@ public class AlarmClockActivity extends Activity {
 
   private AlarmClockServiceBinder service;
   private DbAccessor db;
-  private Cursor alarmListCursor;
+  private AlarmViewAdapter adapter;
   private TextView clock;
   private Button testBtn;
   private Button pendingBtn;
@@ -45,8 +44,6 @@ public class AlarmClockActivity extends Activity {
 
     service = AlarmClockServiceBinder.newBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
-    alarmListCursor = db.getAlarmList();
-    startManagingCursor(alarmListCursor);
     handler = new Handler();
 
     clock = (TextView) findViewById(R.id.clock);
@@ -87,19 +84,15 @@ public class AlarmClockActivity extends Activity {
       }
     });
 
-    final AlarmViewAdapter adapter =
-      new AlarmViewAdapter(getApplicationContext(), R.layout.alarm_description,
-          alarmListCursor, service);
+    adapter = new AlarmViewAdapter(getApplicationContext(), getLayoutInflater(), service);
     final ListView alarmList = (ListView) findViewById(R.id.alarm_list);
     alarmList.setAdapter(adapter);
     alarmList.setOnItemClickListener(new OnItemClickListener() {
       @Override
       public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
-        alarmListCursor.moveToPosition(position);
-        long alarmId = alarmListCursor.getLong(
-            alarmListCursor.getColumnIndex(DbHelper.ALARMS_COL__ID));
+        AlarmInfo info = (AlarmInfo) adapter.getItemAtPosition(position);
         Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
-        i.putExtra(SettingsActivity.EXTRAS_ALARM_ID, alarmId);
+        i.putExtra(SettingsActivity.EXTRAS_ALARM_ID, info.getAlarmId());
         startActivity(i);
       }
     });
@@ -183,7 +176,7 @@ public class AlarmClockActivity extends Activity {
     clock.setText(time.localizedString(getApplicationContext()));
 
     // Update the alarm list.
-    alarmListCursor.requery();
+    adapter.requery();
   }
 
   @Override

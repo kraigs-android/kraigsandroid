@@ -24,17 +24,6 @@ public class DbAccessor {
     rwDb.close();
   }
 
-  public Cursor getAlarmList() {
-    return rDb.query(
-        DbHelper.DB_TABLE_ALARMS,
-        new String[] {
-          DbHelper.ALARMS_COL__ID,
-          DbHelper.ALARMS_COL_TIME,
-          DbHelper.ALARMS_COL_ENABLED
-        }, null, null, null, null,
-        DbHelper.ALARMS_COL_TIME + " ASC");
-  }
-
   public long newAlarm(AlarmTime time) {
     // TODO(cgallek) make sure this time doesn't exist yet.
     ContentValues values = new ContentValues(2);
@@ -56,7 +45,6 @@ public class DbAccessor {
     return count > 0;
   }
 
-  // TODO(cgallek) most of these can be removed in favor of readAlarmInfo()
   public boolean enableAlarm(long alarmId, boolean enabled) {
     ContentValues values = new ContentValues(1);
     values.put(DbHelper.ALARMS_COL_ENABLED, enabled);

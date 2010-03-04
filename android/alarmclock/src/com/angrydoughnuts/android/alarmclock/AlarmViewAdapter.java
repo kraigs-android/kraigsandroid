@@ -1,57 +1,76 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import java.util.LinkedList;
 import android.content.Context;
 import android.database.Cursor;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
-import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
-class AlarmViewAdapter extends ResourceCursorAdapter {
+class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
   private AlarmClockServiceBinder service;
-  private int idIndex;
-  private int timeIndex;
-  private int enabledIndex;
+  private LayoutInflater inflater;
+  private DbAccessor db;
+  private Cursor cursor;
 
-  public AlarmViewAdapter(
-      Context context, int layout, Cursor c, AlarmClockServiceBinder service) {
-    super(context, layout, c);
+  public AlarmViewAdapter(Context context, LayoutInflater inflater, AlarmClockServiceBinder service) {
+    super(context, 0, new LinkedList<AlarmInfo>());
     this.service = service;
-    this.idIndex = c.getColumnIndex(DbHelper.ALARMS_COL__ID);
-    this.timeIndex = c.getColumnIndex(DbHelper.ALARMS_COL_TIME);
-    this.enabledIndex = c.getColumnIndex(DbHelper.ALARMS_COL_ENABLED);
+    this.inflater = inflater;
+    this.db = new DbAccessor(context);
+    this.cursor = db.readAlarmInfo();
+  }
+
+  public void requery() {
+    clear();
+    cursor.requery();
+    while (cursor.moveToNext()) {
+      add(new AlarmInfo(cursor));
+    }
+    notifyDataSetChanged();
   }
 
   @Override
-  public void bindView(View view, Context context, Cursor cursor) {
+  public View getView(int position, View convertView, ViewGroup parent) {
+    View view = inflater.inflate(R.layout.alarm_description, null);
     TextView timeView = (TextView) view.findViewById(R.id.alarm_time);
     TextView nextView = (TextView) view.findViewById(R.id.next_alarm);
     CheckBox enabledView = (CheckBox) view.findViewById(R.id.alarm_enabled);
 
-    AlarmTime time = new AlarmTime(cursor.getInt(timeIndex));
-    String timeStr = time.localizedString(context);
+    final AlarmInfo info = getItem(position);
+    AlarmTime time = new AlarmTime(info.getTime());
+    String timeStr = time.localizedString(getContext());
     String alarmId = "";
-    if (AlarmClockService.debug(context)) {
-      alarmId = " [" + cursor.getLong(idIndex) + "]";
+    if (AlarmClockService.debug(getContext())) {
+      alarmId = " [" + info.getAlarmId() + "]";
     }
     timeView.setText(timeStr + alarmId);
-    enabledView.setChecked(cursor.getInt(enabledIndex) != 0);
+    enabledView.setChecked(info.enabled());
     // TODO(cgallek): This doesn't account for snoozed alarms :-\
     // Figure out how to get this information back from the service based
     // on actual scheduled times.
     nextView.setText(time.timeUntilString());
-    final long id = cursor.getLong(idIndex);
     enabledView.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
         CheckBox check = (CheckBox) v;
         if (check.isChecked()) {
-          service.scheduleAlarm(id);
+          service.scheduleAlarm(info.getAlarmId());
         } else {
-          service.dismissAlarm(id);
+          service.dismissAlarm(info.getAlarmId());
         }
       }
     });
-  }    
+    return view;
+  }
+
+  protected void finalize() throws Throwable {
+    cursor.close();
+    db.closeConnections();
+    super.finalize();
+  }
 }
