@@ -90,8 +90,15 @@ public class AlarmClockService extends Service {
     // TODO(cgallek): validate params??
     // Store the alarm in the persistent database.
     long alarmId = db.newAlarm(minutesAfterMidnight);
+    scheduleAlarm(alarmId);
+  }
 
+  public void scheduleAlarm(long alarmId) {
     // Schedule the next alarm.
+    int minutesAfterMidnight = db.alarmTime(alarmId);
+    if (minutesAfterMidnight < 0) {
+      throw new IllegalStateException("Invalid timestamp stored in DB.");
+    }
     // TODO(cgallek): this is actually interpreted as seconds after midnight right
     // now (for testing).  Switch it to minutes eventually.
     int hour = minutesAfterMidnight % 3600;
@@ -117,13 +124,15 @@ public class AlarmClockService extends Service {
     // TODO(cgallek): make sure ID doesn't exist yet?
     // Keep track of all scheduled alarms.
     pendingAlarms.put(alarmId, scheduleIntent);
+    // Mark the alarm as enabled in the database.
+    db.enableAlarm(alarmId, true);
   }
 
   public boolean dismissAlarm(long alarmId) {
+    db.enableAlarm(alarmId, false);
     PendingIntent alarm = pendingAlarms.remove(alarmId);
     if (alarm != null) {
       alarm.cancel();
-      db.enableAlarm(alarmId, false);
       return true;
     } else {
       return false;

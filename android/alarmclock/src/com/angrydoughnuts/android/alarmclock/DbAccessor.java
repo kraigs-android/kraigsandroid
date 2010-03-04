@@ -36,7 +36,7 @@ public class DbAccessor {
     // TODO(cgallek) make sure this time doesn't exist yet.
     ContentValues values = new ContentValues(2);
     values.put(DbHelper.ALARMS_COL_TIME, minutesAfterMidnight);
-    values.put(DbHelper.ALARMS_COL_ENABLED, true);
+    values.put(DbHelper.ALARMS_COL_ENABLED, false);
     long id = rwDb.insert(DbHelper.DB_TABLE_ALARMS, null, values);
     if (id < 0) {
       throw new IllegalStateException("Unable to insert into database");
@@ -50,5 +50,18 @@ public class DbAccessor {
     int count = rwDb.update(DbHelper.DB_TABLE_ALARMS, values,
         DbHelper.ALARMS_COL_ID + " = " + alarmId, null);
     return count != 0;
+  }
+
+  public int alarmTime(long alarmId) {
+    Cursor cursor = rDb.query(DbHelper.DB_TABLE_ALARMS,
+        new String[] { DbHelper.ALARMS_COL_TIME },
+        DbHelper.ALARMS_COL_ID + " = " + alarmId, null, null, null, null);
+    if (cursor.getCount() != 1) {
+      return -1;
+    }
+    cursor.moveToFirst();
+    int time = cursor.getInt(0);
+    cursor.close();
+    return time;
   }
 }

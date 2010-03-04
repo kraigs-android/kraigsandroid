@@ -37,7 +37,7 @@ public class AlarmClockActivity extends Activity {
       }
     });
 
-    AlarmViewAdapter adapter = new AlarmViewAdapter(getApplicationContext(), R.layout.alarm_description, alarmListCursor);
+    AlarmViewAdapter adapter = new AlarmViewAdapter(getApplicationContext(), R.layout.alarm_description, alarmListCursor, service);
     ListView alarmList = (ListView) findViewById(R.id.alarm_list);
     alarmList.setAdapter(adapter);
   }
