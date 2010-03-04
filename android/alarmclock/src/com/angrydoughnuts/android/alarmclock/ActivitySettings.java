@@ -71,9 +71,6 @@ public class ActivitySettings extends Activity {
       }
     });
     Button deleteButton = (Button) findViewById(R.id.settings_delete);
-    if (alarmId == AlarmSettings.DEFAULT_SETTINGS_ID) {
-      deleteButton.setVisibility(View.GONE);
-    }
     deleteButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
@@ -82,6 +79,8 @@ public class ActivitySettings extends Activity {
         finish();
       }
     });
+
+    ListView alarmInfoList = (ListView) findViewById(R.id.alarm_info_list);
 
     // TODO(cgallek): move all these strings to strings.xml
     Setting[] settingsObjects = new Setting[SettingType.values().length];
@@ -123,6 +122,15 @@ public class ActivitySettings extends Activity {
     adapter = new SettingsAdapter(getApplicationContext(), settingsObjects);
     settingsList.setAdapter(adapter);
     settingsList.setOnItemClickListener(new SettingsListClickListener());
+
+    // The alarm info section and the delete button should not be shown when
+    // editing the default settings.
+    if (alarmId == AlarmSettings.DEFAULT_SETTINGS_ID) {
+      deleteButton.setVisibility(View.GONE);
+      alarmInfoList.setVisibility(View.GONE);
+      TextView infoHeader = (TextView) findViewById(R.id.alarm_info_header);
+      infoHeader.setVisibility(View.GONE);
+    }
   }
 
   @Override

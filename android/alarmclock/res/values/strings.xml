@@ -3,6 +3,8 @@
     <string name="app_name">Alarm Clock</string>
     <string name="add_alarm">Add alarm...</string>
     <string name="default_settings">Default Settings...</string>
+    <string name="settings">Settings</string>
+    <string name="alarm">Alarm</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="delete">Delete...</string>
