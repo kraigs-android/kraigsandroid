@@ -10,7 +10,7 @@ import android.widget.Button;
 
 public class AlarmNotificationActivity extends Activity {
 
-  private int alarmId;
+  private long alarmId;
   private AlarmClockServiceBinder service;
   private KeyguardLock screenLock;
 
@@ -21,7 +21,7 @@ public class AlarmNotificationActivity extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.notification);
     Bundle extras = getIntent().getExtras();
-    this.alarmId = extras.getInt("task_id");
+    this.alarmId = extras.getLong("task_id");
 
     service = AlarmClockServiceBinder.newBinder(getApplicationContext());
 

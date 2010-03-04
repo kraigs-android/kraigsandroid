@@ -22,7 +22,7 @@ public class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
   }
 
   @Override
-  public void acknowledgeAlarm(int alarmId) {
+  public void acknowledgeAlarm(long alarmId) {
     Toast.makeText(context, "CLEAR ALARM " + alarmId, Toast.LENGTH_SHORT).show();
     service.acknowledgeAlarm(alarmId);
   }

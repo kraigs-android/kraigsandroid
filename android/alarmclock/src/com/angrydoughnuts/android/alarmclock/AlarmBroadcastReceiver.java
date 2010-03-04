@@ -20,7 +20,7 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
   @Override
   public void onReceive(Context context, Intent recvIntent) {
     Bundle input = recvIntent.getExtras();
-    int alarmId = input.getInt("task_id");
+    long alarmId = input.getLong("task_id");
 
     if (wakeLock == null) {
       PowerManager powerManager =

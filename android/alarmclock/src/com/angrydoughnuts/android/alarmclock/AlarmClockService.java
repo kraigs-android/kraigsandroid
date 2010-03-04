@@ -13,6 +13,7 @@ import android.os.IBinder;
 
 public class AlarmClockService extends Service {
   private final int NOTIFICATION_ID = 1;
+  private DbAccessor db;
 
   @Override
   public void onStart(Intent intent, int startId) {
@@ -22,6 +23,8 @@ public class AlarmClockService extends Service {
   @Override
   public void onCreate() {
     super.onCreate();
+
+    db = new DbAccessor(getApplicationContext());
 
     final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     // TODO(cgallek): add a better notification icon.
@@ -75,21 +78,15 @@ public class AlarmClockService extends Service {
     }
   }
 
-  // TODO(cgallek): replace this with a data provider.
-  private static int taskId = 0;
-
-  private static int nextTaskId() {
-    return taskId++;
-  }
-
-  private TreeMap<Integer, PendingIntent> taskList = new TreeMap<Integer, PendingIntent>();
+  private TreeMap<Long, PendingIntent> taskList = new TreeMap<Long, PendingIntent>();
 
   public int alarmCount() {
     return taskList.size();
   }
 
   public void scheduleAlarmIn(int seconds) {
-    int alarmId = nextTaskId();
+    // TODO(cgallek): seconds is the wrong thing to pass in here.
+    long alarmId = db.newAlarm(seconds);
     Intent notifyIntent = new Intent(getApplicationContext(), AlarmBroadcastReceiver.class);
     notifyIntent.putExtra("task_id", alarmId);
     PendingIntent scheduleIntent =
@@ -101,7 +98,7 @@ public class AlarmClockService extends Service {
     taskList.put(alarmId, scheduleIntent);
   }
 
-  public boolean acknowledgeAlarm(int alarmId) {
+  public boolean acknowledgeAlarm(long alarmId) {
     PendingIntent task = taskList.remove(alarmId);
     if (task != null) {
       task.cancel();

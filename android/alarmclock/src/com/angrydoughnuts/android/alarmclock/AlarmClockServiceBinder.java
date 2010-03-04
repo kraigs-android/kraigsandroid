@@ -92,7 +92,7 @@ public class AlarmClockServiceBinder {
     });
   }
 
-  public void acknowledgeAlarm(final int alarmId) {
+  public void acknowledgeAlarm(final long alarmId) {
     runOrDefer(new ServiceCallback() {
       @Override
       public void run() throws RemoteException {
