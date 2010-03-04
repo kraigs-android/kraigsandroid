@@ -25,8 +25,7 @@ public class DbAccessor {
   }
 
   public long newAlarm(AlarmTime time) {
-    AlarmInfo info = new AlarmInfo();
-    info.setTime(time);
+    AlarmInfo info = new AlarmInfo(time, false, "");
 
     long id = rwDb.insert(DbHelper.DB_TABLE_ALARMS, null, info.contentValues());
     if (id < 0) {

@@ -23,11 +23,11 @@ public class AlarmInfo {
     time = BuildAlarmTime(secondsAfterMidnight, dowBitmask);
   }
 
-  public AlarmInfo() {
+  public AlarmInfo(AlarmTime time, boolean enabled, String name) {
     alarmId = -69;  // initially invalid.
-    time = new AlarmTime(0, 0, 0);
-    enabled = false;
-    name = "";
+    this.time = time;
+    this.enabled = enabled;
+    this.name = name;
   }
 
   public AlarmInfo(AlarmInfo rhs) {
