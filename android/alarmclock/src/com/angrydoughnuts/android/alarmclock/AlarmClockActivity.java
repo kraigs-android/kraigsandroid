@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.AdapterView.OnItemClickListener;
 
@@ -27,7 +28,7 @@ public class AlarmClockActivity extends Activity {
   private DbAccessor db;
   private Cursor alarmListCursor;
   private Handler handler;
-  private Runnable refreshCallback;
+  private Runnable tickCallback;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -39,17 +40,27 @@ public class AlarmClockActivity extends Activity {
     alarmListCursor = db.getAlarmList();
     startManagingCursor(alarmListCursor);
 
-    // TODO(cgallek): Replace this refresh loop with something that is triggered by
-    // the time tick notification.  That will also be useful when a clock is added
-    // to this activity and will align updates with the minute boundaries.
     handler = new Handler();
-    refreshCallback = new Runnable() {
+    final TextView clock = (TextView) findViewById(R.id.clock);
+    tickCallback = new Runnable() {
       @Override
       public void run() {
-        if (alarmListCursor != null) {
-          alarmListCursor.requery();
+        // Current time.
+        Calendar c = Calendar.getInstance();
+        AlarmTime time = new AlarmTime(c);
+
+        // Refresh operations
+        clock.setText(time.localizedString(getApplicationContext()));
+        alarmListCursor.requery();
+
+        // Schedule the next update on the next interval boundary.
+        int intervalMillis = 60 * 1000;  // every minute
+        if (AlarmClockService.debug(getApplicationContext())) {
+          intervalMillis = 1000;  // every second
         }
-        handler.postDelayed(refreshCallback, 60 *1000);
+        long now = c.getTimeInMillis();
+        long next = intervalMillis - now % intervalMillis;
+        handler.postDelayed(tickCallback, next);
       }
     };
 
@@ -144,13 +155,13 @@ public class AlarmClockActivity extends Activity {
     super.onResume();
     service.bind();
     alarmListCursor.requery();
-    handler.postDelayed(refreshCallback, 60 * 1000);
+    handler.post(tickCallback);
   }
 
   @Override
   protected void onPause() {
     super.onPause();
-    handler.removeCallbacks(refreshCallback);
+    handler.removeCallbacks(tickCallback);
     service.unbind();
   }
 
