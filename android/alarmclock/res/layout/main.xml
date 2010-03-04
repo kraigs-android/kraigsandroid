@@ -1,12 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    >
-<TextView  
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="@string/hello"
-    />
+  android:orientation="vertical"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent" >
+
+<Button android:text="Start Service"
+  android:id="@+id/start_service"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content" />
+<Button android:text="Stop Service"
+  android:id="@+id/stop_service"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content" />
+<Button android:text="Set Alarm"
+  android:id="@+id/set_alarm"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content" />
+<Button android:text="Clear Alarm"
+  android:id="@+id/clear_alarm"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content" />
+
 </LinearLayout>
