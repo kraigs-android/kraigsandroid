@@ -34,6 +34,7 @@ public class SettingsActivity extends Activity {
   private final int VOLUME_FADE_PICK_ID = 3;
 
   private long alarmId;
+  private AlarmClockServiceBinder service;
   private DbAccessor db;
   private AlarmSettings settings;
   SettingsAdapter adapter;
@@ -48,6 +49,7 @@ public class SettingsActivity extends Activity {
       throw new IllegalStateException("EXTRAS_ALARM_ID not supplied in intent.");
     }
 
+    service = AlarmClockServiceBinder.newBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
 
     settings = db.readAlarmSettings(alarmId);
@@ -75,7 +77,7 @@ public class SettingsActivity extends Activity {
       @Override
       public void onClick(View v) {
         // TODO(cgallek): Add confirmation dialog.
-        db.deleteAlarm(alarmId);
+        service.deleteAlarm(alarmId);
         finish();
       }
     });
@@ -114,6 +116,18 @@ public class SettingsActivity extends Activity {
     adapter = new SettingsAdapter(getApplicationContext(), R.layout.settings_item, settingsObjects);
     settingsList.setAdapter(adapter);
     settingsList.setOnItemClickListener(new SettingsListClickListener());
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
+    service.bind();
+  }
+
+  @Override
+  protected void onPause() {
+    super.onPause();
+    service.unbind();
   }
 
   @Override
