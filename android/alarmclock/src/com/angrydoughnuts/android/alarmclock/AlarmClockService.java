@@ -33,6 +33,8 @@ public class AlarmClockService extends Service {
   @Override
   public void onCreate() {
     super.onCreate();
+    // TODO(cgallek): consider removing this for release.  At least make it configurable.
+    Thread.setDefaultUncaughtExceptionHandler(new LoggingUncaughtExceptionHandler("/sdcard"));
 
     db = new DbAccessor(getApplicationContext());
     pendingAlarms = new TreeMap<Long, PendingIntent>();
