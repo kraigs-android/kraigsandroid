@@ -15,14 +15,17 @@
 
 package com.angrydoughnuts.android.alarmclock;
 
+import java.lang.reflect.Field;
+
 import android.net.Uri;
+import android.provider.Settings;
 
 public final class AlarmUtil {
   static public Uri alarmIdToUri(long alarmId) {
     return Uri.parse("alarm_id:" + alarmId);
   }
 
-  static public long alarmUriToId(Uri uri) {
+  public static long alarmUriToId(Uri uri) {
     return Long.parseLong(uri.getSchemeSpecificPart());
   }
 
@@ -35,13 +38,25 @@ public final class AlarmUtil {
     }
   }
 
-  static public long millisTillNextInterval(Interval interval) {
+  public static long millisTillNextInterval(Interval interval) {
     long now = System.currentTimeMillis();
     return interval.millis() - now % interval.millis();
   }
 
-  static public long nextIntervalInUTC(Interval interval) {
+  public static long nextIntervalInUTC(Interval interval) {
     long now = System.currentTimeMillis();
     return now + interval.millis() - now % interval.millis();
+  }
+
+  public static Uri getDefaultAlarmUri() {
+    // DEFAULT_ALARM_ALERT_URI is only available after SDK version 5.
+    // Fall back to the default notification if the default alarm is
+    // unavailable.
+    try {
+      Field f = Settings.System.class.getField("DEFAULT_ALARM_ALERT_URI");
+      return (Uri) f.get(null);
+    } catch (Exception e) {
+      return Settings.System.DEFAULT_NOTIFICATION_URI;
+    }
   }
 }

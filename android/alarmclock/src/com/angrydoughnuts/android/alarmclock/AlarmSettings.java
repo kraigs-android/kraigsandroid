@@ -18,7 +18,6 @@ package com.angrydoughnuts.android.alarmclock;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.Settings;
 
 /**
  * This class contains all of the settings data for a given alarm.  It also
@@ -63,9 +62,7 @@ public final class AlarmSettings {
   }
 
   public AlarmSettings() {
-    // It would be nice to use DEFAULT_ALARM_ALERT_URI, but it's not available
-    // until SDK 5.
-    tone = Settings.System.DEFAULT_NOTIFICATION_URI;
+    tone = AlarmUtil.getDefaultAlarmUri();
     toneName = "Default";
     snoozeMinutes = 10;
     vibrate = false;

@@ -28,7 +28,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
-import android.provider.Settings;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -98,7 +97,7 @@ public final class ActivityAlarmNotification extends Activity {
     // The media player can fail for lots of reasons.  Try to setup a backup
     // sound for use when the media player fails.
     fallbackSound = RingtoneManager.getRingtone(getApplicationContext(),
-        Settings.System.DEFAULT_NOTIFICATION_URI);
+        AlarmUtil.getDefaultAlarmUri());
     if (fallbackSound == null) {
       Uri superFallback = RingtoneManager.getValidRingtoneUri(getApplicationContext());
       fallbackSound = RingtoneManager.getRingtone(getApplicationContext(), superFallback);
