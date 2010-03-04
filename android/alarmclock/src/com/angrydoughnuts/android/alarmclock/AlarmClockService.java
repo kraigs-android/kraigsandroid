@@ -1,7 +1,5 @@
 package com.angrydoughnuts.android.alarmclock;
 
-import java.util.TreeMap;
-
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -21,7 +19,7 @@ public class AlarmClockService extends Service {
 
   private final int NOTIFICATION_ID = 1;
   private DbAccessor db;
-  private TreeMap<Long, PendingIntent> pendingAlarms;
+  private PendingAlarmList pendingAlarms;
 
   public static Uri alarmIdToUri(long alarmId) {
     return Uri.parse("alarm_id:" + alarmId);
@@ -44,7 +42,7 @@ public class AlarmClockService extends Service {
     }
 
     db = new DbAccessor(getApplicationContext());
-    pendingAlarms = new TreeMap<Long, PendingIntent>();
+    pendingAlarms = new PendingAlarmList();
 
     final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     // TODO(cgallek): add a better notification icon.
@@ -151,10 +149,11 @@ public class AlarmClockService extends Service {
 
     // Previous instances of this intent will be overwritten in both
     // the alarm manager and the pendingAlarms list.
+    long alarmTime = time.nextLocalOccuranceInMillisUTC();
     AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-    alarmManager.set(AlarmManager.RTC_WAKEUP, time.nextLocalOccuranceInMillisUTC(), scheduleIntent);
+    alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, scheduleIntent);
     // Keep track of all scheduled alarms.
-    pendingAlarms.put(alarmId, scheduleIntent);
+    pendingAlarms.put(alarmId, alarmTime, scheduleIntent);
     
   }
 }
