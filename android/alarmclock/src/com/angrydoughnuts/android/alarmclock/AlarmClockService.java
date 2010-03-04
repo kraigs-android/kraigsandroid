@@ -12,6 +12,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.widget.Toast;
 
@@ -41,8 +42,8 @@ public class AlarmClockService extends Service {
 
   public final static String COMMAND_EXTRA = "command";
   public final static int COMMAND_UNKNOWN = 1;
-  public final static int COMMAND_NOTIFICATION_REFRESH = 1;
-
+  public final static int COMMAND_NOTIFICATION_REFRESH = 2;
+  public final static int COMMAND_DEVICE_BOOT = 3;
 
   private final int NOTIFICATION_ID = 1;
   private DbAccessor db;
@@ -95,8 +96,24 @@ public class AlarmClockService extends Service {
       switch (command) {
         case COMMAND_NOTIFICATION_REFRESH:
           refreshNotification();
+          break;
+        case COMMAND_DEVICE_BOOT:
+          // If we were started as a result of a phone reboot, terminate if there
+          // are now alarms scheduled.
+          if (pendingAlarms.size() == 0) {
+            // Can't call selfStop from within start, so make it happen soon.
+            Handler handler = new Handler();
+            handler.post(new Runnable() {
+              @Override
+              public void run() {
+                stopSelf();
+              }
+            });
+          }
+          break;
       }
     }
+
     return super.onStartCommand(intent, flags, startId);
   }
 
