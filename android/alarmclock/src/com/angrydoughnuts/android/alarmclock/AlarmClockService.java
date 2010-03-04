@@ -20,22 +20,28 @@ import android.os.IBinder;
     public void onCreate() {
       super.onCreate();
 
-      NotificationManager manager =
+      final NotificationManager manager =
         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-      Notification notification = new Notification(
-          R.drawable.icon, "Alarm Clock Service", System.currentTimeMillis());
+
+      // TODO(cgallek): add a better notification icon.
+      Notification notification = new Notification(R.drawable.icon, null, 0);
+      notification.flags |= Notification.FLAG_ONGOING_EVENT;
+
+      // Make the notification launch the UI Activity when clicked.
       Intent notificationIntent = new Intent(this, AlarmClockActivity.class);
       PendingIntent launch = PendingIntent.getActivity(
           this, 0, notificationIntent, 0);
+      // TODO(cgallek): fill in the 'next alarm in/at' text.
       notification.setLatestEventInfo(
-          getApplicationContext(), "title", "text", launch);
+          getApplicationContext(), "Alarm Clock", "Next Alarm in ...", launch);
+
       manager.notify(NOTIFICATION_ID, notification);
     }
   
     @Override
     public void onDestroy() {
       super.onDestroy();
-      NotificationManager manager =
+      final NotificationManager manager =
         (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
       manager.cancel(NOTIFICATION_ID);
     }
