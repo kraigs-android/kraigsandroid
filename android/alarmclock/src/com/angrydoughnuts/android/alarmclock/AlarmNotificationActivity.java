@@ -146,8 +146,9 @@ public class AlarmNotificationActivity extends Activity {
     screenLock.disableKeyguard();
     service.bind();
 
-    // TODO(cgallek): Do this based on a setting.
-    vibrator.vibrate(new long[] {500, 500}, 0);
+    if (settings.getVibrate()) {
+      vibrator.vibrate(new long[] {500, 500}, 0);
+    }
 
     Uri tone = settings.getTone();
     mediaPlayer.reset();
@@ -235,24 +236,27 @@ public class AlarmNotificationActivity extends Activity {
     }
   }
 
-  // TODO(cgallek): make this configurable.
   private class VolumeIncreaser implements Runnable {
-    float value;
+    float start;
+    float end;
+    float increment;
 
     public VolumeIncreaser() {
-      mediaPlayer.setVolume((float)0.10, (float)0.10);
-      value = (float) 0.10;
+      start = (float) (settings.getVolumeStartPercent() / 100.0);
+      end = (float) (settings.getVolumeEndPercent() / 100.0);
+      increment = (end - start) / (float) settings.getVolumeChangeTimeSec();
+      mediaPlayer.setVolume(start, start);
     }
 
     @Override
     public void run() {
-      mediaPlayer.setVolume(value, value);
+      mediaPlayer.setVolume(start, start);
       TextView volume = (TextView) findViewById(R.id.volume);
-      volume.setText("Volume: " + value);
-      if (value >= 1) {
+      volume.setText("Volume: " + start);
+      if (start >= end) {
         return;
       }
-      value += 0.05;
+      start += increment;
       handler.postDelayed(volumeIncreaseCallback, 1000);
     }
   }
