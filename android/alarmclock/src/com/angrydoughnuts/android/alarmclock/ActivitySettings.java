@@ -2,6 +2,8 @@ package com.angrydoughnuts.android.alarmclock;
 
 import java.util.Calendar;
 
+import com.angrydoughnuts.android.alarmclock.AlarmInfo.Day;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -9,6 +11,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -35,7 +38,7 @@ public class ActivitySettings extends Activity {
   private enum SettingType { TONE, SNOOZE, VIBRATE, VOLUME_FADE; }
 
   private final int MISSING_EXTRAS = -69;
-  private enum Dialogs { TIME_PICKER, NAME_PICKER, TONE_PICKER, SNOOZE_PICKER, VOLUME_FADE_PICKER }
+  private enum Dialogs { TIME_PICKER, NAME_PICKER, DOW_PICKER, TONE_PICKER, SNOOZE_PICKER, VOLUME_FADE_PICKER }
 
   private long alarmId;
   private AlarmClockServiceBinder service;
@@ -254,6 +257,32 @@ public class ActivitySettings extends Activity {
           }
         });
         return nameBuilder.create();
+      case DOW_PICKER:
+        AlertDialog.Builder dowBuilder = new AlertDialog.Builder(this);
+        // TODO(cgallek): move this to strings.xml
+        dowBuilder.setTitle("Repeat Days");
+        dowBuilder.setMultiChoiceItems(
+            info.getDaysOfWeek().names(),
+            info.getDaysOfWeek().bitmask(),
+            new OnMultiChoiceClickListener() {
+              @Override
+              public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                if (isChecked) {
+                  info.getDaysOfWeek().addDay(Day.values()[which]);
+                } else {
+                  info.getDaysOfWeek().removeDay(Day.values()[which]);
+                }
+              }
+        });
+        dowBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            alarmInfoAdapter.notifyDataSetChanged();
+            dismissDialog(Dialogs.DOW_PICKER.ordinal());
+          }
+        });
+        return dowBuilder.create();
+
       case SNOOZE_PICKER:
         // TODO(cgallek): this is silly...
         final CharSequence[] items = {
@@ -320,6 +349,7 @@ public class ActivitySettings extends Activity {
           showDialog(Dialogs.NAME_PICKER.ordinal());
           break;
         case DAYS_OF_WEEK:
+          showDialog(Dialogs.DOW_PICKER.ordinal());
           break;
       }
     }

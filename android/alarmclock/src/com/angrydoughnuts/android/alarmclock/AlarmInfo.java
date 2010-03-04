@@ -1,7 +1,5 @@
 package com.angrydoughnuts.android.alarmclock;
 
-import java.util.ArrayList;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -9,19 +7,96 @@ import android.database.Cursor;
 public class AlarmInfo {
   public enum Day { SUN, MON, TUE, WED, THU, FRI, SAT; }
 
+  public class Week {
+    private boolean[] bitmask;
+
+    public CharSequence[] names() {
+      CharSequence[] nameList = new CharSequence[Day.values().length];
+      for (Day day : Day.values()) {
+        nameList[day.ordinal()] = day.toString();
+      }
+      return nameList;
+    }
+
+    public Week() {
+      bitmask = new boolean[Day.values().length];
+    }
+    public Week(int dow) {
+      bitmask = new boolean[Day.values().length];
+      for (Day day : Day.values()) {
+        if ((dow & 1 << day.ordinal()) > 0) {
+          addDay(day);
+        }
+      }
+    }
+    public boolean[] bitmask() {
+      return bitmask;
+    }
+    public void addDay(Day day) {
+      bitmask[day.ordinal()] = true;
+    }
+    public void removeDay(Day day) {
+      bitmask[day.ordinal()] = false;
+    }
+    public boolean hasDay(Day day) {
+      return bitmask[day.ordinal()];
+    }
+    public int toInetger() {
+      int dow = 0;
+      for (Day day: Day.values()) {
+        if (bitmask[day.ordinal()]) {
+          dow |= 1 << day.ordinal();
+        }
+      }
+      return dow;
+    }
+    public String toString(Context context) {
+      String list = "";
+      for (Day day : Day.values()) {
+        if (!bitmask[day.ordinal()]) {
+          continue;
+        }
+        switch (day) {
+          case SUN:
+            list += context.getString(R.string.dow_sun_short) + " ";
+            break;
+          case MON:
+            list += context.getString(R.string.dow_mon_short) + " ";
+            break;
+          case TUE:
+            list += context.getString(R.string.dow_tue_short) + " ";
+            break;
+          case WED:
+            list += context.getString(R.string.dow_wed_short) + " ";
+            break;
+          case THU:
+            list += context.getString(R.string.dow_thu_short) + " ";
+            break;
+          case FRI:
+            list += context.getString(R.string.dow_fri_short) + " ";
+            break;
+          case SAT:
+            list += context.getString(R.string.dow_sat_short) + " ";
+            break;
+        }
+      }
+      return list;
+    }
+  }
+
   private long alarmId;
   // TODO(cgallek): Move the AlarmTime class in here and replace this integer.
   private int time;
   private boolean enabled;
   private String name;
-  private int dow;
+  private Week daysOfWeek;
 
   AlarmInfo(Cursor cursor) {
     alarmId = cursor.getLong(cursor.getColumnIndex(DbHelper.ALARMS_COL__ID));
     time = cursor.getInt(cursor.getColumnIndex(DbHelper.ALARMS_COL_TIME));
     enabled = cursor.getInt(cursor.getColumnIndex(DbHelper.ALARMS_COL_ENABLED)) == 1;
     name = cursor.getString(cursor.getColumnIndex(DbHelper.ALARMS_COL_NAME));
-    dow = cursor.getInt(cursor.getColumnIndex(DbHelper.ALARMS_COL_DAY_OF_WEEK));
+    daysOfWeek = new Week(cursor.getInt(cursor.getColumnIndex(DbHelper.ALARMS_COL_DAY_OF_WEEK)));
   }
 
   public ContentValues contentValues() {
@@ -29,7 +104,7 @@ public class AlarmInfo {
     values.put(DbHelper.ALARMS_COL_TIME, time);
     values.put(DbHelper.ALARMS_COL_ENABLED, enabled);
     values.put(DbHelper.ALARMS_COL_NAME, name);
-    values.put(DbHelper.ALARMS_COL_DAY_OF_WEEK, dow);
+    values.put(DbHelper.ALARMS_COL_DAY_OF_WEEK, daysOfWeek.toInetger());
     return values;
   }
 
@@ -71,49 +146,15 @@ public class AlarmInfo {
     this.name = name;
   }
 
-  public Day[] getDaysOfWeek() {
-    ArrayList<Day> days = new ArrayList<Day>();
-    for (int i = 0; i < Day.values().length; ++i) {
-      if ((dow & Day.values()[i].ordinal()) > 0) {
-        days.add(Day.values()[i]);
-      }
-    }
-    return days.toArray(new Day[0]);
+  public Week getDaysOfWeek() {
+    return daysOfWeek;
+  }
+
+  public void setDow(Week week) {
+    this.daysOfWeek = week;
   }
 
   public String getDaysOfWeekString(Context context) {
-    String list = "";
-    for (Day day : getDaysOfWeek()) {
-      switch (day) {
-      case SUN:
-        list += context.getString(R.string.dow_sun_short) + " ";
-        break;
-      case MON:
-        list += context.getString(R.string.dow_mon_short) + " ";
-        break;
-      case TUE:
-        list += context.getString(R.string.dow_tue_short) + " ";
-        break;
-      case WED:
-        list += context.getString(R.string.dow_wed_short) + " ";
-        break;
-      case THU:
-        list += context.getString(R.string.dow_thu_short) + " ";
-        break;
-      case FRI:
-        list += context.getString(R.string.dow_fri_short) + " ";
-        break;
-      case SAT:
-        list += context.getString(R.string.dow_sat_short) + " ";
-        break;
-      }
-    }
-    return list;
-  }
-
-  public void setDow(Day[] daysOfWeek) {
-    for (Day day: daysOfWeek) {
-      dow |= day.ordinal();
-    }
+    return daysOfWeek.toString(context);
   }
 }
