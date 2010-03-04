@@ -9,6 +9,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
@@ -66,7 +67,13 @@ public class AlarmNotificationActivity extends Activity {
     mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
     fallbackSound = RingtoneManager.getRingtone(getApplicationContext(),
         Settings.System.DEFAULT_ALARM_ALERT_URI); 
-    fallbackSound.setStreamType(AudioManager.STREAM_ALARM);
+    if (fallbackSound == null) {
+      Uri superFallback = RingtoneManager.getValidRingtoneUri(getApplicationContext());
+      fallbackSound = RingtoneManager.getRingtone(getApplicationContext(), superFallback);
+    }
+    if (fallbackSound != null) {
+      fallbackSound.setStreamType(AudioManager.STREAM_ALARM);
+    }
     vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
     handler = new Handler();
@@ -77,7 +84,8 @@ public class AlarmNotificationActivity extends Activity {
       public void run() {
         // TODO(cgallek): Make this control a custom clock too.
         // Some sound should always be playing.
-        if (!mediaPlayer.isPlaying() && !fallbackSound.isPlaying()) {
+        if (!mediaPlayer.isPlaying() &&
+            fallbackSound != null && !fallbackSound.isPlaying()) { 
           fallbackSound.play();
         }
 
@@ -206,7 +214,9 @@ public class AlarmNotificationActivity extends Activity {
     handler.removeCallbacks(timeTick);
     vibrator.cancel();
     mediaPlayer.stop();
-    fallbackSound.stop();
+    if (fallbackSound != null) {
+      fallbackSound.stop();
+    }
   }
 
   @Override

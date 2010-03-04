@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -159,7 +160,8 @@ public class SettingsActivity extends Activity {
           uri = Settings.System.DEFAULT_ALARM_ALERT_URI;
         }
         Context c = getApplicationContext();
-        String name = RingtoneManager.getRingtone(c, uri).getTitle(c);
+        Ringtone tone = RingtoneManager.getRingtone(c, uri);
+        String name = tone != null ? tone.getTitle(c) : "Unknown name";
         settings.setTone(uri, name);
         adapter.notifyDataSetChanged();
       default:
