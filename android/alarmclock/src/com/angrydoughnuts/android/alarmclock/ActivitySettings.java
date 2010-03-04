@@ -175,14 +175,14 @@ public class ActivitySettings extends Activity {
   }
 
   @Override
-  protected void onStart() {
-    super.onStart();
+  protected void onResume() {
+    super.onResume();
     service.bind();
   }
 
   @Override
-  protected void onStop() {
-    super.onStop();
+  protected void onPause() {
+    super.onPause();
     service.unbind();
   }
 
