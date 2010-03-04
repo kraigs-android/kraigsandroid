@@ -56,7 +56,7 @@ public class AlarmClockActivity extends Activity {
         // Schedule the next update on the next interval boundary.
         int intervalMillis = 60 * 1000;  // every minute
         if (AlarmClockService.debug(getApplicationContext())) {
-          intervalMillis = 1000;  // every second
+          intervalMillis = 5 * 1000;  // every 5 seconds
         }
         long now = c.getTimeInMillis();
         long next = intervalMillis - now % intervalMillis;

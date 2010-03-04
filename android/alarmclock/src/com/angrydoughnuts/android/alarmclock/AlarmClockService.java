@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.net.Uri;
+import android.os.Handler;
 import android.os.IBinder;
 
 public class AlarmClockService extends Service {
@@ -20,6 +21,9 @@ public class AlarmClockService extends Service {
   private final int NOTIFICATION_ID = 1;
   private DbAccessor db;
   private PendingAlarmList pendingAlarms;
+  private Notification notification;
+  private Handler handler;
+  private Runnable alarmStatusCallback;
 
   public static Uri alarmIdToUri(long alarmId) {
     return Uri.parse("alarm_id:" + alarmId);
@@ -44,26 +48,30 @@ public class AlarmClockService extends Service {
     db = new DbAccessor(getApplicationContext());
     pendingAlarms = new PendingAlarmList();
 
-    final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     // TODO(cgallek): add a better notification icon.
-    Notification notification = new Notification(R.drawable.icon, null, 0);
+    notification = new Notification(R.drawable.icon, null, 0);
     notification.flags |= Notification.FLAG_ONGOING_EVENT;
 
-    // Make the notification launch the UI Activity when clicked.
-    Intent notificationIntent = new Intent(this, AlarmClockActivity.class);
-    PendingIntent launch = PendingIntent.getActivity(this, 0,
-        notificationIntent, 0);
-    // TODO(cgallek): fill in the 'next alarm in/at' text.
-    notification.setLatestEventInfo(getApplicationContext(), "Alarm Clock",
-        "Next Alarm in ...", launch);
-
-    manager.notify(NOTIFICATION_ID, notification);
+    handler = new Handler();
+    alarmStatusCallback = new Runnable() {
+      @Override
+      public void run() {
+        refreshNotification();
+        int intervalMillis = 1000 * 60;  // every minute
+        long now = System.currentTimeMillis();
+        long next = intervalMillis - now % intervalMillis;
+        handler.postDelayed(alarmStatusCallback, next);
+      }
+    };
+    handler.post(alarmStatusCallback);
   }
 
   @Override
   public void onDestroy() {
     super.onDestroy();
     db.closeConnections();
+
+    handler.removeCallbacks(alarmStatusCallback);
 
     final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     manager.cancel(NOTIFICATION_ID);
@@ -101,6 +109,27 @@ public class AlarmClockService extends Service {
     }
   }
 
+  private void refreshNotification() {
+    AlarmTime nextTime = pendingAlarms.nextAlarmTime();
+    String nextString;
+    if (nextTime != null) {
+      nextString = "Next Alarm: " + nextTime.nextLocalOccuranceAsString();
+    } else {
+      nextString = "No Alarms Pending";
+    }
+
+    // Make the notification launch the UI Activity when clicked.
+    Intent notificationIntent = new Intent(this, AlarmClockActivity.class);
+    final PendingIntent launch = PendingIntent.getActivity(this, 0,
+        notificationIntent, 0);
+
+    notification.setLatestEventInfo(
+        getApplicationContext(), getApplication().getPackageName(), nextString, launch);
+
+    final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    manager.notify(NOTIFICATION_ID, notification);
+  }
+
   public void createAlarm(AlarmTime time) {
     // TODO(cgallek): validate params??
     // Store the alarm in the persistent database.
@@ -129,6 +158,7 @@ public class AlarmClockService extends Service {
       alarmManager.cancel(alarm);
       alarm.cancel();
     }
+    refreshNotification();
   }
 
   public void snoozeAlarm(long alarmId) {
@@ -149,11 +179,10 @@ public class AlarmClockService extends Service {
 
     // Previous instances of this intent will be overwritten in both
     // the alarm manager and the pendingAlarms list.
-    long alarmTime = time.nextLocalOccuranceInMillisUTC();
     AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-    alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, scheduleIntent);
+    alarmManager.set(AlarmManager.RTC_WAKEUP, time.nextLocalOccuranceInMillisUTC(), scheduleIntent);
     // Keep track of all scheduled alarms.
-    pendingAlarms.put(alarmId, alarmTime, scheduleIntent);
-    
+    pendingAlarms.put(alarmId, time, scheduleIntent);
+    refreshNotification();
   }
 }

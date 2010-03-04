@@ -7,7 +7,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.format.DateFormat;
 
-public class AlarmTime implements Parcelable {
+public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
   private int secondsAfterMidnight;
   private Calendar asCalendar;
 
@@ -31,6 +31,11 @@ public class AlarmTime implements Parcelable {
     int minutes = asCalendar.get(Calendar.MINUTE) * 60;
     int seconds = asCalendar.get(Calendar.SECOND);
     this.secondsAfterMidnight = hours + minutes + seconds;
+  }
+
+  @Override
+  public int compareTo(AlarmTime another) {
+    return asCalendar.compareTo(another.asCalendar);
   }
 
   public String toString() {
