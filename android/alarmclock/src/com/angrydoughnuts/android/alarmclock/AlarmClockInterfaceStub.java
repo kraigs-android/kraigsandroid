@@ -3,6 +3,9 @@ package com.angrydoughnuts.android.alarmclock;
 import android.content.Context;
 import android.widget.Toast;
 
+// TODO(cgallek): Remove these toasts.
+// TODO(cgallek): This class can probably move as an inner class
+// of AlarmClockService.
 public class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
   private Context context;
   private AlarmClockService service;
