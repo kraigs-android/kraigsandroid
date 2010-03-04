@@ -25,7 +25,7 @@ public class DbAccessor {
     return rDb.query(
         DbHelper.DB_TABLE_ALARMS,
         new String[] {
-          DbHelper.ALARMS_COL_ID,
+          DbHelper.ALARMS_COL__ID,
           DbHelper.ALARMS_COL_TIME,
           DbHelper.ALARMS_COL_ENABLED
         }, null, null, null, null,
@@ -46,7 +46,7 @@ public class DbAccessor {
 
   public boolean deleteAlarm(long alarmId) {
     int count = rDb.delete(DbHelper.DB_TABLE_ALARMS,
-        DbHelper.ALARMS_COL_ID + " = " + alarmId, null);
+        DbHelper.ALARMS_COL__ID + " = " + alarmId, null);
     return count > 0;
   }
 
@@ -54,14 +54,14 @@ public class DbAccessor {
     ContentValues values = new ContentValues(1);
     values.put(DbHelper.ALARMS_COL_ENABLED, enabled);
     int count = rwDb.update(DbHelper.DB_TABLE_ALARMS, values,
-        DbHelper.ALARMS_COL_ID + " = " + alarmId, null);
+        DbHelper.ALARMS_COL__ID + " = " + alarmId, null);
     return count != 0;
   }
 
   public int alarmTime(long alarmId) {
     Cursor cursor = rDb.query(DbHelper.DB_TABLE_ALARMS,
         new String[] { DbHelper.ALARMS_COL_TIME },
-        DbHelper.ALARMS_COL_ID + " = " + alarmId, null, null, null, null);
+        DbHelper.ALARMS_COL__ID + " = " + alarmId, null, null, null, null);
     if (cursor.getCount() != 1) {
       return -1;
     }

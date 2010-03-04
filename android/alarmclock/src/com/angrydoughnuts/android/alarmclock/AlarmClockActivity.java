@@ -51,7 +51,7 @@ public class AlarmClockActivity extends Activity {
           long id) {
         alarmListCursor.moveToPosition(position);
         long alarmId = alarmListCursor.getLong(
-            alarmListCursor.getColumnIndex(DbHelper.ALARMS_COL_ID));
+            alarmListCursor.getColumnIndex(DbHelper.ALARMS_COL__ID));
         service.deleteAlarm(alarmId);
         alarmListCursor.requery();
       }

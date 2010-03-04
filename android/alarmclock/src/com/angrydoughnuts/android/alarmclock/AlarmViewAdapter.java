@@ -18,7 +18,7 @@ class AlarmViewAdapter extends ResourceCursorAdapter {
       Context context, int layout, Cursor c, AlarmClockServiceBinder service) {
     super(context, layout, c);
     this.service = service;
-    this.idIndex = c.getColumnIndex(DbHelper.ALARMS_COL_ID);
+    this.idIndex = c.getColumnIndex(DbHelper.ALARMS_COL__ID);
     this.timeIndex = c.getColumnIndex(DbHelper.ALARMS_COL_TIME);
     this.enabledIndex = c.getColumnIndex(DbHelper.ALARMS_COL_ENABLED);
   }
