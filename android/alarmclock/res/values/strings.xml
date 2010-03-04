@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">Alarm Clock</string>
+  <string name="app_name">Alarm Klock</string>
   <string name="add_alarm">Add alarm...</string>
   <string name="default_settings">Default Settings...</string>
   <string name="settings">Settings</string>
