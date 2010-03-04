@@ -11,6 +11,7 @@
     </activity>
     <service android:name="AlarmClockService"></service>
     <activity android:name="AlarmNotificationActivity"></activity>
+    <receiver android:name="AlarmBroadcastReceiver"></receiver>
   </application>
 
   <uses-sdk android:minSdkVersion="4" />

@@ -83,15 +83,6 @@ public class AlarmClockServiceBinder {
     });
   }
 
-  public void notifyDialog(final int alarmId) { 
-    runOrDefer(new ServiceCallback() {
-      @Override
-      public void run() throws RemoteException {
-        clock.notifyDialog(alarmId);
-      }
-    });
-  }
-
   public void scheduleAlarmIn(final int seconds) {
     runOrDefer(new ServiceCallback() {
       @Override

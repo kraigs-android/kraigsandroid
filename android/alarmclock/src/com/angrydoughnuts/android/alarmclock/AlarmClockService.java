@@ -1,24 +1,18 @@
 package com.angrydoughnuts.android.alarmclock;
 
-import java.util.Timer;
 import java.util.TreeMap;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.PowerManager;
 
 public class AlarmClockService extends Service {
   private final int NOTIFICATION_ID = 1;
-
-  private Timer timerThread;
-  private Handler uiHandler;
-  private PowerManager.WakeLock wakeLock;
 
   @Override
   public void onStart(Intent intent, int startId) {
@@ -28,17 +22,6 @@ public class AlarmClockService extends Service {
   @Override
   public void onCreate() {
     super.onCreate();
-    timerThread = new Timer();
-    // TODO(cgallek): This must be created in the main thread. Is there a way
-    // to ensure this?
-    uiHandler = new Handler();
-
-    PowerManager powerManager =
-      (PowerManager) getSystemService(Context.POWER_SERVICE);
-    wakeLock = powerManager.newWakeLock(
-        PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
-        "Alarm Notification Wake Lock");
-    wakeLock.setReferenceCounted(false);
 
     final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     // TODO(cgallek): add a better notification icon.
@@ -59,7 +42,6 @@ public class AlarmClockService extends Service {
   @Override
   public void onDestroy() {
     super.onDestroy();
-    timerThread.cancel(); // Just in case OnUnbind was never called.
 
     final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     manager.cancel(NOTIFICATION_ID);
@@ -83,7 +65,6 @@ public class AlarmClockService extends Service {
     // we explicitly started the service in onBind (to remain persistent),
     // we must explicitly stop here when there are no alarms set.
     if (alarmCount() == 0) {
-      timerThread.cancel();
       stopSelf();
       return false;
     } else {
@@ -101,24 +82,27 @@ public class AlarmClockService extends Service {
     return taskId++;
   }
 
-  private TreeMap<Integer, AlarmClockTimerTask> taskList = new TreeMap<Integer, AlarmClockTimerTask>();
+  private TreeMap<Integer, PendingIntent> taskList = new TreeMap<Integer, PendingIntent>();
 
   public int alarmCount() {
     return taskList.size();
   }
 
   public void scheduleAlarmIn(int seconds) {
-    int id = nextTaskId();
-    AlarmClockTimerTask task = new AlarmClockTimerTask(getApplicationContext(),
-        uiHandler, id);
+    int alarmId = nextTaskId();
+    Intent notifyIntent = new Intent(getApplicationContext(), AlarmBroadcastReceiver.class);
+    notifyIntent.putExtra("task_id", alarmId);
+    PendingIntent scheduleIntent =
+      PendingIntent.getBroadcast(getApplicationContext(), 0, notifyIntent, 0);
+
+    AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+    alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + seconds * 1000, scheduleIntent);
     // TODO(cgallek): make sure ID doesn't exist yet?
-    taskList.put(id, task);
-    timerThread.schedule(task, seconds * 1000);
+    taskList.put(alarmId, scheduleIntent);
   }
 
   public boolean acknowledgeAlarm(int alarmId) {
-    wakeLock.release();
-    AlarmClockTimerTask task = taskList.remove(alarmId);
+    PendingIntent task = taskList.remove(alarmId);
     if (task != null) {
       task.cancel();
       return true;
@@ -128,23 +112,9 @@ public class AlarmClockService extends Service {
   }
 
   public void clearAllAlarms() {
-    for (AlarmClockTimerTask task : taskList.values()) {
+    for (PendingIntent task : taskList.values()) {
       task.cancel();
     }
     taskList.clear();
-  }
-
-  public void notifyDialog(int alarmId) {
-    final Intent notifyIntent = new Intent(getApplicationContext(),
-        AlarmNotificationActivity.class);
-    notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    notifyIntent.putExtra("task_id", alarmId);
-
-    // TODO(cgallek): I don't think this function actually gets called
-    // unless the phone is connected to power.  Might have to replace the
-    // thread wakeup thing.
-    wakeLock.acquire();
-
-    startActivity(notifyIntent);
   }
 }

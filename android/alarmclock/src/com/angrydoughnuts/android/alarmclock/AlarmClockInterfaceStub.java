@@ -16,12 +16,6 @@ public class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
   }
 
   @Override
-  public void notifyDialog(int alarmId) {
-    Toast.makeText(context, "FIRE ALARM! " + alarmId, Toast.LENGTH_SHORT).show();
-    service.notifyDialog(alarmId);
-  }
-
-  @Override
   public void scheduleAlarmIn(int seconds) {
     Toast.makeText(context, "SCHEDULE ALARM!", Toast.LENGTH_SHORT).show();
     service.scheduleAlarmIn(seconds);

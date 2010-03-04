@@ -34,6 +34,12 @@ public class AlarmNotificationActivity extends Activity {
     okButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
+        // TODO(cgallek):  Currently the alarm will only be acknowledged if the ok
+        // button is pressed.  However, this dialog can be closed in other ways.
+        // figure out how to handle acknowledgements in those cases.  Maybe
+        // a notification item?
+        service.acknowledgeAlarm(alarmId);
+        AlarmBroadcastReceiver.wakeLock().release();
         finish();
       }
     });
@@ -42,19 +48,15 @@ public class AlarmNotificationActivity extends Activity {
   @Override
   protected void onResume() {
     super.onResume();
-    service.bind();
     screenLock.disableKeyguard();
+    service.bind();
   }
 
   @Override
   protected void onPause() {
     super.onPause();
-    screenLock.reenableKeyguard();
-    // TODO(cgallek): It's important to acknowledge the alarm in here some way
-    // so that the power locks are released by the service when this dialog
-    // goes away.
-    service.acknowledgeAlarm(alarmId);
     service.unbind();
+    screenLock.reenableKeyguard();
   }
 
   // TODO(cgallek): Clicking the power button twice while this activity is
