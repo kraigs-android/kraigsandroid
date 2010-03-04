@@ -82,7 +82,7 @@ class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
           service.scheduleAlarm(info.getAlarmId());
           requery();
         } else {
-          service.dismissAlarm(info.getAlarmId());
+          service.unscheduleAlarm(info.getAlarmId());
           requery();
         }
       }

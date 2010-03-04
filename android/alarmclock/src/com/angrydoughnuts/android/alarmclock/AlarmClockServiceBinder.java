@@ -105,11 +105,20 @@ public class AlarmClockServiceBinder {
     });
   }
 
-  public void dismissAlarm(final long alarmId) {
+  public void unscheduleAlarm(final long alarmId) {
     runOrDefer(new ServiceCallback() {
       @Override
       public void run() throws RemoteException {
-        clock.dismissAlarm(alarmId);
+        clock.unscheduleAlarm(alarmId);
+      }
+    });
+  }
+
+  public void acknowledgeAlarm(final long alarmId) {
+    runOrDefer(new ServiceCallback() {
+      @Override
+      public void run() throws RemoteException {
+        clock.acknowledgeAlarm(alarmId);
       }
     });
   }

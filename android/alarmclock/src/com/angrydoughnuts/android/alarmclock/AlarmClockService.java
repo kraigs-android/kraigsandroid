@@ -203,7 +203,7 @@ public class AlarmClockService extends Service {
   }
 
   public void deleteAlarm(long alarmId) {
-    dismissAlarm(alarmId);
+    pendingAlarms.remove(alarmId);
     db.deleteAlarm(alarmId);
   }
 
@@ -217,9 +217,22 @@ public class AlarmClockService extends Service {
     refreshNotification();
   }
 
-  public void dismissAlarm(long alarmId) {
-    db.enableAlarm(alarmId, false);
+  public void acknowledgeAlarm(long alarmId) {
     pendingAlarms.remove(alarmId);
+
+    AlarmTime time = db.readAlarmInfo(alarmId).getTime();
+    if (time.repeats()) {
+      pendingAlarms.put(alarmId, time);
+    } else {
+      db.enableAlarm(alarmId, false);
+    }
+    refreshNotification();
+  }
+
+  public void dismissAlarm(long alarmId) {
+    pendingAlarms.remove(alarmId);
+    db.enableAlarm(alarmId, false);
+
     refreshNotification();
   }
 

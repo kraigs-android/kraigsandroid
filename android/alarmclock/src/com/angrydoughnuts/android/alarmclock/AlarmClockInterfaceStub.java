@@ -42,9 +42,14 @@ public class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
   }
 
   @Override
-  public void dismissAlarm(long alarmId) {
-    debugToast("DISMISS ALARM " + alarmId);
+  public void unscheduleAlarm(long alarmId) {
+    debugToast("UNSCHEDULE ALARM " + alarmId);
     service.dismissAlarm(alarmId);
+  }
+
+  public void acknowledgeAlarm(long alarmId) {
+    debugToast("ACKNOWLEDGE ALARM " + alarmId);
+    service.acknowledgeAlarm(alarmId);
   }
 
   @Override

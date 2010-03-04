@@ -267,7 +267,7 @@ public class ActivityAlarmNotification extends Activity {
         ReceiverAlarm.wakeLock().release();
         break;
       case ACKED:
-        service.dismissAlarm(alarmId);
+        service.acknowledgeAlarm(alarmId);
         ReceiverAlarm.wakeLock().release();
         break;
       default:

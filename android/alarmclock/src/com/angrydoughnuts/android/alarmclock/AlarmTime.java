@@ -94,6 +94,10 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
     return daysOfWeek;
   }
 
+  public boolean repeats() {
+    return !daysOfWeek.equals(Week.NO_REPEATS);
+  }
+
   public String timeUntilString(Context c) {
     Calendar now = Calendar.getInstance();
     if (calendar.before(now)) {
