@@ -1,8 +1,11 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import java.util.Calendar;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,6 +14,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +25,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class ActivitySettings extends Activity {
@@ -30,14 +35,12 @@ public class ActivitySettings extends Activity {
   private enum SettingType { TONE, SNOOZE, VIBRATE, VOLUME_FADE; }
 
   private final int MISSING_EXTRAS = -69;
-  // TODO(cgallek): make these an emum?
-  private final int TONE_PICK_ID = 1;
-  private final int SNOOZE_PICK_ID = 2;
-  private final int VOLUME_FADE_PICK_ID = 3;
+  private enum Dialogs { TIME_PICKER, TONE_PICKER, SNOOZE_PICKER, VOLUME_FADE_PICKER }
 
   private long alarmId;
   private AlarmClockServiceBinder service;
   private DbAccessor db;
+  private AlarmInfo info;
   private AlarmSettings settings;
   SettingsAdapter alarmInfoAdapter;
   SettingsAdapter settingsAdapter;
@@ -55,12 +58,18 @@ public class ActivitySettings extends Activity {
     service = AlarmClockServiceBinder.newBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
 
+    info = db.readAlarmInfo(alarmId);
     settings = db.readAlarmSettings(alarmId);
 
     Button okButton = (Button) findViewById(R.id.settings_ok);
     okButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
+        // TODO(cgallek): This needs to update the alarm info through the service rather
+        // than directly writing to the database (unschedule old alarm, schedule new if enabled).
+        // It should be fine to leave the settings write directly to the db.  They are not
+        // maintained in memory anywhere.
+        db.writeAlarmInfo(alarmId, info);
         db.writeAlarmSettings(alarmId, settings);
         finish();
       }
@@ -82,32 +91,32 @@ public class ActivitySettings extends Activity {
       }
     });
 
-    // null??
-    final AlarmInfo info = db.readAlarmInfo(alarmId);
-    // TODO(cgallek): move all these strings to strings.xml
-    Setting[] alarmInfoObjects = new Setting[AlarmInfoType.values().length];
-    alarmInfoObjects[AlarmInfoType.TIME.ordinal()] = new Setting() {
-      @Override
-      public String name() { return "Time"; }
-      @Override
-      public String value() { return new AlarmTime(info.getTime()).localizedString(getApplicationContext()); }
-    };
-    alarmInfoObjects[AlarmInfoType.NAME.ordinal()] = new Setting() {
-      @Override
-      public String name() { return "Label"; }
-      @Override
-      public String value() { return info.getName(); }
-    };
-    alarmInfoObjects[AlarmInfoType.DAYS_OF_WEEK.ordinal()] = new Setting() {
-      @Override
-      public String name() { return "Repeat"; }
-      @Override
-      public String value() { return info.getDaysOfWeekString(getApplicationContext()); }
-    };
     ListView alarmInfoList = (ListView) findViewById(R.id.alarm_info_list);
-    alarmInfoAdapter = new SettingsAdapter(getApplicationContext(), alarmInfoObjects);
-    alarmInfoList.setAdapter(alarmInfoAdapter);
-    alarmInfoList.setOnItemClickListener(new AlarmInfoListClickListener());
+    if (alarmId != AlarmSettings.DEFAULT_SETTINGS_ID) {
+      // TODO(cgallek): move all these strings to strings.xml
+      Setting[] alarmInfoObjects = new Setting[AlarmInfoType.values().length];
+      alarmInfoObjects[AlarmInfoType.TIME.ordinal()] = new Setting() {
+        @Override
+        public String name() { return "Time"; }
+        @Override
+        public String value() { return new AlarmTime(info.getTime()).localizedString(getApplicationContext()); }
+      };
+      alarmInfoObjects[AlarmInfoType.NAME.ordinal()] = new Setting() {
+        @Override
+        public String name() { return "Label"; }
+        @Override
+        public String value() { return info.getName(); }
+      };
+      alarmInfoObjects[AlarmInfoType.DAYS_OF_WEEK.ordinal()] = new Setting() {
+        @Override
+        public String name() { return "Repeat"; }
+        @Override
+        public String value() { return info.getDaysOfWeekString(getApplicationContext()); }
+      };
+      alarmInfoAdapter = new SettingsAdapter(getApplicationContext(), alarmInfoObjects);
+      alarmInfoList.setAdapter(alarmInfoAdapter);
+      alarmInfoList.setOnItemClickListener(new AlarmInfoListClickListener());
+    }
 
     // TODO(cgallek): move all these strings to strings.xml
     Setting[] settingsObjects = new Setting[SettingType.values().length];
@@ -184,8 +193,8 @@ public class ActivitySettings extends Activity {
       return;
     }
 
-    switch (requestCode) {
-      case TONE_PICK_ID:
+    switch (Dialogs.values()[requestCode]) {
+      case TONE_PICKER:
         // This can be null if 'Silent' was selected, but it was disabled
         // above so that should never happen.
         Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
@@ -206,8 +215,23 @@ public class ActivitySettings extends Activity {
 
   @Override
   protected Dialog onCreateDialog(int id) {
-    switch (id) {
-      case SNOOZE_PICK_ID:
+    switch (Dialogs.values()[id]) {
+      case TIME_PICKER:
+        AlarmTime time = new AlarmTime(info.getTime());
+        int hour = time.calendar().get(Calendar.HOUR_OF_DAY);
+        int minute = time.calendar().get(Calendar.MINUTE);
+        boolean is24Hour = DateFormat.is24HourFormat(getApplicationContext());
+        return new TimePickerDialog(this,
+            new TimePickerDialog.OnTimeSetListener() {
+              @Override
+              public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                AlarmTime newTime = new AlarmTime(hourOfDay, minute, 0);
+                info.setTime(newTime.secondsAfterMidnight());
+                alarmInfoAdapter.notifyDataSetChanged();
+              }
+            },
+            hour, minute, is24Hour);
+      case SNOOZE_PICKER:
         // TODO(cgallek): this is silly...
         final CharSequence[] items = {
             "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
@@ -224,11 +248,11 @@ public class ActivitySettings extends Activity {
           public void onClick(DialogInterface dialog, int item) {
             settings.setSnoozeMinutes(item + 1);
             settingsAdapter.notifyDataSetChanged();
-            dismissDialog(SNOOZE_PICK_ID);
+            dismissDialog(Dialogs.SNOOZE_PICKER.ordinal());
           }
         });
         return snoozeBuilder.create();
-      case VOLUME_FADE_PICK_ID:
+      case VOLUME_FADE_PICKER:
         AlertDialog.Builder fadeBuilder = new AlertDialog.Builder(this);
         // TODO(cgallek): move this to strings.xml
         fadeBuilder.setTitle("Alarm Volume Fade");
@@ -247,13 +271,13 @@ public class ActivitySettings extends Activity {
             settings.setVolumeEndPercent(Integer.parseInt(volumeEnd.getText().toString()));
             settings.setVolumeChangeTimeSec(Integer.parseInt(volumeDuration.getText().toString()));
             settingsAdapter.notifyDataSetChanged();
-            dismissDialog(VOLUME_FADE_PICK_ID);
+            dismissDialog(Dialogs.VOLUME_FADE_PICKER.ordinal());
           }
         });
         fadeBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
-            dismissDialog(VOLUME_FADE_PICK_ID);
+            dismissDialog(Dialogs.VOLUME_FADE_PICKER.ordinal());
           }
         });
         return fadeBuilder.create();
@@ -267,6 +291,7 @@ public class ActivitySettings extends Activity {
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
       switch (AlarmInfoType.values()[position]) {
         case TIME:
+          showDialog(Dialogs.TIME_PICKER.ordinal());
           break;
         case NAME:
           break;
@@ -290,17 +315,17 @@ public class ActivitySettings extends Activity {
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_INCLUDE_DRM, true);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Default Alarm Tone");
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, current_tone);
-          startActivityForResult(i, TONE_PICK_ID);
+          startActivityForResult(i, Dialogs.TONE_PICKER.ordinal());
           break;
         case SNOOZE:
-          showDialog(SNOOZE_PICK_ID);
+          showDialog(Dialogs.SNOOZE_PICKER.ordinal());
           break;
         case VIBRATE:
           settings.setVibrate(!settings.getVibrate());
           settingsAdapter.notifyDataSetChanged();
           break;
         case VOLUME_FADE:
-          showDialog(VOLUME_FADE_PICK_ID);
+          showDialog(Dialogs.VOLUME_FADE_PICKER.ordinal());
           break;
       }
     }
