@@ -11,6 +11,7 @@ public class AlarmSettings implements Parcelable {
   static public final long DEFAULT_SETTINGS_ID = -1;
 
   private Uri tone;
+  private String toneName;
   private int snoozeMinutes;
   private boolean vibrate;
   private int volumeStartPercent;
@@ -18,9 +19,10 @@ public class AlarmSettings implements Parcelable {
   private int volumeChangeTimeSec;
 
   public ContentValues contentValues(long alarmId) {
-    ContentValues values = new ContentValues(3);
+    ContentValues values = new ContentValues();
     values.put(DbHelper.SETTINGS_COL_ID, alarmId);
     values.put(DbHelper.SETTINGS_COL_TONE_URL, tone.toString());
+    values.put(DbHelper.SETTINGS_COL_TONE_NAME, toneName);
     values.put(DbHelper.SETTINGS_COL_SNOOZE, snoozeMinutes);
     values.put(DbHelper.SETTINGS_COL_VIBRATE, vibrate);
     values.put(DbHelper.SETTINGS_COL_VOLUME_STARTING, volumeStartPercent);
@@ -33,6 +35,7 @@ public class AlarmSettings implements Parcelable {
     return new String[] {
       DbHelper.SETTINGS_COL_ID,
       DbHelper.SETTINGS_COL_TONE_URL,
+      DbHelper.SETTINGS_COL_TONE_NAME,
       DbHelper.SETTINGS_COL_SNOOZE,
       DbHelper.SETTINGS_COL_VIBRATE,
       DbHelper.SETTINGS_COL_VOLUME_STARTING,
@@ -44,6 +47,7 @@ public class AlarmSettings implements Parcelable {
   // TODO(cgallek): default constructor to initialize defaults.
   public AlarmSettings() {
     tone = Settings.System.DEFAULT_ALARM_ALERT_URI;
+    toneName = "Default";
     snoozeMinutes = 10;
     vibrate = false;
     volumeStartPercent = 0;
@@ -54,6 +58,7 @@ public class AlarmSettings implements Parcelable {
   public AlarmSettings(Cursor cursor) {
     cursor.moveToFirst();
     tone = Uri.parse(cursor.getString(cursor.getColumnIndex(DbHelper.SETTINGS_COL_TONE_URL)));
+    toneName = cursor.getString(cursor.getColumnIndex(DbHelper.SETTINGS_COL_TONE_NAME));
     snoozeMinutes = cursor.getInt(cursor.getColumnIndex(DbHelper.SETTINGS_COL_SNOOZE));
     vibrate = cursor.getInt(cursor.getColumnIndex(DbHelper.SETTINGS_COL_VIBRATE)) == 1;
     volumeStartPercent = cursor.getInt(cursor.getColumnIndex(DbHelper.SETTINGS_COL_VOLUME_STARTING));
@@ -63,6 +68,7 @@ public class AlarmSettings implements Parcelable {
 
   public AlarmSettings(Parcel source) {
     tone = source.readParcelable(getClass().getClassLoader());
+    toneName = source.readString();
     snoozeMinutes = source.readInt();
     vibrate = source.readInt() == 1 ? true : false;
     volumeStartPercent = source.readInt();
@@ -73,8 +79,12 @@ public class AlarmSettings implements Parcelable {
   @Override
   public void writeToParcel(Parcel dest, int flags) {
     dest.writeParcelable(tone, 0);
+    dest.writeString(toneName);
     dest.writeInt(snoozeMinutes);
     dest.writeInt(vibrate ? 1 : 0);
+    dest.writeInt(volumeStartPercent);
+    dest.writeInt(volumeEndPercent);
+    dest.writeInt(volumeChangeTimeSec);
   }
 
   @Override
@@ -98,8 +108,13 @@ public class AlarmSettings implements Parcelable {
     return tone;
   }
 
-  public void setTone(Uri tone) {
+  public void setTone(Uri tone, String name) {
     this.tone = tone;
+    this.toneName = name;
+  }
+
+  public String getToneName() {
+    return toneName;
   }
 
   public int getSnoozeMinutes() {

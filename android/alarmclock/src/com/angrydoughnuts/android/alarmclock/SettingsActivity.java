@@ -88,7 +88,13 @@ public class SettingsActivity extends Activity {
       @Override
       public String name() { return "Tone"; }
       @Override
-      public String value() { return "" + settings.getTone().toString(); }
+      public String value() {
+        String value = settings.getToneName();
+        if (AlarmClockService.debug(getApplicationContext())) {
+          value += " " + settings.getTone().toString();
+        }
+        return value;
+      }
       
     };
     settingsObjects[SettingType.SNOOZE.ordinal()] = new Setting() {
@@ -152,8 +158,10 @@ public class SettingsActivity extends Activity {
           // in case.
           uri = Settings.System.DEFAULT_ALARM_ALERT_URI;
         }
+        Context c = getApplicationContext();
+        String name = RingtoneManager.getRingtone(c, uri).getTitle(c);
+        settings.setTone(uri, name);
         adapter.notifyDataSetChanged();
-        settings.setTone(uri);
       default:
         super.onActivityResult(requestCode, resultCode, data);
     }
