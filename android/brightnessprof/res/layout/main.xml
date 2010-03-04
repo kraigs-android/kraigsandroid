@@ -5,6 +5,11 @@
   android:layout_height="fill_parent"
   android:minWidth="400px">
 
+  <CheckBox android:id="@+id/auto_brightness"
+    android:text="@string/auto_brightness"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" />
+  
   <TextView android:id="@+id/brightness"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
@@ -41,4 +46,5 @@
       android:layout_height="wrap_content" />
 
   </LinearLayout>
+
 </LinearLayout>

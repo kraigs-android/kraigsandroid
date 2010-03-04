@@ -27,6 +27,7 @@ import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.SimpleCursorAdapter;
@@ -233,6 +234,14 @@ public class BrightnessProfiles extends Activity {
 
     SeekBar slider = (SeekBar) findViewById(R.id.slider);
     slider.setProgress(getBrightness());
+ 
+    // Show/Hide the auto brightness check box.
+    CheckBox checkbox = (CheckBox) findViewById(R.id.auto_brightness);
+    if (Util.supportsAutoBrightness()) {
+      checkbox.setVisibility(View.VISIBLE);
+    } else {
+    checkbox.setVisibility(View.GONE);
+  }
   }
 
   private int getBrightness() {

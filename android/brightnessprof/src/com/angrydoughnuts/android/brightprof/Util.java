@@ -146,4 +146,9 @@ public class Util {
     lp.screenBrightness = brightnessUnits / 255.0f;
     activity.getWindow().setAttributes(lp);
   }
+
+  static boolean supportsAutoBrightness() {
+    // TODO(cgallek): Implement this.
+    return false;
+  }
 }

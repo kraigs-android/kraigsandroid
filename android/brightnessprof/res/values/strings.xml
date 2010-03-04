@@ -3,6 +3,7 @@
   <string name="app_name">Brightness Profiles</string>
   <string name="name">Name:</string>
   <string name="brightness">Brightness:</string>
+  <string name="auto_brightness">Auto Brightness</string>
   <string name="add">Add...</string>
   <string name="edit">Edit...</string>
   <string name="delete">Delete</string>
