@@ -123,10 +123,11 @@ public class AlarmClockService extends Service {
     AlarmTime nextTime = pendingAlarms.nextAlarmTime();
     String nextString;
     if (nextTime != null) {
-      nextString = getApplicationContext().getString(R.string.next_alarm)
-        + " " + nextTime.timeUntilString(getApplicationContext());
+      nextString = getString(R.string.next_alarm)
+        + " " + nextTime.localizedString(getApplicationContext())
+        + " (" + nextTime.timeUntilString(getApplicationContext()) + ")";
     } else {
-      nextString = getApplicationContext().getString(R.string.no_pending_alarms);
+      nextString = getString(R.string.no_pending_alarms);
     }
 
     // Make the notification launch the UI Activity when clicked.
@@ -135,7 +136,7 @@ public class AlarmClockService extends Service {
         notificationIntent, 0);
 
     Context c = getApplicationContext();
-    notification.setLatestEventInfo(c, c.getString(R.string.app_name), nextString, launch);
+    notification.setLatestEventInfo(c, getString(R.string.app_name), nextString, launch);
 
     final NotificationManager manager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
