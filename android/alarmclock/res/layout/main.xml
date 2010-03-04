@@ -4,14 +4,15 @@
   android:layout_width="fill_parent"
   android:layout_height="fill_parent" >
 
-<Button android:text="Set Alarm"
-  android:id="@+id/set_alarm"
-  android:layout_width="wrap_content"
-  android:layout_height="wrap_content" />
+  <ListView android:id="@+id/alarm_list"
+    android:layout_weight="1"
+    android:paddingLeft="10px"
+    android:paddingRight="10px"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" />
 
-<ListView android:id="@+id/alarm_list"
-  android:paddingLeft="10px"
-  android:paddingRight="10px"
-  android:layout_width="fill_parent"
-  android:layout_height="wrap_content" />
+  <Button android:text="@string/add_alarm"
+    android:id="@+id/add_alarm"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" />
 </LinearLayout>

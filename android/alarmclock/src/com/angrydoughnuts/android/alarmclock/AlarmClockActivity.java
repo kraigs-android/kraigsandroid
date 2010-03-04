@@ -31,8 +31,8 @@ public class AlarmClockActivity extends Activity {
     alarmListCursor = db.getAlarmList();
     startManagingCursor(alarmListCursor);
 
-    Button setBtn = (Button) findViewById(R.id.set_alarm);
-    setBtn.setOnClickListener(new View.OnClickListener() {
+    Button addBtn = (Button) findViewById(R.id.add_alarm);
+    addBtn.setOnClickListener(new View.OnClickListener() {
       public void onClick(View view) {
         showDialog(TIME_PICKER_DIALOG_ID);
       }
