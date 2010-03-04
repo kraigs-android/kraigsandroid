@@ -3,16 +3,13 @@
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="wrap_content"
   android:layout_height="wrap_content">
-  <TextView android:id="@+id/alarm_id"
-    android:paddingRight="4px"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" />
+
   <TextView android:id="@+id/alarm_time"
-    android:paddingRight="4px"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" />
+
+  <CheckBox android:id="@+id/alarm_enabled"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
-  <TextView android:id="@+id/alarm_enabled"
-    android:paddingRight="4px"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" />
+
 </LinearLayout>

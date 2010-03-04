@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
 
 public class AlarmClockActivity extends Activity {
   private AlarmClockServiceBinder service;
@@ -38,9 +37,7 @@ public class AlarmClockActivity extends Activity {
       }
     });
 
-    String[] from = new String[] { DbHelper.ALARMS_COL_ID, DbHelper.ALARMS_COL_TIME, DbHelper.ALARMS_COL_ENABLED };
-    int[] to = new int[] { R.id.alarm_id, R.id.alarm_time, R.id.alarm_enabled };
-    SimpleCursorAdapter adapter = new SimpleCursorAdapter(getApplicationContext(), R.layout.alarm_description, alarmListCursor, from, to);
+    AlarmViewAdapter adapter = new AlarmViewAdapter(getApplicationContext(), R.layout.alarm_description, alarmListCursor);
     ListView alarmList = (ListView) findViewById(R.id.alarm_list);
     alarmList.setAdapter(adapter);
   }
