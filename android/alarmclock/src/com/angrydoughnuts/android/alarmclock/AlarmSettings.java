@@ -3,11 +3,9 @@ package com.angrydoughnuts.android.alarmclock;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.provider.Settings;
 
-public class AlarmSettings implements Parcelable {
+public class AlarmSettings {
   static public final long DEFAULT_SETTINGS_ID = -1;
 
   private Uri tone;
@@ -65,44 +63,6 @@ public class AlarmSettings implements Parcelable {
     volumeEndPercent = cursor.getInt(cursor.getColumnIndex(DbHelper.SETTINGS_COL_VOLUME_ENDING));
     volumeChangeTimeSec = cursor.getInt(cursor.getColumnIndex(DbHelper.SETTINGS_COL_VOLUME_TIME));
   }
-
-  public AlarmSettings(Parcel source) {
-    tone = source.readParcelable(getClass().getClassLoader());
-    toneName = source.readString();
-    snoozeMinutes = source.readInt();
-    vibrate = source.readInt() == 1 ? true : false;
-    volumeStartPercent = source.readInt();
-    volumeEndPercent = source.readInt();
-    volumeChangeTimeSec = source.readInt();
-  }
-
-  @Override
-  public void writeToParcel(Parcel dest, int flags) {
-    dest.writeParcelable(tone, 0);
-    dest.writeString(toneName);
-    dest.writeInt(snoozeMinutes);
-    dest.writeInt(vibrate ? 1 : 0);
-    dest.writeInt(volumeStartPercent);
-    dest.writeInt(volumeEndPercent);
-    dest.writeInt(volumeChangeTimeSec);
-  }
-
-  @Override
-  public int describeContents() {
-    return 0;
-  }
-
-  public static final Parcelable.Creator<AlarmSettings> CREATOR =
-    new Parcelable.Creator<AlarmSettings>() {
-      @Override
-      public AlarmSettings createFromParcel(Parcel source) {
-        return new AlarmSettings(source);
-      }
-      @Override
-      public AlarmSettings[] newArray(int size) {
-        return new AlarmSettings[size];
-      }
-  };
 
   public Uri getTone() {
     return tone;
