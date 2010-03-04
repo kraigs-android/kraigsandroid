@@ -87,7 +87,7 @@ public class DbAccessor {
 
   public Cursor readAlarmInfo() {
     Cursor cursor = rDb.query(DbHelper.DB_TABLE_ALARMS, AlarmInfo.contentColumns(),
-        null, null, null, null, null);
+        null, null, null, null, DbHelper.ALARMS_COL_TIME + " ASC");
     return cursor;
   }
 
