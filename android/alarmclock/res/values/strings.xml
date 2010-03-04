@@ -19,6 +19,9 @@
   <string name="alarm_fade">Alarm volume fade</string>
   <string name="fade_description">From %d%% to %d%% over %d seconds.</string>
   <string name="unknown_name">Unknown name</string>
+  <string name="volume_start">Start volume (percent)</string>
+  <string name="volume_end">End volume (percent)</string>
+  <string name="volume_duration">Fade duration (seconds)</string>
   <string name="ok">OK</string>
   <string name="cancel">Cancel</string>
   <string name="delete">Delete...</string>
@@ -27,10 +30,8 @@
   <string name="plus_five">+5</string>
   <string name="minus_five">-5</string>
   <string name="minutes">minutes</string>
-  <string name="name_label">Label</string>
-  <string name="volume_start">Start volume (percent)</string>
-  <string name="volume_end">End volume (percent)</string>
-  <string name="volume_duration">Fade duration (seconds)</string>
+  <string name="next_alarm">Next alarm:</string>
+  <string name="no_pending_alarms">No pending alarms</string>
   <string name="dow_sun_short">Su</string>
   <string name="dow_mon_short">Mo</string>
   <string name="dow_tue_short">Tu</string>

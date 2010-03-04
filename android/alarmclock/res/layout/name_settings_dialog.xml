@@ -4,7 +4,7 @@
   android:layout_width="fill_parent"
   android:layout_height="wrap_content">
 
-    <TextView android:text="@string/name_label"
+    <TextView android:text="@string/label"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content" />
 

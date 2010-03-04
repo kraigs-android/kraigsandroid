@@ -122,11 +122,11 @@ public class AlarmClockService extends Service {
   private void refreshNotification() {
     AlarmTime nextTime = pendingAlarms.nextAlarmTime();
     String nextString;
-    // TODO(cgallek): move these to strings.xml
     if (nextTime != null) {
-      nextString = "Next Alarm: " + nextTime.timeUntilString();
+      nextString = getApplicationContext().getString(R.string.next_alarm)
+        + " " + nextTime.timeUntilString();
     } else {
-      nextString = "No Alarms Pending";
+      nextString = getApplicationContext().getString(R.string.no_pending_alarms);
     }
 
     // Make the notification launch the UI Activity when clicked.
@@ -134,10 +134,8 @@ public class AlarmClockService extends Service {
     final PendingIntent launch = PendingIntent.getActivity(this, 0,
         notificationIntent, 0);
 
-    // TODO(cgallek); Figure out how to get the application name
-    // programatically.
-    notification.setLatestEventInfo(
-        getApplicationContext(), "Alarm Clock", nextString, launch);
+    Context c = getApplicationContext();
+    notification.setLatestEventInfo(c, c.getString(R.string.app_name), nextString, launch);
 
     final NotificationManager manager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
