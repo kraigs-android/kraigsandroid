@@ -68,12 +68,11 @@ public class ActivitySettings extends Activity {
     okButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
-        // TODO(cgallek): This needs to update the alarm info through the service rather
-        // than directly writing to the database (unschedule old alarm, schedule new if enabled).
-        // It should be fine to leave the settings write directly to the db.  They are not
-        // maintained in memory anywhere.
         if (info != null && info.dirty()) {
           db.writeAlarmInfo(alarmId, info);
+          if (info.enabled()) {
+            service.scheduleAlarm(alarmId);
+          }
         }
         if (settings.dirty()) {
           db.writeAlarmSettings(alarmId, settings);
