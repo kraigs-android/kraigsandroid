@@ -38,7 +38,7 @@ public class AlarmNotificationActivity extends Activity {
         // button is pressed.  However, this dialog can be closed in other ways.
         // figure out how to handle acknowledgements in those cases.  Maybe
         // a notification item?
-        service.acknowledgeAlarm(alarmId);
+        service.dismissAlarm(alarmId);
         AlarmBroadcastReceiver.wakeLock().release();
         finish();
       }

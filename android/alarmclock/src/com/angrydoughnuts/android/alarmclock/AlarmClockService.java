@@ -15,6 +15,7 @@ import android.os.IBinder;
 public class AlarmClockService extends Service {
   private final int NOTIFICATION_ID = 1;
   private DbAccessor db;
+  private TreeMap<Long, PendingIntent> pendingAlarms;
 
   @Override
   public void onStart(Intent intent, int startId) {
@@ -26,6 +27,7 @@ public class AlarmClockService extends Service {
     super.onCreate();
 
     db = new DbAccessor(getApplicationContext());
+    pendingAlarms = new TreeMap<Long, PendingIntent>();
 
     final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     // TODO(cgallek): add a better notification icon.
@@ -50,6 +52,10 @@ public class AlarmClockService extends Service {
 
     final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     manager.cancel(NOTIFICATION_ID);
+
+    if (pendingAlarms.size() != 0) {
+      throw new IllegalStateException("Service shutdown with pending alarms.");
+    }
   }
 
   @Override
@@ -69,7 +75,7 @@ public class AlarmClockService extends Service {
     // the service would shutdown after the last un-bind. However, since
     // we explicitly started the service in onBind (to remain persistent),
     // we must explicitly stop here when there are no alarms set.
-    if (alarmCount() == 0) {
+    if (pendingAlarms.size() == 0) {
       stopSelf();
       return false;
     } else {
@@ -80,16 +86,12 @@ public class AlarmClockService extends Service {
     }
   }
 
-  // TODO(cgallek): Remove this.
-  private TreeMap<Long, PendingIntent> taskList = new TreeMap<Long, PendingIntent>();
-
-  public int alarmCount() {
-    return taskList.size();
-  }
-
   public void newAlarm(int minutesAfterMidnight) {
     // TODO(cgallek): validate params??
+    // Store the alarm in the persistent database.
     long alarmId = db.newAlarm(minutesAfterMidnight);
+
+    // Schedule the next alarm.
     // TODO(cgallek): this is actually interpreted as seconds after midnight right
     // now (for testing).  Switch it to minutes eventually.
     int hour = minutesAfterMidnight % 3600;
@@ -113,23 +115,17 @@ public class AlarmClockService extends Service {
     AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
     alarmManager.set(AlarmManager.RTC_WAKEUP, schedule.getTimeInMillis(), scheduleIntent);
     // TODO(cgallek): make sure ID doesn't exist yet?
-    taskList.put(alarmId, scheduleIntent);
+    // Keep track of all scheduled alarms.
+    pendingAlarms.put(alarmId, scheduleIntent);
   }
 
-  public boolean acknowledgeAlarm(long alarmId) {
-    PendingIntent task = taskList.remove(alarmId);
-    if (task != null) {
-      task.cancel();
+  public boolean dismissAlarm(long alarmId) {
+    PendingIntent alarm = pendingAlarms.remove(alarmId);
+    if (alarm != null) {
+      alarm.cancel();
       return true;
     } else {
       return false;
     }
-  }
-
-  public void clearAllAlarms() {
-    for (PendingIntent task : taskList.values()) {
-      task.cancel();
-    }
-    taskList.clear();
   }
 }

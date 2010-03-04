@@ -26,8 +26,6 @@ public class AlarmClockActivity extends Activity {
     startManagingCursor(alarmListCursor);
 
     Button setBtn = (Button) findViewById(R.id.set_alarm);
-    Button clearBtn = (Button) findViewById(R.id.clear_alarm);
-
     setBtn.setOnClickListener(new View.OnClickListener() {
       public void onClick(View view) {
         Calendar trigger = Calendar.getInstance();
@@ -36,12 +34,6 @@ public class AlarmClockActivity extends Activity {
         // Change back to minutes.
         int minutesAfterMidnight = trigger.get(Calendar.HOUR_OF_DAY) * 3600 + trigger.get(Calendar.MINUTE) * 60 + trigger.get(Calendar.SECOND);
         service.newAlarm(minutesAfterMidnight);
-        alarmListCursor.requery();
-      }
-    });
-    clearBtn.setOnClickListener(new View.OnClickListener() {
-      public void onClick(View view) {
-        service.clearAllAlarms();
         alarmListCursor.requery();
       }
     });
