@@ -282,6 +282,11 @@ public class BrightnessProfiles extends Activity {
   }
 
   private void setBrightness(int brightness) {
+    // Don't try to adjust brightness if auto brightness is enabled.
+    if (Util.supportsAutoBrightness() && Util.getAutoBrightnessEnabled()) {
+      return;
+    }
+
     if (brightness < 0) {
       appBrightness = 0;
     } else if (brightness > 100) {
