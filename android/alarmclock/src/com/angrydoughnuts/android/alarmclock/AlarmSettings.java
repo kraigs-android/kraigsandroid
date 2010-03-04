@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.provider.Settings;
 
 public class AlarmSettings implements Parcelable {
   static public final long DEFAULT_SETTINGS_ID = -1;
@@ -47,7 +48,7 @@ public class AlarmSettings implements Parcelable {
 
   // TODO(cgallek): default constructor to initialize defaults.
   public AlarmSettings() {
-    tone = Uri.parse("none");
+    tone = Settings.System.DEFAULT_ALARM_ALERT_URI;
     snoozeMinutes = 10;
   }
 

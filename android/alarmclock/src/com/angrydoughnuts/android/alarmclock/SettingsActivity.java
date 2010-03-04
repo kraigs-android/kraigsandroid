@@ -170,13 +170,10 @@ public class SettingsActivity extends Activity {
           Intent i = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALL);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
-          // TODO(cgallek): It would be nice to include the default, but the media
-          // player doesn't resolve this url...
-          i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false);
+          i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_INCLUDE_DRM, true);
-          i.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, current_tone);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Default Alarm Tone");
-          // TODO(cgallek): Set the initially selected item.
+          i.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, current_tone);
           startActivityForResult(i, TONE_PICK_ID);
           break;
         case SNOOZE_SETTING:
