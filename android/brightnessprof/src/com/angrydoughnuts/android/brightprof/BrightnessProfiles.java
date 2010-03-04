@@ -320,7 +320,5 @@ public class BrightnessProfiles extends Activity {
       profileList.setVisibility(View.VISIBLE);
       slider.setEnabled(true);
     }
-
-    // TODO(cgallek): figure out how to disable the OptionsMenu.
   }
 }
