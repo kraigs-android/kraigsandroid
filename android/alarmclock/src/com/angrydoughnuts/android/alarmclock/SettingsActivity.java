@@ -25,7 +25,7 @@ public class SettingsActivity extends Activity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.default_settings);
+    setContentView(R.layout.settings);
 
     alarmId = getIntent().getExtras().getLong(EXTRAS_ALARM_ID, MISSING_EXTRAS);
     if (alarmId == MISSING_EXTRAS) {
