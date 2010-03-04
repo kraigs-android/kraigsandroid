@@ -63,6 +63,7 @@ public class DbAccessor {
         new String[] { DbHelper.ALARMS_COL_TIME },
         DbHelper.ALARMS_COL__ID + " = " + alarmId, null, null, null, null);
     if (cursor.getCount() != 1) {
+      cursor.close();
       return -1;
     }
     cursor.moveToFirst();
@@ -99,6 +100,7 @@ public class DbAccessor {
         DbHelper.SETTINGS_COL_ID + " = " + alarmId, null, null, null, null);
 
     if (cursor.getCount() != 1) {
+      cursor.close();
       return "default";
     }
 
