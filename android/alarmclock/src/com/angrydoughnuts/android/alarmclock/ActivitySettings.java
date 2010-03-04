@@ -262,7 +262,7 @@ public class ActivitySettings extends Activity {
         // TODO(cgallek): move this to strings.xml
         dowBuilder.setTitle("Repeat Days");
         dowBuilder.setMultiChoiceItems(
-            info.getDaysOfWeek().names(),
+            info.getDaysOfWeek().names(getApplicationContext()),
             info.getDaysOfWeek().bitmask(),
             new OnMultiChoiceClickListener() {
               @Override

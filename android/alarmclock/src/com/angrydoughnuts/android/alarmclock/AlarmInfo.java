@@ -5,15 +5,30 @@ import android.content.Context;
 import android.database.Cursor;
 
 public class AlarmInfo {
-  public enum Day { SUN, MON, TUE, WED, THU, FRI, SAT; }
+  public enum Day {
+    SUN(R.string.dow_sun),
+    MON(R.string.dow_mon),
+    TUE(R.string.dow_tue),
+    WED(R.string.dow_wed),
+    THU(R.string.dow_thu),
+    FRI(R.string.dow_fri),
+    SAT(R.string.dow_sat);
+    private int stringId;
+    Day (int stringId) {
+      this.stringId = stringId;
+    }
+    public int stringId() {
+      return stringId;
+    }
+  }
 
   public class Week {
     private boolean[] bitmask;
 
-    public CharSequence[] names() {
+    public CharSequence[] names(Context context) {
       CharSequence[] nameList = new CharSequence[Day.values().length];
       for (Day day : Day.values()) {
-        nameList[day.ordinal()] = day.toString();
+        nameList[day.ordinal()] = context.getString(day.stringId());
       }
       return nameList;
     }

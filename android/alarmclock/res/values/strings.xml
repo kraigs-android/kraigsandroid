@@ -24,4 +24,11 @@
     <string name="dow_thu_short">Th</string>
     <string name="dow_fri_short">Fr</string>
     <string name="dow_sat_short">Sa</string>
+    <string name="dow_sun">Sunday</string>
+    <string name="dow_mon">Monday</string>
+    <string name="dow_tue">Tuesday</string>
+    <string name="dow_wed">Wednesday</string>
+    <string name="dow_thu">Thursday</string>
+    <string name="dow_fri">Friday</string>
+    <string name="dow_sat">Saturday</string>
 </resources>
