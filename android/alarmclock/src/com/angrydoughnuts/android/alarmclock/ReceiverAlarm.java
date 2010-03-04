@@ -12,7 +12,7 @@ public class ReceiverAlarm extends BroadcastReceiver {
   @Override
   public void onReceive(Context context, Intent recvIntent) {
     Uri alarmUri = recvIntent.getData();
-    long alarmId = AlarmClockService.alarmUriToId(alarmUri);
+    long alarmId = AlarmUtil.alarmUriToId(alarmUri);
 
     WakeLock.acquire(context, alarmId);
 

@@ -40,7 +40,7 @@ public class PendingAlarmList {
     // the alarm id in the data section of the intent rather than in
     // the extras bundle.
     Intent notifyIntent = new Intent(context, ReceiverAlarm.class);
-    notifyIntent.setData(AlarmClockService.alarmIdToUri(alarmId));
+    notifyIntent.setData(AlarmUtil.alarmIdToUri(alarmId));
     PendingIntent scheduleIntent =
       PendingIntent.getBroadcast(context, 0, notifyIntent, 0);
 

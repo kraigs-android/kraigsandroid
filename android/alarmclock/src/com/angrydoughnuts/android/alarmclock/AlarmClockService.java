@@ -7,7 +7,6 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -23,14 +22,6 @@ public class AlarmClockService extends Service {
   private DbAccessor db;
   private PendingAlarmList pendingAlarms;
   private Notification notification;
-
-  public static Uri alarmIdToUri(long alarmId) {
-    return Uri.parse("alarm_id:" + alarmId);
-  }
-
-  public static long alarmUriToId(Uri uri) {
-    return Long.parseLong(uri.getSchemeSpecificPart());
-  }
 
   @Override
   public void onCreate() {

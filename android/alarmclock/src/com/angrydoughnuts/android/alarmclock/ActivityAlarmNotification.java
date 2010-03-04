@@ -55,7 +55,7 @@ public class ActivityAlarmNotification extends Activity {
     service = new AlarmClockServiceBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
 
-    alarmId = AlarmClockService.alarmUriToId(getIntent().getData());
+    alarmId = AlarmUtil.alarmUriToId(getIntent().getData());
     settings = db.readAlarmSettings(alarmId);
     ackState = AckStates.UNACKED;
 
@@ -164,7 +164,7 @@ public class ActivityAlarmNotification extends Activity {
   // wake lock in the alarm receiver, and one unlock call via the ack method.
   @Override
   protected void onNewIntent(Intent intent) {
-    alarmId = AlarmClockService.alarmUriToId(intent.getData());
+    alarmId = AlarmUtil.alarmUriToId(intent.getData());
     settings = db.readAlarmSettings(alarmId);
     ackState = AckStates.UNACKED;
     volumeIncreaseCallback.reset();
