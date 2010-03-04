@@ -17,10 +17,10 @@ package com.angrydoughnuts.android.brightprof;
 
 import java.math.BigDecimal;
 
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
+import android.view.Window;
 import android.view.WindowManager;
 
 public class Util {
@@ -31,15 +31,15 @@ public class Util {
    * and normalizing it to a scale of 0 to 100. The actual brightness percentage
    * is calculated on the scale of minimumBrightness to 255, though.
    * 
-   * @param activity
-   *          The current activity.
+   * @param resolver
+   *          The ContentResolver.
    * @param db
-   *          A database accessor pointing to a DB with the minimum minimum
+   *          A database accessor pointing to a DB with the minimum
    *          brightness setting in it.
    * @return A value between 0 and 100.
    */
-  static int getPhoneBrighness(Activity activity, DbAccessor db) {
-    int systemBrightness = getSystemBrightness(activity);
+  static int getPhoneBrighness(ContentResolver resolver, DbAccessor db) {
+    int systemBrightness = getSystemBrightness(resolver);
     int minValue = db.getMinimumBrightness();
 
     // The system brightness can range from 0 to 255. To normalize this
@@ -64,15 +64,15 @@ public class Util {
    * Finds the phone's system brightness setting. Returns 0 if there is an error
    * getting this setting.
    * 
-   * @param activity
-   *          The current activity.
+   * @param resolver
+   *          The ContentResolver.
    * @return A value between 0 and 255.
    */
-  static int getSystemBrightness(Activity activity) {
+  static int getSystemBrightness(ContentResolver resolver) {
     // Lookup the initial system brightness.
     int systemBrightness = 0;
     try {
-      systemBrightness = Settings.System.getInt(activity.getContentResolver(),
+      systemBrightness = Settings.System.getInt(resolver,
           Settings.System.SCREEN_BRIGHTNESS);
     } catch (SettingNotFoundException e) {
       // TODO Log an error message.
@@ -87,12 +87,16 @@ public class Util {
    * value using the devices actual maximum brightness level and the minimum
    * brightness level calibrated via the CalibrateActivity activity.
    * 
-   * @param activity
-   *          The active activity.
+   * @param resolver
+   *          The ContentResolver.
+   * @param window
+   *          The activity Window.
    * @param brightnessPercentage
    *          An integer between 0 and 100.
    */
-  static void setPhoneBrightness(Activity activity, DbAccessor db,
+  static void setPhoneBrightness(ContentResolver resolver,
+      Window window,
+      DbAccessor db,
       int brightnessPercentage) {
     // Lookup the minimum acceptable brightness set by the CalibrationActivity.
     int min_value = db.getMinimumBrightness();
@@ -109,24 +113,23 @@ public class Util {
     } else if (brightnessUnits > 255) {
       brightnessUnits = 255;
     }
-    setSystemBrightness(activity, brightnessUnits);
-    setActivityBrightness(activity, brightnessUnits);
+    setSystemBrightness(resolver, brightnessUnits);
+    setActivityBrightness(window, brightnessUnits);
   }
 
   /**
    * Sets the phone's global brightness level. This does not change the screen's
    * brightness immediately. Valid brightnesses range from 0 to 255.
    * 
-   * @param activity
-   *          The active activity.
+   * @param resolver
+   *          The ContentResolver.
    * @param brightnessUnits
    *          An integer between 0 and 255.
    */
-  static void setSystemBrightness(Activity activity, int brightnessUnits) {
+  static void setSystemBrightness(ContentResolver resolver, int brightnessUnits) {
     // Change the system brightness setting. This doesn't change the
     // screen brightness immediately. (Scale 0 - 255).
-    Settings.System.putInt(activity.getContentResolver(),
-        Settings.System.SCREEN_BRIGHTNESS, brightnessUnits);
+    Settings.System.putInt(resolver, Settings.System.SCREEN_BRIGHTNESS, brightnessUnits);
   }
 
   /**
@@ -134,18 +137,18 @@ public class Util {
    * change immediately. As soon as the activity terminates, the brightness will
    * return to the system brightness. Valid brightnesses range from 0 to 255.
    * 
-   * @param activity
-   *          The active activity.
+   * @param window
+   *          The activity window.
    * @param brightnessUnits
    *          An integer between 0 and 255.
    */
-  static void setActivityBrightness(Activity activity, int brightnessUnits) {
+  static void setActivityBrightness(Window window, int brightnessUnits) {
     // Set the brightness of the current window. This takes effect immediately.
     // When the window is closed, the new system brightness is used.
     // (Scale 0.0 - 1.0).
-    WindowManager.LayoutParams lp = activity.getWindow().getAttributes();
+    WindowManager.LayoutParams lp = window.getAttributes();
     lp.screenBrightness = brightnessUnits / 255.0f;
-    activity.getWindow().setAttributes(lp);
+    window.setAttributes(lp);
   }
 
   // These constants are not exposed through the API, but are defined in

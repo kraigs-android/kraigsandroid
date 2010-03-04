@@ -37,14 +37,13 @@ public class CalibrateActivity extends Activity {
 
     db = new DbAccessor(this);
 
-    final Activity thisActivity = this;
     okButton.setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
         db.setMinimumBrightness(minBrightness);
         // If the new minimum brightness is greater than the current screen
         // setting, update the setting.
-        if (minBrightness > Util.getSystemBrightness(thisActivity)) {
-          Util.setSystemBrightness(thisActivity, minBrightness);
+        if (minBrightness > Util.getSystemBrightness(getContentResolver())) {
+          Util.setSystemBrightness(getContentResolver(), minBrightness);
         }
         setResult(RESULT_OK);
         finish();
@@ -69,7 +68,7 @@ public class CalibrateActivity extends Activity {
   protected void onResume() {
     super.onResume();
     updateDisplay();
-    Util.setActivityBrightness(this, minBrightness);
+    Util.setActivityBrightness(getWindow(), minBrightness);
 
     TextView current_minimum_brightness =
       (TextView) findViewById(R.id.current_min_brightness);
@@ -79,7 +78,7 @@ public class CalibrateActivity extends Activity {
   @Override
   protected void onPause() {
     // Return the brightness to it's previous state when the dialog closes.
-    Util.setActivityBrightness(this, -1);
+    Util.setActivityBrightness(getWindow(), -1);
     super.onPause();
   }
 
@@ -91,14 +90,14 @@ public class CalibrateActivity extends Activity {
         if (minBrightness > 1) {
           minBrightness -= 1;
           updateDisplay();
-          Util.setActivityBrightness(this, minBrightness);
+          Util.setActivityBrightness(getWindow(), minBrightness);
         }
         return true;
       case KeyEvent.KEYCODE_VOLUME_UP:
         if (minBrightness < 255) {
           minBrightness += 1;
           updateDisplay();
-          Util.setActivityBrightness(this, minBrightness);
+          Util.setActivityBrightness(getWindow(), minBrightness);
         }
         return true;
       default:

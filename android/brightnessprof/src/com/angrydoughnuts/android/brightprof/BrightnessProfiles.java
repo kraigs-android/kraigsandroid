@@ -80,6 +80,10 @@ public class BrightnessProfiles extends Activity {
           CompoundButton buttonView, boolean isChecked) {
         Util.setAutoBrightnessEnabled(getContentResolver(), isChecked);
         lockBrightnessControls(isChecked);
+        // Update the app brightness in case auto brightness changed it.
+        appBrightness = Util.getPhoneBrighness(getContentResolver(), dbAccessor);
+        setBrightness(appBrightness);
+        refreshDisplay();
       }
     });
 
@@ -137,7 +141,7 @@ public class BrightnessProfiles extends Activity {
   protected void onResume() {
     // Lookup the initial system brightness and set our app's brightness
     // percentage appropriately.
-    appBrightness = Util.getPhoneBrighness(this, dbAccessor);
+    appBrightness = Util.getPhoneBrighness(getContentResolver(), dbAccessor);
     // Set the value for the brightness text field and slider.
     refreshDisplay();
 
@@ -296,7 +300,8 @@ public class BrightnessProfiles extends Activity {
     } else {
       appBrightness = brightness;
     }
-    Util.setPhoneBrightness(this, dbAccessor, appBrightness);
+    Util.setPhoneBrightness(getContentResolver(), getWindow(), dbAccessor,
+        appBrightness);
     refreshDisplay();
   }
 
