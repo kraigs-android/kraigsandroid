@@ -107,6 +107,7 @@ public class AlarmClockService extends Service {
       switch (command) {
         case COMMAND_NOTIFICATION_REFRESH:
           refreshNotification();
+          handler.post(maybeShutdown);
           break;
         case COMMAND_DEVICE_BOOT:
           handler.post(maybeShutdown);
@@ -151,20 +152,10 @@ public class AlarmClockService extends Service {
     final NotificationManager manager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     manager.cancel(NOTIFICATION_ID);
-
-    if (pendingAlarms.size() != 0) {
-      throw new IllegalStateException("Service shutdown with pending alarms.");
-    }
   }
 
   @Override
   public IBinder onBind(Intent intent) {
-    // Explicitly start this service when a client binds. This will cause
-    // the service to outlive all of its binders.
-    final Intent selfIntent = new Intent(getApplicationContext(),
-        AlarmClockService.class);
-    startService(selfIntent);
-
     return new AlarmClockInterfaceStub(getApplicationContext(), this);
   }
 
@@ -180,6 +171,8 @@ public class AlarmClockService extends Service {
     } else {
       // Since we want the service to continue running in this case, return
       // true so that onRebind is called instead of onBind.
+      final Intent self = new Intent(getApplicationContext(), AlarmClockService.class);
+      startService(self);
       return true;
 
     }
