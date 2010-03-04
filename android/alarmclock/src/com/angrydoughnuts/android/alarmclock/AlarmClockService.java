@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.os.RemoteException;
 import android.widget.Toast;
   
@@ -78,7 +79,26 @@ import android.widget.Toast;
           Toast.makeText(getApplicationContext(), "FIRE ALARM!", Toast.LENGTH_SHORT).show();
           Intent notifyIntent = new Intent(getApplicationContext(), AlarmNotificationActivity.class);
           notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+          // TODO(cgallek) Currently, both this service and the Notification
+          // Activity manage power settings.  It might make sense to move all
+          // power management into the service.  This would require a callback
+          // from the Notification application.  I'm not sure how to get a
+          // response from an activity started from a service...
+          // I think there also might be a race condition between the
+          // startActivity call and the wake lock release call below (ie if
+          // the lock is released before the activity actually starts).  Moving
+          // all locking to this service would also fix that problem.
+          PowerManager manager =
+            (PowerManager) getSystemService(Context.POWER_SERVICE);
+          PowerManager.WakeLock wakeLock = manager.newWakeLock(
+              PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
+              "Alarm Service CPU wake lock");
+          wakeLock.acquire();
+
           startActivity(notifyIntent);
+
+          wakeLock.release();
         }
         @Override
         public void alarmOn() throws RemoteException {
