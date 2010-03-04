@@ -6,7 +6,6 @@ import android.app.KeyguardManager.KeyguardLock;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.PowerManager;
-import android.os.RemoteException;
 import android.view.View;
 import android.widget.Button;
 
@@ -48,12 +47,7 @@ public class AlarmNotificationActivity extends Activity {
       public void onClick(View v) {
         Bundle extras = getIntent().getExtras();
         int id = extras.getInt("task_id");
-        try {
-          service.clock().clearAlarm(id);
-        } catch (RemoteException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
+        service.clearAlarm(id);
         finish();
       }
     });

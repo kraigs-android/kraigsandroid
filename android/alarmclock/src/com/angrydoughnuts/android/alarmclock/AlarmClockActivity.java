@@ -2,7 +2,6 @@ package com.angrydoughnuts.android.alarmclock;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.view.View;
 import android.widget.Button;
 
@@ -21,22 +20,12 @@ public class AlarmClockActivity extends Activity {
 
     setBtn.setOnClickListener(new View.OnClickListener() {
       public void onClick(View view) {
-        try {
-          service.clock().alarmOn();
-        } catch (RemoteException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
+        service.alarmOn();
       }
     });
     clearBtn.setOnClickListener(new View.OnClickListener() {
       public void onClick(View view) {
-        try {
-          service.clock().alarmOff();
-        } catch (RemoteException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
+        service.alarmOff();
       }
     });
   }
