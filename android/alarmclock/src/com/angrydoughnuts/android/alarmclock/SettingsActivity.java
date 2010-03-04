@@ -11,7 +11,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class DefaultSettingsActivity extends Activity {
+public class SettingsActivity extends Activity {
   static public final String EXTRAS_ALARM_ID = "alarm_id";
 
   private final int MISSING_EXTRAS = -69;

@@ -10,7 +10,7 @@
       </intent-filter>
     </activity>
     <activity android:name="AlarmNotificationActivity"></activity>
-    <activity android:name="DefaultSettingsActivity"></activity>
+    <activity android:name="SettingsActivity"></activity>
     <service android:name="AlarmClockService"></service>
     <receiver android:name="AlarmBroadcastReceiver"></receiver>
   </application>
