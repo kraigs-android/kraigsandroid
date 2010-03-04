@@ -13,12 +13,12 @@ public class AlarmClockServiceBinder {
   private int bindFlags;
   private AlarmClockInterface clock;
   private LinkedList<ServiceCallback> callbacks;
- 
-  public static AlarmClockServiceBinder newBinderAndStart(Context context) {
-    return new AlarmClockServiceBinder(context, Context.BIND_AUTO_CREATE);
-  }
+
+  //TODO(cgallek): consider removing this method and using the
+  // contstructor of AlarmClockServiceBinder directly (removing the
+  // flags argument, of course).
   public static AlarmClockServiceBinder newBinder(Context context) {
-    return new AlarmClockServiceBinder(context, 0);
+    return new AlarmClockServiceBinder(context, Context.BIND_AUTO_CREATE);
   }
 
   private interface ServiceCallback {

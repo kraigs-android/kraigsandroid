@@ -30,7 +30,7 @@ public class AlarmClockActivity extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
 
-    service = AlarmClockServiceBinder.newBinderAndStart(getApplicationContext());
+    service = AlarmClockServiceBinder.newBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
     alarmListCursor = db.getAlarmList();
     startManagingCursor(alarmListCursor);
