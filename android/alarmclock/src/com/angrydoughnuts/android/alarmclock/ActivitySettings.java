@@ -2,7 +2,6 @@ package com.angrydoughnuts.android.alarmclock;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.LinkedList;
 import java.util.List;
 
 import android.app.Activity;
@@ -35,8 +34,7 @@ import android.widget.AdapterView.OnItemClickListener;
 public class ActivitySettings extends Activity {
   static public final String EXTRAS_ALARM_ID = "alarm_id";
 
-  private enum AlarmInfoType { TIME, NAME, DAYS_OF_WEEK; }
-  private enum SettingType { TONE, SNOOZE, VIBRATE, VOLUME_FADE; }
+  private enum SettingType { TIME, NAME, DAYS_OF_WEEK, TONE, SNOOZE, VIBRATE, VOLUME_FADE; }
 
   private final int MISSING_EXTRAS = -69;
   private enum Dialogs { TIME_PICKER, NAME_PICKER, DOW_PICKER, TONE_PICKER, SNOOZE_PICKER, VOLUME_FADE_PICKER, DELETE_CONFIRM }
@@ -103,34 +101,34 @@ public class ActivitySettings extends Activity {
       }
     });
 
-    ListView alarmInfoList = (ListView) findViewById(R.id.alarm_info_list);
+    ArrayList<Setting> settingsObjects = new ArrayList<Setting>(SettingType.values().length);
     if (alarmId != AlarmSettings.DEFAULT_SETTINGS_ID) {
-      ArrayList<Setting> alarmInfoObjects = new ArrayList<Setting>(AlarmInfoType.values().length);
-      alarmInfoObjects.add(AlarmInfoType.TIME.ordinal(), new Setting() {
+      settingsObjects.add(new Setting() {
         @Override
         public String name() { return getString(R.string.time); }
         @Override
         public String value() { return info.getTime().localizedString(getApplicationContext()); }
+        @Override
+        public SettingType type() { return SettingType.TIME; }
       });
-      alarmInfoObjects.add(AlarmInfoType.NAME.ordinal(), new Setting() {
+      settingsObjects.add(new Setting() {
         @Override
         public String name() { return getString(R.string.label); }
         @Override
         public String value() { return info.getName(); }
+        @Override
+        public SettingType type() { return SettingType.NAME; }
       });
-      alarmInfoObjects.add(AlarmInfoType.DAYS_OF_WEEK.ordinal(), new Setting() {
+      settingsObjects.add(new Setting() {
         @Override
         public String name() { return getString(R.string.repeat); }
         @Override
         public String value() { return info.getTime().getDaysOfWeek().toString(getApplicationContext()); }
+        @Override
+        public SettingType type() { return SettingType.DAYS_OF_WEEK; }
       });
-      alarmInfoAdapter = new SettingsAdapter(getApplicationContext(), alarmInfoObjects);
-      alarmInfoList.setAdapter(alarmInfoAdapter);
-      alarmInfoList.setOnItemClickListener(new AlarmInfoListClickListener());
     }
-
-    ArrayList<Setting> settingsObjects = new ArrayList<Setting>(SettingType.values().length);
-    settingsObjects.add(SettingType.TONE.ordinal(), new Setting() {
+    settingsObjects.add(new Setting() {
       @Override
       public String name() { return getString(R.string.tone); }
       @Override
@@ -141,25 +139,32 @@ public class ActivitySettings extends Activity {
         }
         return value;
       }
-      
+      @Override
+      public SettingType type() { return SettingType.TONE; }
     });
-    settingsObjects.add(SettingType.SNOOZE.ordinal(), new Setting() {
+    settingsObjects.add(new Setting() {
       @Override
       public String name() { return getString(R.string.snooze_minutes); }
       @Override
-      public String value() { return "" + settings.getSnoozeMinutes(); }      
+      public String value() { return "" + settings.getSnoozeMinutes(); }
+      @Override
+      public SettingType type() { return SettingType.SNOOZE; }
     });
-    settingsObjects.add(SettingType.VIBRATE.ordinal(), new Setting() {
+    settingsObjects.add(new Setting() {
       @Override
       public String name() { return getString(R.string.vibrate); }
       @Override
       public String value() { return settings.getVibrate() ? getString(R.string.enabled) : getString(R.string.disabled); }
+      @Override
+      public SettingType type() { return SettingType.VIBRATE; }
     });
-    settingsObjects.add(SettingType.VOLUME_FADE.ordinal(), new Setting() {
+    settingsObjects.add(new Setting() {
       @Override
       public String name() { return getString(R.string.alarm_fade); }
       @Override
       public String value() { return getString(R.string.fade_description, settings.getVolumeStartPercent(), settings.getVolumeEndPercent(), settings.getVolumeChangeTimeSec()); }
+      @Override
+      public SettingType type() { return SettingType.VOLUME_FADE; }
     });
     
     ListView settingsList = (ListView) findViewById(R.id.settings_list);
@@ -167,13 +172,9 @@ public class ActivitySettings extends Activity {
     settingsList.setAdapter(settingsAdapter);
     settingsList.setOnItemClickListener(new SettingsListClickListener());
 
-    // The alarm info section and the delete button should not be shown when
-    // editing the default settings.
+    // The delete button should not be shown when editing the default settings.
     if (alarmId == AlarmSettings.DEFAULT_SETTINGS_ID) {
       deleteButton.setVisibility(View.GONE);
-      alarmInfoList.setVisibility(View.GONE);
-      TextView infoHeader = (TextView) findViewById(R.id.alarm_info_header);
-      infoHeader.setVisibility(View.GONE);
     }
   }
 
@@ -353,10 +354,12 @@ public class ActivitySettings extends Activity {
     }
   }
 
-  class AlarmInfoListClickListener implements OnItemClickListener {
+  class SettingsListClickListener implements OnItemClickListener {
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-      switch (AlarmInfoType.values()[position]) {
+      SettingsAdapter adapter = (SettingsAdapter) parent.getAdapter();
+      SettingType type = adapter.getItem(position).type();
+      switch (type) {
         case TIME:
           showDialog(Dialogs.TIME_PICKER.ordinal());
           break;
@@ -366,14 +369,6 @@ public class ActivitySettings extends Activity {
         case DAYS_OF_WEEK:
           showDialog(Dialogs.DOW_PICKER.ordinal());
           break;
-      }
-    }
-  }
-
-  class SettingsListClickListener implements OnItemClickListener {
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-      switch (SettingType.values()[position]) {
         case TONE:
           Uri current_tone = settings.getTone();
           Intent i = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
@@ -403,6 +398,7 @@ public class ActivitySettings extends Activity {
   private abstract class Setting {
     public abstract String name();
     public abstract String value();
+    public abstract SettingType type();
   }
 
   private class SettingsAdapter extends ArrayAdapter<Setting> {
