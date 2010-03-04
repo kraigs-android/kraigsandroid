@@ -98,23 +98,22 @@ public class ActivitySettings extends Activity {
 
     ListView alarmInfoList = (ListView) findViewById(R.id.alarm_info_list);
     if (alarmId != AlarmSettings.DEFAULT_SETTINGS_ID) {
-      // TODO(cgallek): move all these strings to strings.xml
       Setting[] alarmInfoObjects = new Setting[AlarmInfoType.values().length];
       alarmInfoObjects[AlarmInfoType.TIME.ordinal()] = new Setting() {
         @Override
-        public String name() { return "Time"; }
+        public String name() { return getApplicationContext().getString(R.string.time); }
         @Override
         public String value() { return info.getTime().localizedString(getApplicationContext()); }
       };
       alarmInfoObjects[AlarmInfoType.NAME.ordinal()] = new Setting() {
         @Override
-        public String name() { return "Label"; }
+        public String name() { return getApplicationContext().getString(R.string.label); }
         @Override
         public String value() { return info.getName(); }
       };
       alarmInfoObjects[AlarmInfoType.DAYS_OF_WEEK.ordinal()] = new Setting() {
         @Override
-        public String name() { return "Repeat"; }
+        public String name() { return getApplicationContext().getString(R.string.repeat); }
         @Override
         public String value() { return info.getDaysOfWeekString(getApplicationContext()); }
       };
@@ -123,11 +122,10 @@ public class ActivitySettings extends Activity {
       alarmInfoList.setOnItemClickListener(new AlarmInfoListClickListener());
     }
 
-    // TODO(cgallek): move all these strings to strings.xml
     Setting[] settingsObjects = new Setting[SettingType.values().length];
     settingsObjects[SettingType.TONE.ordinal()] = new Setting() {
       @Override
-      public String name() { return "Tone"; }
+      public String name() { return getApplicationContext().getString(R.string.tone); }
       @Override
       public String value() {
         String value = settings.getToneName();
@@ -140,23 +138,21 @@ public class ActivitySettings extends Activity {
     };
     settingsObjects[SettingType.SNOOZE.ordinal()] = new Setting() {
       @Override
-      public String name() { return "Snooze (minutes)"; }
+      public String name() { return getApplicationContext().getString(R.string.snooze_minutes); }
       @Override
       public String value() { return "" + settings.getSnoozeMinutes(); }      
     };
     settingsObjects[SettingType.VIBRATE.ordinal()] = new Setting() {
       @Override
-      public String name() { return "Vibrate"; }
+      public String name() { return getApplicationContext().getString(R.string.vibrate); }
       @Override
-      public String value() { return settings.getVibrate() ? "Enabled" : "Disabled"; }
+      public String value() { return settings.getVibrate() ? getApplicationContext().getString(R.string.enabled) : getApplicationContext().getString(R.string.disabled); }
     };
     settingsObjects[SettingType.VOLUME_FADE.ordinal()] = new Setting() {
       @Override
-      public String name() { return "Alarm volume fade"; }
+      public String name() { return getApplicationContext().getString(R.string.alarm_fade); }
       @Override
-      public String value() { return "From " + settings.getVolumeStartPercent() + "% "
-      + "to " + settings.getVolumeEndPercent() + "% "
-      + "over " + settings.getVolumeChangeTimeSec() + " seconds."; }
+      public String value() { return getApplicationContext().getString(R.string.fade_description, settings.getVolumeStartPercent(), settings.getVolumeEndPercent(), settings.getVolumeChangeTimeSec()); }
     };
     
     ListView settingsList = (ListView) findViewById(R.id.settings_list);
@@ -210,7 +206,7 @@ public class ActivitySettings extends Activity {
         }
         Context c = getApplicationContext();
         Ringtone tone = RingtoneManager.getRingtone(c, uri);
-        String name = tone != null ? tone.getTitle(c) : "Unknown name";
+        String name = tone != null ? tone.getTitle(c) : c.getString(R.string.unknown_name);
         settings.setTone(uri, name);
         settingsAdapter.notifyDataSetChanged();
       default:
@@ -237,13 +233,12 @@ public class ActivitySettings extends Activity {
             hour, minute, is24Hour);
       case NAME_PICKER:
         AlertDialog.Builder nameBuilder = new AlertDialog.Builder(this);
-        // TODO(cgallek): move this to strings.xml
-        nameBuilder.setTitle("Alarm Label");
+        nameBuilder.setTitle(getApplicationContext().getString(R.string.alarm_label));
         View nameView = getLayoutInflater().inflate(R.layout.name_settings_dialog, null);
         final TextView label = (TextView) nameView.findViewById(R.id.name_label);
         label.setText(info.getName());
         nameBuilder.setView(nameView);
-        nameBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        nameBuilder.setPositiveButton(getApplicationContext().getString(R.string.ok), new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
             info.setName(label.getEditableText().toString());
@@ -251,7 +246,7 @@ public class ActivitySettings extends Activity {
             dismissDialog(Dialogs.NAME_PICKER.ordinal());
           }
         });
-        nameBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        nameBuilder.setNegativeButton(getApplicationContext().getString(R.string.cancel), new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
             dismissDialog(Dialogs.NAME_PICKER.ordinal());
@@ -260,8 +255,7 @@ public class ActivitySettings extends Activity {
         return nameBuilder.create();
       case DOW_PICKER:
         AlertDialog.Builder dowBuilder = new AlertDialog.Builder(this);
-        // TODO(cgallek): move this to strings.xml
-        dowBuilder.setTitle("Repeat Days");
+        dowBuilder.setTitle(getApplicationContext().getString(R.string.scheduled_days));
         dowBuilder.setMultiChoiceItems(
             info.getDaysOfWeek().names(getApplicationContext()),
             info.getDaysOfWeek().bitmask(),
@@ -275,7 +269,7 @@ public class ActivitySettings extends Activity {
                 }
               }
         });
-        dowBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        dowBuilder.setPositiveButton(getApplicationContext().getString(R.string.ok), new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
             alarmInfoAdapter.notifyDataSetChanged();
@@ -285,17 +279,12 @@ public class ActivitySettings extends Activity {
         return dowBuilder.create();
 
       case SNOOZE_PICKER:
-        // TODO(cgallek): this is silly...
-        final CharSequence[] items = {
-            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
-            "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
-            "21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
-            "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
-            "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
-            "51", "52", "53", "54", "55", "56", "57", "58", "59", "60" };
+        final CharSequence[] items = new CharSequence[60];
+        for (int i = 1; i <= 60; ++i) {
+          items[i-1] = new Integer(i).toString();
+        }
         AlertDialog.Builder snoozeBuilder = new AlertDialog.Builder(this);
-        // TODO(cgallek): move this to strings.xml
-        snoozeBuilder.setTitle("Snooze (in minutes)");
+        snoozeBuilder.setTitle(getApplicationContext().getString(R.string.snooze_minutes));
         snoozeBuilder.setSingleChoiceItems(items, settings.getSnoozeMinutes() - 1,
             new DialogInterface.OnClickListener() {
           public void onClick(DialogInterface dialog, int item) {
@@ -307,8 +296,7 @@ public class ActivitySettings extends Activity {
         return snoozeBuilder.create();
       case VOLUME_FADE_PICKER:
         AlertDialog.Builder fadeBuilder = new AlertDialog.Builder(this);
-        // TODO(cgallek): move this to strings.xml
-        fadeBuilder.setTitle("Alarm Volume Fade");
+        fadeBuilder.setTitle(getApplicationContext().getString(R.string.alarm_fade));
         View fadeView = getLayoutInflater().inflate(R.layout.fade_settings_dialog, null);
         final EditText volumeStart = (EditText) fadeView.findViewById(R.id.volume_start);
         volumeStart.setText("" + settings.getVolumeStartPercent());
@@ -317,7 +305,7 @@ public class ActivitySettings extends Activity {
         final EditText volumeDuration = (EditText) fadeView.findViewById(R.id.volume_duration);
         volumeDuration.setText("" + settings.getVolumeChangeTimeSec());
         fadeBuilder.setView(fadeView);
-        fadeBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        fadeBuilder.setPositiveButton(getApplicationContext().getString(R.string.ok), new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
             settings.setVolumeStartPercent(Integer.parseInt(volumeStart.getText().toString()));
@@ -327,7 +315,7 @@ public class ActivitySettings extends Activity {
             dismissDialog(Dialogs.VOLUME_FADE_PICKER.ordinal());
           }
         });
-        fadeBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        fadeBuilder.setNegativeButton(getApplicationContext().getString(R.string.cancel), new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
             dismissDialog(Dialogs.VOLUME_FADE_PICKER.ordinal());
@@ -368,7 +356,7 @@ public class ActivitySettings extends Activity {
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, Settings.System.DEFAULT_ALARM_ALERT_URI);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_INCLUDE_DRM, true);
-          i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Default Alarm Tone");
+          i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, getApplicationContext().getString(R.string.alarm_tone));
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, current_tone);
           startActivityForResult(i, Dialogs.TONE_PICKER.ordinal());
           break;
