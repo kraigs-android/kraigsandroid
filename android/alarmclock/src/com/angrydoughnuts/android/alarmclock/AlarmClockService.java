@@ -90,14 +90,14 @@ import android.os.PowerManager;
 
     // TODO(cgallek): replace this with a data provider.
     private static int taskId = 0;
-    private static synchronized int nextTaskId() { return taskId++; }
+    private static int nextTaskId() { return taskId++; }
     private TreeMap<Integer, AlarmClockTimerTask> taskList = new TreeMap<Integer, AlarmClockTimerTask>();
 
-    public synchronized int alarmCount() {
+    public int alarmCount() {
       return taskList.size();
     }
 
-    public synchronized void addAlarm() {
+    public void addAlarm() {
       int id = nextTaskId();
       AlarmClockTimerTask task =
         new AlarmClockTimerTask(getApplicationContext(), uiHandler, id);
@@ -106,7 +106,7 @@ import android.os.PowerManager;
       timerThread.schedule(task, 5000);
     }
 
-    public synchronized boolean removeAlarm(int id) {
+    public boolean removeAlarm(int id) {
       AlarmClockTimerTask task = taskList.remove(id);
       if (task != null) {
         task.cancel();
@@ -116,14 +116,14 @@ import android.os.PowerManager;
       }
     }
  
-    public synchronized void clearAllAlarms() {
+    public void clearAllAlarms() {
       for (AlarmClockTimerTask task : taskList.values()) {
         task.cancel();
       }
       taskList.clear();
     }
 
-    public synchronized void triggerAlarm(int id) {
+    public void triggerAlarm(int id) {
       Intent notifyIntent = new Intent(getApplicationContext(), AlarmNotificationActivity.class);
       notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
       notifyIntent.putExtra("task_id", id);

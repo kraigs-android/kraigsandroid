@@ -11,11 +11,7 @@ public class AlarmClockServiceBinder {
   private Context context;
   private int bindFlags;
   private AlarmClockInterface clock;
-  private synchronized void setClock(AlarmClockInterface clock) {
-    this.clock = clock;
-    notify();
-  }
-
+ 
   public static AlarmClockServiceBinder newBinderAndStart(Context context) {
     return new AlarmClockServiceBinder(context, Context.BIND_AUTO_CREATE);
   }
@@ -27,38 +23,31 @@ public class AlarmClockServiceBinder {
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
       Toast.makeText(context, "Service Connected " + name, Toast.LENGTH_SHORT).show();
-      setClock(AlarmClockInterface.Stub.asInterface(service));
+      clock = AlarmClockInterface.Stub.asInterface(service);
     }
     @Override
     public void onServiceDisconnected(ComponentName name) {
       // TODO(cgallek): This should only happen if the AlarmClockService
       // crashes.  Consider throwing an exception here.
       Toast.makeText(context, "Service Disconnected " + name, Toast.LENGTH_SHORT).show();
-      setClock(null);
+      clock = null;
     }
   };
 
-  public synchronized void bind() {
+  public void bind() {
     final Intent serviceIntent = new Intent(context, AlarmClockService.class);
     if (!context.bindService(serviceIntent, serviceConnection, bindFlags)) {
       throw new IllegalStateException("Unable to bind to AlarmClockService.");
     }
-    while (clock == null) {
-      try {
-        wait();
-      } catch (InterruptedException e) {
-        throw new IllegalStateException("Unable to bind to AlarmClockService.");
-      }
-    }
   }
 
-  public synchronized void unbind() {
+  public void unbind() {
     context.unbindService(serviceConnection);
     clock = null;
   }
 
   // TODO(cgallek): Note not to keep references to this around.
-  public synchronized AlarmClockInterface clock() {
+  public AlarmClockInterface clock() {
     return clock;
   }
 

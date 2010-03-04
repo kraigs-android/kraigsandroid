@@ -16,7 +16,14 @@ public class AlarmClockTimerTask extends TimerTask {
     @Override
     public void run() {
       try {
+        // TODO(cgallek): This currently re-binds to the service on every
+        // run.  Figure out how to reference count threads and only
+        // bind as necessary in the Timer thread.
+        service.bind();
+
         service.clock().fire(id);
+
+        service.unbind();
       } catch (RemoteException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
@@ -31,15 +38,8 @@ public class AlarmClockTimerTask extends TimerTask {
   }
 
   @Override
-  public synchronized void run() {
-    // TODO(cgallek): This currently re-binds to the service on every
-    // run.  Figure out how to reference count threads and only
-    // bind as necessary in the Timer thread.
-    service.bind();
-
+  public void run() {
     handler.post(work);
-
-    service.unbind();
   }
 
   @Override
