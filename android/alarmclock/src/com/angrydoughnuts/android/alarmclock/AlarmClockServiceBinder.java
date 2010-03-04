@@ -74,13 +74,8 @@ public class AlarmClockServiceBinder {
   }
 
   public void unbind() {
-    runOrDefer(new ServiceCallback() {
-      @Override
-      public void run() throws RemoteException {
-        context.unbindService(serviceConnection);
-        clock = null;
-      }
-    });
+    context.unbindService(serviceConnection);
+    clock = null;
   }
 
   public void createAlarm(final AlarmTime time) {
