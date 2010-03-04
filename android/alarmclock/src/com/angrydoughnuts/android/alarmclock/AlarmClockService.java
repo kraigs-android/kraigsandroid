@@ -1,12 +1,12 @@
   package com.angrydoughnuts.android.alarmclock;
   
-  import android.app.Notification;
-  import android.app.NotificationManager;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
-  import android.app.Service;
-  import android.content.Context;
-  import android.content.Intent;
-  import android.os.IBinder;
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.os.IBinder;
 import android.widget.Toast;
   
   public class AlarmClockService extends Service {
@@ -49,7 +49,9 @@ import android.widget.Toast;
       // the service to outlive all of its binders.
       Intent selfIntent = new Intent(getApplication(), AlarmClockService.class);
       startService(selfIntent);
-      return null;
+
+      final AlarmClockInterface.Stub binder = new AlarmClockInterface.Stub() {};
+      return binder;
     }
   
     @Override

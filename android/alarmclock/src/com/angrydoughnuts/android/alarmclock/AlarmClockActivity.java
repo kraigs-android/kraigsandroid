@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 public class AlarmClockActivity extends Activity {
   // TODO(cgallek): replace this with a data provider.
@@ -57,9 +58,13 @@ public class AlarmClockActivity extends Activity {
     serviceConnection = new ServiceConnection() {
       @Override
       public void onServiceConnected(ComponentName name, IBinder service) {
+        Toast.makeText(getApplicationContext(), "Service Connected " + name,
+            Toast.LENGTH_SHORT).show();
       }
       @Override
       public void onServiceDisconnected(ComponentName name) {
+        Toast.makeText(getApplicationContext(), "Service Disconnected " + name,
+            Toast.LENGTH_SHORT).show();
       }
     };
 
