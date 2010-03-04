@@ -113,7 +113,7 @@ public class AlarmClockService extends Service {
     AlarmTime nextTime = pendingAlarms.nextAlarmTime();
     String nextString;
     if (nextTime != null) {
-      nextString = "Next Alarm: " + nextTime.nextLocalOccuranceAsString();
+      nextString = "Next Alarm: " + nextTime.timeUntilString();
     } else {
       nextString = "No Alarms Pending";
     }
@@ -184,7 +184,7 @@ public class AlarmClockService extends Service {
     // Previous instances of this intent will be overwritten in both
     // the alarm manager and the pendingAlarms list.
     AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-    alarmManager.set(AlarmManager.RTC_WAKEUP, time.nextLocalOccurance().getTimeInMillis(), scheduleIntent);
+    alarmManager.set(AlarmManager.RTC_WAKEUP, time.calendar().getTimeInMillis(), scheduleIntent);
     // Keep track of all scheduled alarms.
     pendingAlarms.put(alarmId, time, scheduleIntent);
     refreshNotification();

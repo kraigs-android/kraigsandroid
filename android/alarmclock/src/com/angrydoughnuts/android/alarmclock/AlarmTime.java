@@ -27,12 +27,13 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
     findNextOccurance();
   }
 
-  public AlarmTime(Calendar calendar) {
-    this.asCalendar = calendar;
-    int hours = asCalendar.get(Calendar.HOUR_OF_DAY) * 3600;
-    int minutes = asCalendar.get(Calendar.MINUTE) * 60;
-    int seconds = asCalendar.get(Calendar.SECOND);
-    this.secondsAfterMidnight = hours + minutes + seconds;
+  public AlarmTime(int hourOfDay, int minute, int second) {
+    this.asCalendar = Calendar.getInstance();
+    asCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+    asCalendar.set(Calendar.MINUTE, minute);
+    asCalendar.set(Calendar.SECOND, second);
+    
+    this.secondsAfterMidnight = hourOfDay * 3600 + minute * 60 + second;
     findNextOccurance();
   }
 
@@ -56,7 +57,7 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
 
   public String toString() {
     SimpleDateFormat formatter = new SimpleDateFormat("HH:mm.ss MMMM dd yyyy");
-    return formatter.format(nextLocalOccurance().getTimeInMillis());
+    return formatter.format(asCalendar.getTimeInMillis());
   }
 
   public String localizedString(Context context) {
@@ -80,18 +81,17 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
     return secondsAfterMidnight;
   }
 
-  public Calendar nextLocalOccurance() {
-    Calendar now = Calendar.getInstance();
-    if (asCalendar.before(now)) {
-      throw new IllegalStateException("Inconsistent calendar.");
-    }
-
+  public Calendar calendar() {
     return asCalendar;
   }
 
-  public String nextLocalOccuranceAsString() {
-    long now_min = Calendar.getInstance().getTimeInMillis() / 1000 / 60;
-    long then_min = nextLocalOccurance().getTimeInMillis() / 1000 / 60;
+  public String timeUntilString() {
+    Calendar now = Calendar.getInstance();
+    if (asCalendar.before(now)) {
+      return "Alarm has occurred.";
+    }
+    long now_min = now.getTimeInMillis() / 1000 / 60;
+    long then_min = asCalendar.getTimeInMillis() / 1000 / 60;
     long difference_minutes = then_min - now_min;
     long days = difference_minutes / (60 * 24);
     long hours = difference_minutes % (60 * 24);
@@ -119,10 +119,10 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
   }
 
   public static AlarmTime snoozeInMillisUTC(int minutes) {
-    Calendar now = Calendar.getInstance();
-    now.set(Calendar.SECOND, 0);
-    now.add(Calendar.MINUTE, minutes);
-    return new AlarmTime(now);
+    Calendar snooze = Calendar.getInstance();
+    snooze.set(Calendar.SECOND, 0);
+    snooze.add(Calendar.MINUTE, minutes);
+    return new AlarmTime(snooze.get(Calendar.HOUR_OF_DAY), snooze.get(Calendar.MINUTE), snooze.get(Calendar.SECOND));
   }
 
   private AlarmTime(Parcel source) {

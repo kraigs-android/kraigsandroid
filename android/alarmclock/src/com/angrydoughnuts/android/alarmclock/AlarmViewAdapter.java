@@ -40,7 +40,7 @@ class AlarmViewAdapter extends ResourceCursorAdapter {
     // TODO(cgallek): This doesn't account for snoozed alarms :-\
     // Figure out how to get this information back from the service based
     // on actual scheduled times.
-    nextView.setText(time.nextLocalOccuranceAsString());
+    nextView.setText(time.timeUntilString());
     final long id = cursor.getLong(idIndex);
     enabledView.setOnClickListener(new OnClickListener() {
       @Override

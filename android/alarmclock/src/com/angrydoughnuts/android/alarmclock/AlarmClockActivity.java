@@ -48,7 +48,7 @@ public class AlarmClockActivity extends Activity {
       public void run() {
         // Current time.
         Calendar c = Calendar.getInstance();
-        AlarmTime time = new AlarmTime(c);
+        AlarmTime time = new AlarmTime(c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND));
 
         // Refresh operations
         clock.setText(time.localizedString(getApplicationContext()));
@@ -75,7 +75,7 @@ public class AlarmClockActivity extends Activity {
       public void onClick(View view) {
         Calendar testTime = Calendar.getInstance();
         testTime.add(Calendar.SECOND, 5);
-        service.createAlarm(new AlarmTime(testTime));
+        service.createAlarm(new AlarmTime(testTime.get(Calendar.HOUR_OF_DAY), testTime.get(Calendar.MINUTE), testTime.get(Calendar.SECOND)));
         alarmListCursor.requery();
       }
     });
@@ -124,11 +124,7 @@ public class AlarmClockActivity extends Activity {
             new TimePickerDialog.OnTimeSetListener() {
               @Override
               public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                Calendar c = Calendar.getInstance();
-                c.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                c.set(Calendar.MINUTE, minute);
-                c.set(Calendar.SECOND, 0);
-                service.createAlarm(new AlarmTime(c));
+                service.createAlarm(new AlarmTime(hourOfDay, minute, 0));
                 alarmListCursor.requery();
               }
             },
