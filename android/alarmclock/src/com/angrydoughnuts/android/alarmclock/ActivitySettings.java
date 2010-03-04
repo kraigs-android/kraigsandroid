@@ -1,6 +1,9 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -102,32 +105,32 @@ public class ActivitySettings extends Activity {
 
     ListView alarmInfoList = (ListView) findViewById(R.id.alarm_info_list);
     if (alarmId != AlarmSettings.DEFAULT_SETTINGS_ID) {
-      Setting[] alarmInfoObjects = new Setting[AlarmInfoType.values().length];
-      alarmInfoObjects[AlarmInfoType.TIME.ordinal()] = new Setting() {
+      ArrayList<Setting> alarmInfoObjects = new ArrayList<Setting>(AlarmInfoType.values().length);
+      alarmInfoObjects.add(AlarmInfoType.TIME.ordinal(), new Setting() {
         @Override
         public String name() { return getString(R.string.time); }
         @Override
         public String value() { return info.getTime().localizedString(getApplicationContext()); }
-      };
-      alarmInfoObjects[AlarmInfoType.NAME.ordinal()] = new Setting() {
+      });
+      alarmInfoObjects.add(AlarmInfoType.NAME.ordinal(), new Setting() {
         @Override
         public String name() { return getString(R.string.label); }
         @Override
         public String value() { return info.getName(); }
-      };
-      alarmInfoObjects[AlarmInfoType.DAYS_OF_WEEK.ordinal()] = new Setting() {
+      });
+      alarmInfoObjects.add(AlarmInfoType.DAYS_OF_WEEK.ordinal(), new Setting() {
         @Override
         public String name() { return getString(R.string.repeat); }
         @Override
         public String value() { return info.getTime().getDaysOfWeek().toString(getApplicationContext()); }
-      };
+      });
       alarmInfoAdapter = new SettingsAdapter(getApplicationContext(), alarmInfoObjects);
       alarmInfoList.setAdapter(alarmInfoAdapter);
       alarmInfoList.setOnItemClickListener(new AlarmInfoListClickListener());
     }
 
-    Setting[] settingsObjects = new Setting[SettingType.values().length];
-    settingsObjects[SettingType.TONE.ordinal()] = new Setting() {
+    ArrayList<Setting> settingsObjects = new ArrayList<Setting>(SettingType.values().length);
+    settingsObjects.add(SettingType.TONE.ordinal(), new Setting() {
       @Override
       public String name() { return getString(R.string.tone); }
       @Override
@@ -139,25 +142,25 @@ public class ActivitySettings extends Activity {
         return value;
       }
       
-    };
-    settingsObjects[SettingType.SNOOZE.ordinal()] = new Setting() {
+    });
+    settingsObjects.add(SettingType.SNOOZE.ordinal(), new Setting() {
       @Override
       public String name() { return getString(R.string.snooze_minutes); }
       @Override
       public String value() { return "" + settings.getSnoozeMinutes(); }      
-    };
-    settingsObjects[SettingType.VIBRATE.ordinal()] = new Setting() {
+    });
+    settingsObjects.add(SettingType.VIBRATE.ordinal(), new Setting() {
       @Override
       public String name() { return getString(R.string.vibrate); }
       @Override
       public String value() { return settings.getVibrate() ? getString(R.string.enabled) : getString(R.string.disabled); }
-    };
-    settingsObjects[SettingType.VOLUME_FADE.ordinal()] = new Setting() {
+    });
+    settingsObjects.add(SettingType.VOLUME_FADE.ordinal(), new Setting() {
       @Override
       public String name() { return getString(R.string.alarm_fade); }
       @Override
       public String value() { return getString(R.string.fade_description, settings.getVolumeStartPercent(), settings.getVolumeEndPercent(), settings.getVolumeChangeTimeSec()); }
-    };
+    });
     
     ListView settingsList = (ListView) findViewById(R.id.settings_list);
     settingsAdapter = new SettingsAdapter(getApplicationContext(), settingsObjects);
@@ -403,7 +406,7 @@ public class ActivitySettings extends Activity {
   }
 
   private class SettingsAdapter extends ArrayAdapter<Setting> {
-    public SettingsAdapter(Context context, Setting[] settingsObjects) {
+    public SettingsAdapter(Context context, List<Setting> settingsObjects) {
       super(context, 0, settingsObjects);
     }
 
