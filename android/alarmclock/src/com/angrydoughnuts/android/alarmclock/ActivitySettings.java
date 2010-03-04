@@ -311,6 +311,8 @@ public final class ActivitySettings extends Activity {
               public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                 info.setTime(new AlarmTime(hourOfDay, minute, 0));
                 settingsAdapter.notifyDataSetChanged();
+                // Destroy this dialog so that it does not save its state.
+                removeDialog(Dialogs.TIME_PICKER.ordinal());
               }
             },
             hour, minute, is24Hour);

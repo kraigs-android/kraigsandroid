@@ -231,6 +231,8 @@ public final class ActivityAlarmClock extends Activity {
                 // force the list view to re-query the alarm list. 
                 service.createAlarm(new AlarmTime(hourOfDay, minute, 0));
                 adapter.requery();
+                // Destroy this dialog so that it does not save its state.
+                removeDialog(Dialogs.TIME_PICKER.ordinal());
               }
             },
             hour, minute, is24Hour);
