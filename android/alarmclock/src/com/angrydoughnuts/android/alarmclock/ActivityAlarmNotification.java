@@ -25,8 +25,6 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 // more than once at the same time. (ie, it assumes
 // android:launchMode="singleInstance" is set in the manifest file).
 // Current reasons for this assumption:
-//  - The broadcast receiver that triggers the activity has a single global
-//    wake lock.
 //  - It does not support more than one active alarm at a time.  If a second
 //    alarm triggers while this Activity is running, it will silently snooze
 //    the first alarm and start the second.
@@ -264,11 +262,11 @@ public class ActivityAlarmNotification extends Activity {
     switch (ack) {
       case SNOOZED:
         service.snoozeAlarmFor(alarmId, settings.getSnoozeMinutes());
-        ReceiverAlarm.wakeLock().release();
+        WakeLock.release(alarmId);
         break;
       case ACKED:
         service.acknowledgeAlarm(alarmId);
-        ReceiverAlarm.wakeLock().release();
+        WakeLock.release(alarmId);
         break;
       default:
         throw new IllegalStateException("Unknow alarm notification state.");
