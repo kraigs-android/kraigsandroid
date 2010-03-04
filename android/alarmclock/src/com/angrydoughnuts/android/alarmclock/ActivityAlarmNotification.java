@@ -211,14 +211,11 @@ public final class ActivityAlarmNotification extends Activity {
   }
 
   @Override
-  protected void onStart() {
-    super.onStart();
-    service.bind();
-  }
-
-  @Override
   protected void onResume() {
     super.onResume();
+    WakeLock.assertHeld(alarmId);
+    service.bind();
+
     screenLock.disableKeyguard();
     if (settings.getVibrate()) {
       vibrator.vibrate(new long[] {500, 500}, 0);
@@ -257,13 +254,8 @@ public final class ActivityAlarmNotification extends Activity {
       fallbackSound.stop();
     }
     screenLock.reenableKeyguard();
-  }
 
-  @Override
-  protected void onStop() {
-    super.onStop();
     service.unbind();
-    finish();
   }
 
   @Override
