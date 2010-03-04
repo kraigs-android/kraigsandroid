@@ -138,20 +138,15 @@ public class AlarmClockService extends Service {
   @Override
   public boolean onUnbind(Intent intent) {
     // Decide if we need to explicitly shut down this service. Normally,
-    // the service would shutdown after the last un-bind. However, since
-    // we explicitly started the service in onBind (to remain persistent),
-    // we must explicitly stop here when there are no alarms set.
+    // the service would shutdown after the last un-bind. If there are still pending
+    // alarms, explicitly start the service.  If there are none, explicitly stop it.
     if (pendingAlarms.size() == 0) {
       stopSelf();
-      return false;
     } else {
-      // Since we want the service to continue running in this case, return
-      // true so that onRebind is called instead of onBind.
       final Intent self = new Intent(getApplicationContext(), AlarmClockService.class);
       startService(self);
-      return true;
-
     }
+    return false;
   }
 
   public AlarmTime pendingAlarm(long alarmId) {
