@@ -35,6 +35,25 @@ public class AlarmClockActivity extends Activity {
     alarmListCursor = db.getAlarmList();
     startManagingCursor(alarmListCursor);
 
+    Button testBtn = (Button) findViewById(R.id.test_alarm);
+    if (!AlarmClockService.debug(getApplicationContext())) {
+      testBtn.setVisibility(View.GONE);
+    }
+    testBtn.setOnClickListener(new View.OnClickListener() {
+      public void onClick(View view) {
+        Calendar testTime = Calendar.getInstance();
+        testTime.add(Calendar.SECOND, 5);
+        // TODO(cgallek): this is going to break if seconds are removed
+        // from this service method.
+        int schedTime = TimeUtil.minutesAfterMidnight(
+            testTime.get(Calendar.HOUR_OF_DAY),
+            testTime.get(Calendar.MINUTE),
+            testTime.get(Calendar.SECOND));
+        service.newAlarm(schedTime);
+        alarmListCursor.requery();
+      }
+    });
+
     Button addBtn = (Button) findViewById(R.id.add_alarm);
     addBtn.setOnClickListener(new View.OnClickListener() {
       public void onClick(View view) {

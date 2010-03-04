@@ -11,6 +11,11 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
 
+  <Button android:text="Test Alarm"
+    android:id="@+id/test_alarm"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" />
+
   <Button android:text="@string/add_alarm"
     android:id="@+id/add_alarm"
     android:layout_width="fill_parent"
