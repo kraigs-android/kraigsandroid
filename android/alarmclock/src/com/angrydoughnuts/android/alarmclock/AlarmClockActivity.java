@@ -20,12 +20,12 @@ public class AlarmClockActivity extends Activity {
 
     setBtn.setOnClickListener(new View.OnClickListener() {
       public void onClick(View view) {
-        service.alarmOn();
+        service.scheduleAlarmIn(5);
       }
     });
     clearBtn.setOnClickListener(new View.OnClickListener() {
       public void onClick(View view) {
-        service.alarmOff();
+        service.clearAllAlarms();
       }
     });
   }

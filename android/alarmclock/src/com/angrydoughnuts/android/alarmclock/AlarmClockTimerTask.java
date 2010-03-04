@@ -8,7 +8,7 @@ import android.os.Handler;
 public class AlarmClockTimerTask extends TimerTask {
 
   private Handler handler;
-  int id;
+  int alarmId;
   private AlarmClockServiceBinder service;
 
   final private Runnable work = new Runnable() {
@@ -19,15 +19,15 @@ public class AlarmClockTimerTask extends TimerTask {
       // bind as necessary in the Timer thread.
       service.bind();
 
-      service.fire(id);
+      service.notifyDialog(alarmId);
 
       service.unbind();
     }
   };
 
-  public AlarmClockTimerTask(Context context, Handler handler, int id) {
+  public AlarmClockTimerTask(Context context, Handler handler, int alarmId) {
     this.handler = handler;
-    this.id = id;
+    this.alarmId = alarmId;
     this.service = AlarmClockServiceBinder.newBinder(context);
   }
 

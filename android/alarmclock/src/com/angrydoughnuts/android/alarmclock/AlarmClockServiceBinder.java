@@ -1,21 +1,18 @@
 package com.angrydoughnuts.android.alarmclock;
 
 import java.util.LinkedList;
-import java.util.List;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.widget.Toast;
 
 public class AlarmClockServiceBinder {
   private Context context;
   private int bindFlags;
   private AlarmClockInterface clock;
-  private List<ServiceCallback> callbacks;
+  private LinkedList<ServiceCallback> callbacks;
  
   public static AlarmClockServiceBinder newBinderAndStart(Context context) {
     return new AlarmClockServiceBinder(context, Context.BIND_AUTO_CREATE);
@@ -31,9 +28,9 @@ public class AlarmClockServiceBinder {
   final private ServiceConnection serviceConnection = new ServiceConnection() {
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
-      Toast.makeText(context, "Service Connected " + name, Toast.LENGTH_SHORT).show();
       clock = AlarmClockInterface.Stub.asInterface(service);
-      for (ServiceCallback callback : callbacks) {
+      while (callbacks.size() > 0) {
+        ServiceCallback callback = callbacks.remove();
         try {
           callback.run();
         } catch (RemoteException e) {
@@ -41,13 +38,11 @@ public class AlarmClockServiceBinder {
           e.printStackTrace();
         }
       }
-      callbacks.clear();
     }
     @Override
     public void onServiceDisconnected(ComponentName name) {
       // TODO(cgallek): This should only happen if the AlarmClockService
       // crashes.  Consider throwing an exception here.
-      Toast.makeText(context, "Service Disconnected " + name, Toast.LENGTH_SHORT).show();
       clock = null;
     }
   };
@@ -67,7 +62,7 @@ public class AlarmClockServiceBinder {
         e.printStackTrace();
       }
     } else {
-      callbacks.add(callback);
+      callbacks.offer(callback);
     }
   }
 
@@ -88,38 +83,38 @@ public class AlarmClockServiceBinder {
     });
   }
 
-  public void fire(final int id) { 
+  public void notifyDialog(final int alarmId) { 
     runOrDefer(new ServiceCallback() {
       @Override
       public void run() throws RemoteException {
-        clock.fire(id);
+        clock.notifyDialog(alarmId);
       }
     });
   }
 
-  public void alarmOn() {
+  public void scheduleAlarmIn(final int seconds) {
     runOrDefer(new ServiceCallback() {
       @Override
       public void run() throws RemoteException {
-        clock.alarmOn();
+        clock.scheduleAlarmIn(seconds);
       }
     });
   }
 
-  public void alarmOff() {
+  public void clearAlarm(final int alarmId) {
     runOrDefer(new ServiceCallback() {
       @Override
       public void run() throws RemoteException {
-        clock.alarmOff();
+        clock.clearAlarm(alarmId);
       }
     });
   }
 
-  public void clearAlarm(final int id) {
+  public void clearAllAlarms() {
     runOrDefer(new ServiceCallback() {
       @Override
       public void run() throws RemoteException {
-        clock.clearAlarm(id);
+        clock.clearAllAlarms();
       }
     });
   }

@@ -97,17 +97,17 @@ import android.os.PowerManager;
       return taskList.size();
     }
 
-    public void addAlarm() {
+    public void scheduleAlarmIn(int seconds) {
       int id = nextTaskId();
       AlarmClockTimerTask task =
         new AlarmClockTimerTask(getApplicationContext(), uiHandler, id);
       // TODO(cgallek): make sure ID doesn't exist yet?
       taskList.put(id, task);
-      timerThread.schedule(task, 5000);
+      timerThread.schedule(task, seconds * 1000);
     }
 
-    public boolean removeAlarm(int id) {
-      AlarmClockTimerTask task = taskList.remove(id);
+    public boolean clearAlarm(int alarmId) {
+      AlarmClockTimerTask task = taskList.remove(alarmId);
       if (task != null) {
         task.cancel();
         return true;
@@ -123,10 +123,10 @@ import android.os.PowerManager;
       taskList.clear();
     }
 
-    public void triggerAlarm(int id) {
+    public void notifyDialog(int alarmId) {
       Intent notifyIntent = new Intent(getApplicationContext(), AlarmNotificationActivity.class);
       notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-      notifyIntent.putExtra("task_id", id);
+      notifyIntent.putExtra("task_id", alarmId);
 
       // TODO(cgallek) Currently, both this service and the Notification
       // Activity manage power settings.  It might make sense to move all

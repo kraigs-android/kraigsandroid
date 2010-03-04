@@ -1,8 +1,8 @@
 package com.angrydoughnuts.android.alarmclock;
 
 interface AlarmClockInterface {
-  void fire(int id);
-  void alarmOn();
-  void alarmOff();
-  void clearAlarm(int id);
+  void notifyDialog(int alarmId);
+  void scheduleAlarmIn(int seconds);
+  void clearAlarm(int alarmId);
+  void clearAllAlarms();
 }

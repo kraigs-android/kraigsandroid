@@ -1,7 +1,6 @@
 package com.angrydoughnuts.android.alarmclock;
 
 import android.content.Context;
-import android.os.RemoteException;
 import android.widget.Toast;
 
 public class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
@@ -14,24 +13,26 @@ public class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
   }
 
   @Override
-  public void fire(int id) throws RemoteException {
-    Toast.makeText(context, "FIRE ALARM!", Toast.LENGTH_SHORT).show();
-    service.triggerAlarm(id);
-  }
-  @Override
-  public void alarmOn() throws RemoteException {
-    Toast.makeText(context, "SCHEDULE ALARM!", Toast.LENGTH_SHORT).show();
-    service.addAlarm();
-  }
-  @Override
-  public void alarmOff() throws RemoteException {
-    Toast.makeText(context, "UNSCHEDULE ALARM!", Toast.LENGTH_SHORT).show();
-    service.clearAllAlarms();
+  public void notifyDialog(int alarmId) {
+    Toast.makeText(context, "FIRE ALARM! " + alarmId, Toast.LENGTH_SHORT).show();
+    service.notifyDialog(alarmId);
   }
 
   @Override
-  public void clearAlarm(int id) throws RemoteException {
-    Toast.makeText(context, "HANDLE ALARM " + id, Toast.LENGTH_SHORT).show();
-    service.removeAlarm(id);
+  public void scheduleAlarmIn(int seconds) {
+    Toast.makeText(context, "SCHEDULE ALARM!", Toast.LENGTH_SHORT).show();
+    service.scheduleAlarmIn(seconds);
+  }
+
+  @Override
+  public void clearAlarm(int alarmId) {
+    Toast.makeText(context, "CLEAR ALARM " + alarmId, Toast.LENGTH_SHORT).show();
+    service.clearAlarm(alarmId);
+  }
+
+  @Override
+  public void clearAllAlarms() {
+    Toast.makeText(context, "CLEAR ALL ALARM!", Toast.LENGTH_SHORT).show();
+    service.clearAllAlarms();
   }
 }
