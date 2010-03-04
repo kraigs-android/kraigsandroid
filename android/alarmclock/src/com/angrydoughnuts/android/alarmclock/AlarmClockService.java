@@ -1,6 +1,7 @@
 package com.angrydoughnuts.android.alarmclock;
 
 import java.util.Timer;
+import java.util.TreeMap;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -10,14 +11,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.PowerManager;
   
   public class AlarmClockService extends Service {
     private final int NOTIFICATION_ID = 1;
-
-    // TODO(cgallek): replace this with a data provider.
-    private static boolean alarmOn = false;
-    public static synchronized boolean getAlarmOn() { return alarmOn; }
-    public static synchronized void setAlarmOn(boolean state) { alarmOn = state; }
 
     private Timer timerThread;
     private Handler uiHandler;
@@ -70,8 +67,7 @@ import android.os.IBinder;
       final Intent selfIntent = new Intent(getApplication(), AlarmClockService.class);
       startService(selfIntent);
 
-      return new AlarmClockInterfaceStub(
-          getApplicationContext(), uiHandler, timerThread);
+      return new AlarmClockInterfaceStub(getApplicationContext(), this);
     }
 
     @Override
@@ -80,14 +76,76 @@ import android.os.IBinder;
       // the service would shutdown after the last un-bind.  However, since
       // we explicitly started the service in onBind (to remain persistent),
       // we must explicitly stop here when there are no alarms set.
-      if (getAlarmOn()) {
-        // Since we want the service to continue running in this case, return
-        // true so that onRebind is called instead of onBind.
-        return true;
-      } else {
+      if (alarmCount() == 0) {
         timerThread.cancel();
         stopSelf();
         return false;
+      } else {
+        // Since we want the service to continue running in this case, return
+        // true so that onRebind is called instead of onBind.
+        return true;
+
       }
+    }
+
+    // TODO(cgallek): replace this with a data provider.
+    private static int taskId = 0;
+    private static synchronized int nextTaskId() { return taskId++; }
+    private TreeMap<Integer, AlarmClockTimerTask> taskList = new TreeMap<Integer, AlarmClockTimerTask>();
+
+    public synchronized int alarmCount() {
+      return taskList.size();
+    }
+
+    public synchronized void addAlarm() {
+      int id = nextTaskId();
+      AlarmClockTimerTask task =
+        new AlarmClockTimerTask(getApplicationContext(), uiHandler, id);
+      // TODO(cgallek): make sure ID doesn't exist yet?
+      taskList.put(id, task);
+      timerThread.schedule(task, 5000);
+    }
+
+    public synchronized boolean removeAlarm(int id) {
+      AlarmClockTimerTask task = taskList.remove(id);
+      if (task != null) {
+        task.cancel();
+        return true;
+      } else {
+        return false;
+      }
+    }
+ 
+    public synchronized void clearAllAlarms() {
+      for (AlarmClockTimerTask task : taskList.values()) {
+        task.cancel();
+      }
+      taskList.clear();
+    }
+
+    public synchronized void triggerAlarm(int id) {
+      Intent notifyIntent = new Intent(getApplicationContext(), AlarmNotificationActivity.class);
+      notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      notifyIntent.putExtra("task_id", id);
+
+      // TODO(cgallek) Currently, both this service and the Notification
+      // Activity manage power settings.  It might make sense to move all
+      // power management into the service.  This would require a callback
+      // from the Notification application.  I'm not sure how to get a
+      // response from an activity started from a service...
+      // I think there also might be a race condition between the
+      // startActivity call and the wake lock release call below (ie if
+      // the lock is released before the activity actually starts).  Moving
+      // all locking to this service would also fix that problem.
+      PowerManager manager =
+        (PowerManager) getSystemService(Context.POWER_SERVICE);
+      PowerManager.WakeLock wakeLock = manager.newWakeLock(
+          PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
+          "Alarm Service CPU wake lock");
+      wakeLock.acquire();
+
+      startActivity(notifyIntent);
+
+      wakeLock.release();
     }
   }

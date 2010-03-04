@@ -14,6 +14,7 @@ public class AlarmClockTimerTask extends TimerTask {
 
   private Context context;
   private Handler handler;
+  int id;
   private Intent serviceIntent;
   private AlarmClockInterface clock;
   private synchronized void setClock(AlarmClockInterface clock) {
@@ -35,7 +36,7 @@ public class AlarmClockTimerTask extends TimerTask {
     @Override
     public void run() {
       try {
-        clock.fire();
+        clock.fire(id);
       } catch (RemoteException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
@@ -43,9 +44,10 @@ public class AlarmClockTimerTask extends TimerTask {
     }
   };
 
-  public AlarmClockTimerTask(Context context, Handler handler) {
+  public AlarmClockTimerTask(Context context, Handler handler, int id) {
     this.context = context;
     this.handler = handler;
+    this.id = id;
     this.serviceIntent = new Intent(context, AlarmClockService.class);
   }
 
