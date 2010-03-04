@@ -77,7 +77,7 @@ public class AlarmInfo {
         days.add(Day.values()[i]);
       }
     }
-    return (Day[]) days.toArray();
+    return days.toArray(new Day[0]);
   }
 
   public void setDow(Day[] daysOfWeek) {
