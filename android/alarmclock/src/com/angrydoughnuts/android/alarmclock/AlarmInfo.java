@@ -1,5 +1,7 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import java.util.Calendar;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -130,14 +132,14 @@ public class AlarmInfo {
 
   private long alarmId;
   // TODO(cgallek): Move the AlarmTime class in here and replace this integer.
-  private int time;
+  private AlarmTime time;
   private boolean enabled;
   private String name;
   private Week daysOfWeek;
 
   AlarmInfo(Cursor cursor) {
     alarmId = cursor.getLong(cursor.getColumnIndex(DbHelper.ALARMS_COL__ID));
-    time = cursor.getInt(cursor.getColumnIndex(DbHelper.ALARMS_COL_TIME));
+    time = IntegerToAlarmTime(cursor.getInt(cursor.getColumnIndex(DbHelper.ALARMS_COL_TIME)));
     enabled = cursor.getInt(cursor.getColumnIndex(DbHelper.ALARMS_COL_ENABLED)) == 1;
     name = cursor.getString(cursor.getColumnIndex(DbHelper.ALARMS_COL_NAME));
     daysOfWeek = new Week(cursor.getInt(cursor.getColumnIndex(DbHelper.ALARMS_COL_DAY_OF_WEEK)));
@@ -145,7 +147,7 @@ public class AlarmInfo {
 
   public ContentValues contentValues() {
     ContentValues values = new ContentValues();
-    values.put(DbHelper.ALARMS_COL_TIME, time);
+    values.put(DbHelper.ALARMS_COL_TIME, AlarmTimeToInteger(time));
     values.put(DbHelper.ALARMS_COL_ENABLED, enabled);
     values.put(DbHelper.ALARMS_COL_NAME, name);
     values.put(DbHelper.ALARMS_COL_DAY_OF_WEEK, daysOfWeek.toInetger());
@@ -166,11 +168,11 @@ public class AlarmInfo {
     return alarmId;
   }
 
-  public int getTime() {
+  public AlarmTime getTime() {
     return time;
   }
 
-  public void setTime(int time) {
+  public void setTime(AlarmTime time) {
     this.time = time;
   }
 
@@ -200,5 +202,21 @@ public class AlarmInfo {
 
   public String getDaysOfWeekString(Context context) {
     return daysOfWeek.toString(context);
+  }
+
+  // TODO(cgallek): Make these private.
+  public static int AlarmTimeToInteger(AlarmTime time) {
+    Calendar c = time.calendar();
+    int hourOfDay = c.get(Calendar.HOUR_OF_DAY);
+    int minute = c.get(Calendar.MINUTE);
+    int second = c.get(Calendar.SECOND);
+    return hourOfDay * 3600 + minute * 60 + second;
+  }
+
+  public static AlarmTime IntegerToAlarmTime(int secondsAfterMidnight) {
+    int hours = secondsAfterMidnight % 3600;
+    int minutes = (secondsAfterMidnight - (hours * 3600)) % 60;
+    int seconds = (secondsAfterMidnight- (hours * 3600 + minutes * 60));
+    return new AlarmTime(hours, minutes, seconds);
   }
 }

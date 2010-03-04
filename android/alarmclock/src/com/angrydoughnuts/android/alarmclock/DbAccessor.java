@@ -27,7 +27,7 @@ public class DbAccessor {
   public long newAlarm(AlarmTime time) {
     // TODO(cgallek) make sure this time doesn't exist yet.
     ContentValues values = new ContentValues(2);
-    values.put(DbHelper.ALARMS_COL_TIME, time.secondsAfterMidnight());
+    values.put(DbHelper.ALARMS_COL_TIME, AlarmInfo.AlarmTimeToInteger(time));
     values.put(DbHelper.ALARMS_COL_ENABLED, false);
     long id = rwDb.insert(DbHelper.DB_TABLE_ALARMS, null, values);
     if (id < 0) {
@@ -75,7 +75,7 @@ public class DbAccessor {
       return null;
     }
     cursor.moveToFirst();
-    AlarmTime time = new AlarmTime(cursor.getInt(0));
+    AlarmTime time = AlarmInfo.IntegerToAlarmTime(cursor.getInt(0));
     cursor.close();
     return time;
   }

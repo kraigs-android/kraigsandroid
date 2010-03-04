@@ -104,7 +104,7 @@ public class ActivitySettings extends Activity {
         @Override
         public String name() { return "Time"; }
         @Override
-        public String value() { return new AlarmTime(info.getTime()).localizedString(getApplicationContext()); }
+        public String value() { return info.getTime().localizedString(getApplicationContext()); }
       };
       alarmInfoObjects[AlarmInfoType.NAME.ordinal()] = new Setting() {
         @Override
@@ -222,7 +222,7 @@ public class ActivitySettings extends Activity {
   protected Dialog onCreateDialog(int id) {
     switch (Dialogs.values()[id]) {
       case TIME_PICKER:
-        AlarmTime time = new AlarmTime(info.getTime());
+        AlarmTime time = info.getTime();
         int hour = time.calendar().get(Calendar.HOUR_OF_DAY);
         int minute = time.calendar().get(Calendar.MINUTE);
         boolean is24Hour = DateFormat.is24HourFormat(getApplicationContext());
@@ -230,8 +230,7 @@ public class ActivitySettings extends Activity {
             new TimePickerDialog.OnTimeSetListener() {
               @Override
               public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                AlarmTime newTime = new AlarmTime(hourOfDay, minute, 0);
-                info.setTime(newTime.secondsAfterMidnight());
+                info.setTime(new AlarmTime(hourOfDay, minute, 0));
                 alarmInfoAdapter.notifyDataSetChanged();
               }
             },

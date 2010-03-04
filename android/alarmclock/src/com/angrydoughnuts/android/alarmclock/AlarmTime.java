@@ -9,55 +9,38 @@ import android.os.Parcelable;
 import android.text.format.DateFormat;
 
 public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
-  private int secondsAfterMidnight;
-  private Calendar asCalendar;
-
-  // TODO(cgallek) change this to use alarmId and pull the secondsAfterMidnight
-  // concept completely into this class.
-  public AlarmTime(int secondsAfterMidnight) {
-    this.secondsAfterMidnight = secondsAfterMidnight;
-    this.asCalendar = Calendar.getInstance();
-
-    int hours = secondsAfterMidnight % 3600;
-    int minutes = (secondsAfterMidnight - (hours * 3600)) % 60;
-    int seconds = (secondsAfterMidnight- (hours * 3600 + minutes * 60));
-    asCalendar.set(Calendar.HOUR_OF_DAY, hours);
-    asCalendar.set(Calendar.MINUTE, minutes);
-    asCalendar.set(Calendar.SECOND, seconds);
-    findNextOccurance();
-  }
+  private Calendar calendar;
 
   public AlarmTime(int hourOfDay, int minute, int second) {
-    this.asCalendar = Calendar.getInstance();
-    asCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-    asCalendar.set(Calendar.MINUTE, minute);
-    asCalendar.set(Calendar.SECOND, second);
+    this.calendar = Calendar.getInstance();
+    calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+    calendar.set(Calendar.MINUTE, minute);
+    calendar.set(Calendar.SECOND, second);
     
-    this.secondsAfterMidnight = hourOfDay * 3600 + minute * 60 + second;
     findNextOccurance();
   }
 
   private void findNextOccurance() {
     Calendar now = Calendar.getInstance();
 
-    if (asCalendar.before(now)) {
-      asCalendar.add(Calendar.DATE, 1);
+    if (calendar.before(now)) {
+      calendar.add(Calendar.DATE, 1);
     }
 
     // TODO(cgallek): this is a little sloppy, clean it up.
-    if (asCalendar.before(now)) {
+    if (calendar.before(now)) {
       throw new IllegalStateException("Inconsistent calendar.");
     }   
   }
 
   @Override
   public int compareTo(AlarmTime another) {
-    return asCalendar.compareTo(another.asCalendar);
+    return calendar.compareTo(another.calendar);
   }
 
   public String toString() {
     SimpleDateFormat formatter = new SimpleDateFormat("HH:mm.ss MMMM dd yyyy");
-    return formatter.format(asCalendar.getTimeInMillis());
+    return formatter.format(calendar.getTimeInMillis());
   }
 
   public String localizedString(Context context) {
@@ -74,24 +57,20 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
     }
 
     SimpleDateFormat formatter = new SimpleDateFormat(format);
-    return formatter.format(asCalendar.getTime());
-  }
-
-  public int secondsAfterMidnight() {
-    return secondsAfterMidnight;
+    return formatter.format(calendar.getTime());
   }
 
   public Calendar calendar() {
-    return asCalendar;
+    return calendar;
   }
 
   public String timeUntilString() {
     Calendar now = Calendar.getInstance();
-    if (asCalendar.before(now)) {
+    if (calendar.before(now)) {
       return "Alarm has occurred.";
     }
     long now_min = now.getTimeInMillis() / 1000 / 60;
-    long then_min = asCalendar.getTimeInMillis() / 1000 / 60;
+    long then_min = calendar.getTimeInMillis() / 1000 / 60;
     long difference_minutes = then_min - now_min;
     long days = difference_minutes / (60 * 24);
     long hours = difference_minutes % (60 * 24);
@@ -126,14 +105,12 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
   }
 
   private AlarmTime(Parcel source) {
-    this.secondsAfterMidnight = source.readInt();
-    this.asCalendar = (Calendar) source.readSerializable();
+    this.calendar = (Calendar) source.readSerializable();
   }
 
   @Override
   public void writeToParcel(Parcel dest, int flags) {
-    dest.writeInt(secondsAfterMidnight);
-    dest.writeSerializable(asCalendar);
+    dest.writeSerializable(calendar);
   }
 
   public static final Parcelable.Creator<AlarmTime> CREATOR =

@@ -61,7 +61,7 @@ class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
     }
     // If we couldn't find a pending alarm, display the configured time.
     if (time == null) {
-      time = new AlarmTime(info.getTime());
+      time = info.getTime();
     }
     String timeStr = time.localizedString(getContext());
     String alarmId = "";
