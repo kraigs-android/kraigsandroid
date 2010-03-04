@@ -38,6 +38,9 @@ public class AlarmClockService extends Service {
 
     // Schedule enabled alarms during initial startup.
     for (Long alarmId : db.getEnabledAlarms()) {
+      if (pendingAlarms.pendingTime(alarmId) != null) {
+        continue;
+      }
       if (DebugUtil.isDebugMode(getApplicationContext())) {
         Toast.makeText(getApplicationContext(), "RENABLE " + alarmId, Toast.LENGTH_SHORT).show();
       }
