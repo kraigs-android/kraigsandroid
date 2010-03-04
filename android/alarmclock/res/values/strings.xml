@@ -25,6 +25,7 @@
   <string name="ok">OK</string>
   <string name="cancel">Cancel</string>
   <string name="delete">Delete...</string>
+  <string name="confirm_delete">Confirm delete?</string>
   <string name="snooze">SNOOZE</string>
   <string name="dismiss">DISMISS</string>
   <string name="plus_five">+5</string>

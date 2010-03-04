@@ -38,7 +38,7 @@ public class ActivitySettings extends Activity {
   private enum SettingType { TONE, SNOOZE, VIBRATE, VOLUME_FADE; }
 
   private final int MISSING_EXTRAS = -69;
-  private enum Dialogs { TIME_PICKER, NAME_PICKER, DOW_PICKER, TONE_PICKER, SNOOZE_PICKER, VOLUME_FADE_PICKER }
+  private enum Dialogs { TIME_PICKER, NAME_PICKER, DOW_PICKER, TONE_PICKER, SNOOZE_PICKER, VOLUME_FADE_PICKER, DELETE_CONFIRM }
 
   private long alarmId;
   private AlarmClockServiceBinder service;
@@ -92,9 +92,7 @@ public class ActivitySettings extends Activity {
     deleteButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
-        // TODO(cgallek): Add confirmation dialog.
-        service.deleteAlarm(alarmId);
-        finish();
+        showDialog(Dialogs.DELETE_CONFIRM.ordinal());
       }
     });
 
@@ -103,19 +101,19 @@ public class ActivitySettings extends Activity {
       Setting[] alarmInfoObjects = new Setting[AlarmInfoType.values().length];
       alarmInfoObjects[AlarmInfoType.TIME.ordinal()] = new Setting() {
         @Override
-        public String name() { return getApplicationContext().getString(R.string.time); }
+        public String name() { return getString(R.string.time); }
         @Override
         public String value() { return info.getTime().localizedString(getApplicationContext()); }
       };
       alarmInfoObjects[AlarmInfoType.NAME.ordinal()] = new Setting() {
         @Override
-        public String name() { return getApplicationContext().getString(R.string.label); }
+        public String name() { return getString(R.string.label); }
         @Override
         public String value() { return info.getName(); }
       };
       alarmInfoObjects[AlarmInfoType.DAYS_OF_WEEK.ordinal()] = new Setting() {
         @Override
-        public String name() { return getApplicationContext().getString(R.string.repeat); }
+        public String name() { return getString(R.string.repeat); }
         @Override
         public String value() { return info.getDaysOfWeekString(getApplicationContext()); }
       };
@@ -127,7 +125,7 @@ public class ActivitySettings extends Activity {
     Setting[] settingsObjects = new Setting[SettingType.values().length];
     settingsObjects[SettingType.TONE.ordinal()] = new Setting() {
       @Override
-      public String name() { return getApplicationContext().getString(R.string.tone); }
+      public String name() { return getString(R.string.tone); }
       @Override
       public String value() {
         String value = settings.getToneName();
@@ -140,21 +138,21 @@ public class ActivitySettings extends Activity {
     };
     settingsObjects[SettingType.SNOOZE.ordinal()] = new Setting() {
       @Override
-      public String name() { return getApplicationContext().getString(R.string.snooze_minutes); }
+      public String name() { return getString(R.string.snooze_minutes); }
       @Override
       public String value() { return "" + settings.getSnoozeMinutes(); }      
     };
     settingsObjects[SettingType.VIBRATE.ordinal()] = new Setting() {
       @Override
-      public String name() { return getApplicationContext().getString(R.string.vibrate); }
+      public String name() { return getString(R.string.vibrate); }
       @Override
-      public String value() { return settings.getVibrate() ? getApplicationContext().getString(R.string.enabled) : getApplicationContext().getString(R.string.disabled); }
+      public String value() { return settings.getVibrate() ? getString(R.string.enabled) : getString(R.string.disabled); }
     };
     settingsObjects[SettingType.VOLUME_FADE.ordinal()] = new Setting() {
       @Override
-      public String name() { return getApplicationContext().getString(R.string.alarm_fade); }
+      public String name() { return getString(R.string.alarm_fade); }
       @Override
-      public String value() { return getApplicationContext().getString(R.string.fade_description, settings.getVolumeStartPercent(), settings.getVolumeEndPercent(), settings.getVolumeChangeTimeSec()); }
+      public String value() { return getString(R.string.fade_description, settings.getVolumeStartPercent(), settings.getVolumeEndPercent(), settings.getVolumeChangeTimeSec()); }
     };
     
     ListView settingsList = (ListView) findViewById(R.id.settings_list);
@@ -208,7 +206,7 @@ public class ActivitySettings extends Activity {
         }
         Context c = getApplicationContext();
         Ringtone tone = RingtoneManager.getRingtone(c, uri);
-        String name = tone != null ? tone.getTitle(c) : c.getString(R.string.unknown_name);
+        String name = tone != null ? tone.getTitle(c) : getString(R.string.unknown_name);
         settings.setTone(uri, name);
         settingsAdapter.notifyDataSetChanged();
       default:
@@ -235,12 +233,12 @@ public class ActivitySettings extends Activity {
             hour, minute, is24Hour);
       case NAME_PICKER:
         AlertDialog.Builder nameBuilder = new AlertDialog.Builder(this);
-        nameBuilder.setTitle(getApplicationContext().getString(R.string.alarm_label));
+        nameBuilder.setTitle(R.string.alarm_label);
         View nameView = getLayoutInflater().inflate(R.layout.name_settings_dialog, null);
         final TextView label = (TextView) nameView.findViewById(R.id.name_label);
         label.setText(info.getName());
         nameBuilder.setView(nameView);
-        nameBuilder.setPositiveButton(getApplicationContext().getString(R.string.ok), new DialogInterface.OnClickListener() {
+        nameBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
             info.setName(label.getEditableText().toString());
@@ -248,7 +246,7 @@ public class ActivitySettings extends Activity {
             dismissDialog(Dialogs.NAME_PICKER.ordinal());
           }
         });
-        nameBuilder.setNegativeButton(getApplicationContext().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+        nameBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
             dismissDialog(Dialogs.NAME_PICKER.ordinal());
@@ -257,7 +255,7 @@ public class ActivitySettings extends Activity {
         return nameBuilder.create();
       case DOW_PICKER:
         AlertDialog.Builder dowBuilder = new AlertDialog.Builder(this);
-        dowBuilder.setTitle(getApplicationContext().getString(R.string.scheduled_days));
+        dowBuilder.setTitle(R.string.scheduled_days);
         dowBuilder.setMultiChoiceItems(
             info.getDaysOfWeek().names(getApplicationContext()),
             info.getDaysOfWeek().bitmask(),
@@ -271,7 +269,7 @@ public class ActivitySettings extends Activity {
                 }
               }
         });
-        dowBuilder.setPositiveButton(getApplicationContext().getString(R.string.ok), new DialogInterface.OnClickListener() {
+        dowBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
             alarmInfoAdapter.notifyDataSetChanged();
@@ -286,7 +284,7 @@ public class ActivitySettings extends Activity {
           items[i-1] = new Integer(i).toString();
         }
         AlertDialog.Builder snoozeBuilder = new AlertDialog.Builder(this);
-        snoozeBuilder.setTitle(getApplicationContext().getString(R.string.snooze_minutes));
+        snoozeBuilder.setTitle(R.string.snooze_minutes);
         snoozeBuilder.setSingleChoiceItems(items, settings.getSnoozeMinutes() - 1,
             new DialogInterface.OnClickListener() {
           public void onClick(DialogInterface dialog, int item) {
@@ -298,7 +296,7 @@ public class ActivitySettings extends Activity {
         return snoozeBuilder.create();
       case VOLUME_FADE_PICKER:
         AlertDialog.Builder fadeBuilder = new AlertDialog.Builder(this);
-        fadeBuilder.setTitle(getApplicationContext().getString(R.string.alarm_fade));
+        fadeBuilder.setTitle(R.string.alarm_fade);
         View fadeView = getLayoutInflater().inflate(R.layout.fade_settings_dialog, null);
         final EditText volumeStart = (EditText) fadeView.findViewById(R.id.volume_start);
         volumeStart.setText("" + settings.getVolumeStartPercent());
@@ -307,7 +305,7 @@ public class ActivitySettings extends Activity {
         final EditText volumeDuration = (EditText) fadeView.findViewById(R.id.volume_duration);
         volumeDuration.setText("" + settings.getVolumeChangeTimeSec());
         fadeBuilder.setView(fadeView);
-        fadeBuilder.setPositiveButton(getApplicationContext().getString(R.string.ok), new DialogInterface.OnClickListener() {
+        fadeBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
             settings.setVolumeStartPercent(Integer.parseInt(volumeStart.getText().toString()));
@@ -317,13 +315,32 @@ public class ActivitySettings extends Activity {
             dismissDialog(Dialogs.VOLUME_FADE_PICKER.ordinal());
           }
         });
-        fadeBuilder.setNegativeButton(getApplicationContext().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+        fadeBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
             dismissDialog(Dialogs.VOLUME_FADE_PICKER.ordinal());
           }
         });
         return fadeBuilder.create();
+      case DELETE_CONFIRM:
+        AlertDialog.Builder deleteConfirmBuilder = new AlertDialog.Builder(this);
+        deleteConfirmBuilder.setTitle(R.string.delete);
+        deleteConfirmBuilder.setMessage(R.string.confirm_delete);
+        deleteConfirmBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            service.deleteAlarm(alarmId);
+            dismissDialog(Dialogs.DELETE_CONFIRM.ordinal());
+            finish();
+          }
+        });
+        deleteConfirmBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            dismissDialog(Dialogs.DELETE_CONFIRM.ordinal());
+          }
+        });
+        return deleteConfirmBuilder.create();
       default:
         return super.onCreateDialog(id);
     }
@@ -358,7 +375,7 @@ public class ActivitySettings extends Activity {
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, Settings.System.DEFAULT_ALARM_ALERT_URI);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_INCLUDE_DRM, true);
-          i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, getApplicationContext().getString(R.string.alarm_tone));
+          i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, getString(R.string.alarm_tone));
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, current_tone);
           startActivityForResult(i, Dialogs.TONE_PICKER.ordinal());
           break;
