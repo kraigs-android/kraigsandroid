@@ -31,6 +31,10 @@ public class DefaultSettingsActivity extends Activity {
 
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    if (resultCode == RESULT_CANCELED) {
+      return;
+    }
+
     switch (requestCode) {
       case TONE_PICK_ID:
         Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
