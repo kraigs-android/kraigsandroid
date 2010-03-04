@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.widget.Toast;
 
 public class AlarmClockService extends Service {
@@ -131,6 +132,14 @@ public class AlarmClockService extends Service {
     final NotificationManager manager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     manager.notify(NOTIFICATION_ID, notification);
+
+    // Set the system alarm string for display on the lock screen.
+    if (nextTime != null) {
+      Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED,
+          nextTime.timeUntilString(getApplicationContext()));
+    } else {
+      Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED, "");
+    }
   }
 
   @Override
@@ -143,6 +152,8 @@ public class AlarmClockService extends Service {
     final NotificationManager manager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     manager.cancel(NOTIFICATION_ID);
+
+    Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED, "");
   }
 
   @Override
