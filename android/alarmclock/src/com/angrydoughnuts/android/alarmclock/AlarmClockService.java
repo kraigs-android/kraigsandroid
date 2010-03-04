@@ -116,21 +116,6 @@ public class AlarmClockService extends Service {
     taskList.put(alarmId, scheduleIntent);
   }
 
-  // TODO(cgallek): remove this method.
-  public void scheduleAlarmIn(int seconds) {
-    // TODO(cgallek): seconds is the wrong thing to pass in here.
-    long alarmId = db.newAlarm(seconds);
-    Intent notifyIntent = new Intent(getApplicationContext(), AlarmBroadcastReceiver.class);
-    notifyIntent.putExtra("task_id", alarmId);
-    PendingIntent scheduleIntent =
-      PendingIntent.getBroadcast(getApplicationContext(), 0, notifyIntent, 0);
-
-    AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-    alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + seconds * 1000, scheduleIntent);
-    // TODO(cgallek): make sure ID doesn't exist yet?
-    taskList.put(alarmId, scheduleIntent);
-  }
-
   public boolean acknowledgeAlarm(long alarmId) {
     PendingIntent task = taskList.remove(alarmId);
     if (task != null) {
