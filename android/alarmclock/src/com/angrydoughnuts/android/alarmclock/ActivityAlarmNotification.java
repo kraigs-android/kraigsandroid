@@ -239,16 +239,17 @@ public class ActivityAlarmNotification extends Activity {
   }
 
   void redraw() {
-    AlarmTime time = db.alarmTime(alarmId);
-    String info = time.toString();
+    AlarmInfo alarmInfo = db.readAlarmInfo(alarmId);
+    AlarmTime time = new AlarmTime(alarmInfo.getTime());
+    String info = time.toString() + "\n" + alarmInfo.getName();
     if (AlarmClockService.debug(getApplicationContext())) {
       info += " [" + alarmId + "]";
       findViewById(R.id.volume).setVisibility(View.VISIBLE);
     } else {
       findViewById(R.id.volume).setVisibility(View.GONE);
     }
-    TextView alarmInfo = (TextView) findViewById(R.id.alarm_info);
-    alarmInfo.setText(info);
+    TextView infoText = (TextView) findViewById(R.id.alarm_info);
+    infoText.setText(info);
     TextView snoozeInfo = (TextView) findViewById(R.id.notify_snooze_time);
     snoozeInfo.setText(getString(R.string.snooze) + "\n"
         + settings.getSnoozeMinutes() + " " + getString(R.string.minutes));
