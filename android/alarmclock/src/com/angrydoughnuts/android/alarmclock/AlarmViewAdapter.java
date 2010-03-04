@@ -73,7 +73,9 @@ class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
 
     nextView.setText(time.timeUntilString(getContext()));
     labelView.setText(info.getName());
-    repeatView.setText(info.getTime().getDaysOfWeek().toString(getContext()));
+    if (!info.getTime().getDaysOfWeek().equals(Week.NO_REPEATS)) {
+      repeatView.setText(info.getTime().getDaysOfWeek().toString(getContext()));
+    }
     enabledView.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
