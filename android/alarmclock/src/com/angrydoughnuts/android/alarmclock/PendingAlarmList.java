@@ -35,7 +35,7 @@ public class PendingAlarmList {
     // pending intent must be different.  This means that we must encode
     // the alarm id in the data section of the intent rather than in
     // the extras bundle.
-    Intent notifyIntent = new Intent(context, AlarmBroadcastReceiver.class);
+    Intent notifyIntent = new Intent(context, ReceiverAlarm.class);
     notifyIntent.setData(AlarmClockService.alarmIdToUri(alarmId));
     PendingIntent scheduleIntent =
       PendingIntent.getBroadcast(context, 0, notifyIntent, 0);

@@ -83,7 +83,7 @@ public class AlarmClockService extends Service {
     notification = new Notification(R.drawable.icon, null, 0);
     notification.flags |= Notification.FLAG_ONGOING_EVENT;
 
-    NotificationRefreshReceiver.startRefreshing(getApplicationContext());
+    ReceiverNotificationRefresh.startRefreshing(getApplicationContext());
   }
 
   // TODO(cgallek): This method breaks compatibility with SDK version < 5.
@@ -130,7 +130,7 @@ public class AlarmClockService extends Service {
     }
 
     // Make the notification launch the UI Activity when clicked.
-    final Intent notificationIntent = new Intent(this, AlarmClockActivity.class);
+    final Intent notificationIntent = new Intent(this, ActivityAlarmClock.class);
     final PendingIntent launch = PendingIntent.getActivity(this, 0,
         notificationIntent, 0);
 
@@ -149,7 +149,7 @@ public class AlarmClockService extends Service {
     super.onDestroy();
     db.closeConnections();
 
-    NotificationRefreshReceiver.stopRefreshing(getApplicationContext());
+    ReceiverNotificationRefresh.stopRefreshing(getApplicationContext());
 
     final NotificationManager manager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);

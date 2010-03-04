@@ -30,7 +30,7 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 //  - It does not support more than one active alarm at a time.  If a second
 //    alarm triggers while this Activity is running, it will silently snooze
 //    the first alarm and start the second.
-public class AlarmNotificationActivity extends Activity {
+public class ActivityAlarmNotification extends Activity {
   enum AckStates { UNACKED, ACKED, SNOOZED }
 
   // Per-intent members.
@@ -264,11 +264,11 @@ public class AlarmNotificationActivity extends Activity {
     switch (ack) {
       case SNOOZED:
         service.snoozeAlarmFor(alarmId, settings.getSnoozeMinutes());
-        AlarmBroadcastReceiver.wakeLock().release();
+        ReceiverAlarm.wakeLock().release();
         break;
       case ACKED:
         service.dismissAlarm(alarmId);
-        AlarmBroadcastReceiver.wakeLock().release();
+        ReceiverAlarm.wakeLock().release();
         break;
       default:
         throw new IllegalStateException("Unknow alarm notification state.");

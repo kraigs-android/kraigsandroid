@@ -11,7 +11,7 @@ import android.os.RemoteException;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-public class PendingAlarmsActivity extends Activity {
+public class ActivityPendingAlarms extends Activity {
   boolean connected;
   private ListView listView;
   

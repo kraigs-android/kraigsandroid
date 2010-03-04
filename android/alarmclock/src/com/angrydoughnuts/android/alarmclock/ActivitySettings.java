@@ -23,7 +23,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 
-public class SettingsActivity extends Activity {
+public class ActivitySettings extends Activity {
   static public final String EXTRAS_ALARM_ID = "alarm_id";
 
   private enum SettingType { TONE, SNOOZE, VIBRATE, VOLUME_FADE; }

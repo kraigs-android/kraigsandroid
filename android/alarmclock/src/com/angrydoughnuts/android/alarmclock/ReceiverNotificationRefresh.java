@@ -6,7 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-public class NotificationRefreshReceiver extends BroadcastReceiver {
+public class ReceiverNotificationRefresh extends BroadcastReceiver {
 
   public static void startRefreshing(Context context) {
     context.sendBroadcast(intent(context));
@@ -18,7 +18,7 @@ public class NotificationRefreshReceiver extends BroadcastReceiver {
   }
 
   private static Intent intent(Context context) {
-    return new Intent(context, NotificationRefreshReceiver.class);
+    return new Intent(context, ReceiverNotificationRefresh.class);
   }
 
   private static PendingIntent pendingIntent(Context context) {

@@ -24,7 +24,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.AdapterView.OnItemClickListener;
 
-public class AlarmClockActivity extends Activity {
+public class ActivityAlarmClock extends Activity {
   private enum Dialogs { DEBUG, TIME_PICKER };
   private enum Menus { DEFAULT_SETTINGS };
 
@@ -73,7 +73,7 @@ public class AlarmClockActivity extends Activity {
       @Override
       public void onClick(View v) {
         startActivity(
-            new Intent(getApplicationContext(), PendingAlarmsActivity.class));
+            new Intent(getApplicationContext(), ActivityPendingAlarms.class));
       }
     });
 
@@ -91,8 +91,8 @@ public class AlarmClockActivity extends Activity {
       @Override
       public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
         AlarmInfo info = (AlarmInfo) adapter.getItemAtPosition(position);
-        Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
-        i.putExtra(SettingsActivity.EXTRAS_ALARM_ID, info.getAlarmId());
+        Intent i = new Intent(getApplicationContext(), ActivitySettings.class);
+        i.putExtra(ActivitySettings.EXTRAS_ALARM_ID, info.getAlarmId());
         startActivity(i);
       }
     });
@@ -159,9 +159,9 @@ public class AlarmClockActivity extends Activity {
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (Menus.values()[item.getItemId()]) {
       case DEFAULT_SETTINGS:
-        Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
+        Intent i = new Intent(getApplicationContext(), ActivitySettings.class);
         i.putExtra(
-            SettingsActivity.EXTRAS_ALARM_ID, AlarmSettings.DEFAULT_SETTINGS_ID);
+            ActivitySettings.EXTRAS_ALARM_ID, AlarmSettings.DEFAULT_SETTINGS_ID);
         startActivity(i);
     }
     // TODO(cgallek): Should this still call the parent??

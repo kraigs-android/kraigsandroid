@@ -3,19 +3,19 @@
       android:versionCode="1" android:versionName="1.0.0" xmlns:android="http://schemas.android.com/apk/res/android">
 
   <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true">
-    <activity android:name=".AlarmClockActivity">
+    <activity android:name=".ActivityAlarmClock">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"></action>
         <category android:name="android.intent.category.LAUNCHER"></category>
       </intent-filter>
     </activity>
-    <activity android:name="AlarmNotificationActivity" android:screenOrientation="portrait" android:launchMode="singleInstance"></activity>
-    <activity android:name="SettingsActivity"></activity>
-    <activity android:name="PendingAlarmsActivity"></activity>
+    <activity android:name="ActivityAlarmNotification" android:screenOrientation="portrait" android:launchMode="singleInstance"></activity>
+    <activity android:name="ActivitySettings"></activity>
+    <activity android:name="ActivityPendingAlarms"></activity>
     <service android:name="AlarmClockService"></service>
-    <receiver android:name="AlarmBroadcastReceiver"></receiver>
-    <receiver android:name="NotificationRefreshReceiver"></receiver>
-    <receiver android:name="DeviceBootReceiver">
+    <receiver android:name="ReceiverAlarm"></receiver>
+    <receiver android:name="ReceiverNotificationRefresh"></receiver>
+    <receiver android:name="ReceiverDeviceBoot">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED"></action>
       </intent-filter>

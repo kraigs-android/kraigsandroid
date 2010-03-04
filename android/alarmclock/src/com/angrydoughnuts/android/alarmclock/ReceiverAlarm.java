@@ -1,6 +1,6 @@
 package com.angrydoughnuts.android.alarmclock;
 
-import com.angrydoughnuts.android.alarmclock.AlarmNotificationActivity;
+import com.angrydoughnuts.android.alarmclock.ActivityAlarmNotification;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,7 +9,7 @@ import android.net.Uri;
 import android.os.PowerManager;
 
 
-public class AlarmBroadcastReceiver extends BroadcastReceiver {
+public class ReceiverAlarm extends BroadcastReceiver {
 
   // TODO(cgallek):  I don't think this is safe to do.  The Broadcast receiver can
   // be destroyed as soon as onReceive completes.  But I don't know of any other
@@ -31,7 +31,7 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
     }
     wakeLock.acquire();
 
-    Intent notifyIntent = new Intent(context, AlarmNotificationActivity.class);
+    Intent notifyIntent = new Intent(context, ActivityAlarmNotification.class);
     notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     notifyIntent.setData(alarmUri);
 
