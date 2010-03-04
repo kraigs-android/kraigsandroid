@@ -56,6 +56,7 @@ public class DbAccessor {
     return count > 0;
   }
 
+  // TODO(cgallek) most of these can be removed in favor of readAlarmInfo()
   public boolean enableAlarm(long alarmId, boolean enabled) {
     ContentValues values = new ContentValues(1);
     values.put(DbHelper.ALARMS_COL_ENABLED, enabled);
@@ -91,8 +92,33 @@ public class DbAccessor {
     return time;
   }
 
-  // TODO(cgallek): use a settings object instead of individual
-  // parameters.
+  public boolean writeAlarmInfo(long alarmId, AlarmInfo info) {
+    return rwDb.update(DbHelper.DB_TABLE_ALARMS, info.contentValues(),
+          DbHelper.ALARMS_COL__ID + " = " + alarmId, null) == 1;
+  }
+
+  public Cursor readAlarmInfo() {
+    Cursor cursor = rDb.query(DbHelper.DB_TABLE_ALARMS, AlarmInfo.contentColumns(),
+        null, null, null, null, null);
+    return cursor;
+  }
+
+  public AlarmInfo readAlarmInfo(long alarmId) {
+    Cursor cursor = rDb.query(DbHelper.DB_TABLE_ALARMS, 
+        AlarmInfo.contentColumns(),
+        DbHelper.ALARMS_COL__ID + " = " + alarmId, null, null, null, null);
+
+    if (cursor.getCount() != 1) {
+      cursor.close();
+      return null;
+    }
+
+    cursor.moveToFirst();
+    AlarmInfo info = new AlarmInfo(cursor);
+    cursor.close();
+    return info;
+  }
+
   public boolean writeAlarmSettings(long alarmId, AlarmSettings settings) {
     Cursor cursor = rDb.query(DbHelper.DB_TABLE_SETTINGS,
         new String[] { DbHelper.SETTINGS_COL_ID },
