@@ -26,7 +26,8 @@ public class SettingsActivity extends Activity {
 
   private final int TONE_SETTING = 0;
   private final int SNOOZE_SETTING = 1;
-  private final int TOTAL_SETTINGS = 2;
+  private final int VIBRATE_SETTING = 2;
+  private final int TOTAL_SETTINGS = 3;
 
   private final int MISSING_EXTRAS = -69;
   private final int TONE_PICK_ID = 1;
@@ -79,6 +80,7 @@ public class SettingsActivity extends Activity {
       }
     });
 
+    // TODO(cgallek): move all these strings to strings.xml
     Setting[] settingsObjects = new Setting[TOTAL_SETTINGS];
     settingsObjects[TONE_SETTING] = new Setting() {
       @Override
@@ -92,6 +94,12 @@ public class SettingsActivity extends Activity {
       public String name() { return "Snooze (minutes)"; }
       @Override
       public String value() { return "" + settings.getSnoozeMinutes(); }      
+    };
+    settingsObjects[VIBRATE_SETTING] = new Setting() {
+      @Override
+      public String name() { return "Vibrate"; }
+      @Override
+      public String value() { return settings.getVibrate() ? "Enabled" : "Disabled"; }
     };
     
     ListView settingsList = (ListView) findViewById(R.id.settings_list);
@@ -176,6 +184,9 @@ public class SettingsActivity extends Activity {
         case SNOOZE_SETTING:
           showDialog(SNOOZE_PICK_ID);
           break;
+        case VIBRATE_SETTING:
+          settings.setVibrate(!settings.getVibrate());
+          adapter.notifyDataSetChanged();
       }
     }
   }
