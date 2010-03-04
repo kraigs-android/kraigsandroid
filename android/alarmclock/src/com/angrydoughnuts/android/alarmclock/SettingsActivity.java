@@ -3,19 +3,30 @@ package com.angrydoughnuts.android.alarmclock;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.AdapterView.OnItemClickListener;
 
 public class SettingsActivity extends Activity {
   static public final String EXTRAS_ALARM_ID = "alarm_id";
+
+  private final int TONE_SETTING = 0;
+  private final int SNOOZE_SETTING = 1;
+  private final int TOTAL_SETTINGS = 2;
 
   private final int MISSING_EXTRAS = -69;
   private final int TONE_PICK_ID = 1;
@@ -24,8 +35,7 @@ public class SettingsActivity extends Activity {
   private long alarmId;
   private DbAccessor db;
   private AlarmSettings settings;
-  private TextView tone;
-  private TextView snooze;
+  SettingsAdapter adapter;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -40,36 +50,6 @@ public class SettingsActivity extends Activity {
     db = new DbAccessor(getApplicationContext());
 
     settings = db.readAlarmSettings(alarmId);
-
-    tone = (TextView) findViewById(R.id.tone);
-    tone.setText(settings.getTone().toString());
-    tone.setOnClickListener(new OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        // TODO(cgallek): this is the wrong ringtone.
-        Uri current_tone = settings.getTone();
-        Intent i = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
-        i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALL);
-        i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
-        // TODO(cgallek): It would be nice to include the default, but the media
-        // player doesn't resolve this url...
-        i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false);
-        i.putExtra(RingtoneManager.EXTRA_RINGTONE_INCLUDE_DRM, true);
-        i.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, current_tone);
-        i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Default Alarm Tone");
-        // TODO(cgallek): Set the initially selected item.
-        startActivityForResult(i, TONE_PICK_ID);
-      }
-    });
-
-    snooze = (TextView) findViewById(R.id.snooze);
-    snooze.setText("----------------" + settings.getSnoozeMinutes());
-    snooze.setOnClickListener(new OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        showDialog(SNOOZE_PICK_ID);
-      }
-    });
 
     Button okButton = (Button) findViewById(R.id.settings_ok);
     okButton.setOnClickListener(new OnClickListener() {
@@ -99,6 +79,25 @@ public class SettingsActivity extends Activity {
       }
     });
 
+    Setting[] settingsObjects = new Setting[TOTAL_SETTINGS];
+    settingsObjects[TONE_SETTING] = new Setting() {
+      @Override
+      public String name() { return "Tone"; }
+      @Override
+      public String value() { return "" + settings.getTone().toString(); }
+      
+    };
+    settingsObjects[SNOOZE_SETTING] = new Setting() {
+      @Override
+      public String name() { return "Snooze (minutes)"; }
+      @Override
+      public String value() { return "" + settings.getSnoozeMinutes(); }      
+    };
+    
+    ListView settingsList = (ListView) findViewById(R.id.settings_list);
+    adapter = new SettingsAdapter(getApplicationContext(), R.layout.settings_item, settingsObjects);
+    settingsList.setAdapter(adapter);
+    settingsList.setOnItemClickListener(new SettingsListClickListener());
   }
 
   @Override
@@ -109,7 +108,7 @@ public class SettingsActivity extends Activity {
 
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    if (resultCode == RESULT_CANCELED) {
+    if (resultCode != RESULT_OK) {
       return;
     }
 
@@ -125,7 +124,7 @@ public class SettingsActivity extends Activity {
           // player.  Change it.
           uri = Settings.System.DEFAULT_RINGTONE_URI;
         }
-        tone.setText(uri.toString());
+        adapter.notifyDataSetChanged();
         settings.setTone(uri);
       default:
         super.onActivityResult(requestCode, resultCode, data);
@@ -151,13 +150,63 @@ public class SettingsActivity extends Activity {
             new DialogInterface.OnClickListener() {
           public void onClick(DialogInterface dialog, int item) {
             settings.setSnoozeMinutes(item + 1);
-            snooze.setText("----------------" + settings.getSnoozeMinutes());
+            adapter.notifyDataSetChanged();
             dismissDialog(SNOOZE_PICK_ID);
           }
         });
         return builder.create();
       default:
         return super.onCreateDialog(id);
+    }
+  }
+
+  class SettingsListClickListener implements OnItemClickListener {
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+      switch (position) {
+        case TONE_SETTING:
+          // TODO(cgallek): this is the wrong ringtone.
+          Uri current_tone = settings.getTone();
+          Intent i = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+          i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALL);
+          i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
+          // TODO(cgallek): It would be nice to include the default, but the media
+          // player doesn't resolve this url...
+          i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false);
+          i.putExtra(RingtoneManager.EXTRA_RINGTONE_INCLUDE_DRM, true);
+          i.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, current_tone);
+          i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Default Alarm Tone");
+          // TODO(cgallek): Set the initially selected item.
+          startActivityForResult(i, TONE_PICK_ID);
+          break;
+        case SNOOZE_SETTING:
+          showDialog(SNOOZE_PICK_ID);
+          break;
+      }
+    }
+  }
+
+  private abstract class Setting {
+    public abstract String name();
+    public abstract String value();
+  }
+
+  private class SettingsAdapter extends ArrayAdapter<Setting> {
+    public SettingsAdapter(Context context, int textViewResourceId,
+        Setting[] settingsObjects) {
+      super(context, textViewResourceId, settingsObjects);
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+      LayoutInflater inflater = getLayoutInflater();
+      View row = inflater.inflate(R.layout.settings_item, null); 
+      TextView name = (TextView) row.findViewById(R.id.setting_name);
+      TextView value = (TextView) row.findViewById(R.id.setting_value);
+      Setting setting = getItem(position);
+      name.setText(setting.name());
+      value.setText(setting.value());
+      return row;
     }
   }
 }
