@@ -17,9 +17,9 @@ public class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
   }
 
   @Override
-  public void newAlarm(int minutesAfterMidnight) throws RemoteException {
-    Toast.makeText(context, "SCHEDULE ALARM! " + minutesAfterMidnight, Toast.LENGTH_SHORT).show();
-    service.newAlarm(minutesAfterMidnight);
+  public void createAlarm(CalendarParcel calendar) throws RemoteException {
+    Toast.makeText(context, "SCHEDULE ALARM! " + TimeUtil.calendarToClockString(calendar.calendar()), Toast.LENGTH_SHORT).show();
+    service.createAlarm(calendar.calendar());
   }
 
   @Override

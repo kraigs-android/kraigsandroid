@@ -45,11 +45,7 @@ public class AlarmClockActivity extends Activity {
         testTime.add(Calendar.SECOND, 5);
         // TODO(cgallek): this is going to break if seconds are removed
         // from this service method.
-        int schedTime = TimeUtil.minutesAfterMidnight(
-            testTime.get(Calendar.HOUR_OF_DAY),
-            testTime.get(Calendar.MINUTE),
-            testTime.get(Calendar.SECOND));
-        service.newAlarm(schedTime);
+        service.createAlarm(testTime);
         alarmListCursor.requery();
       }
     });
@@ -92,9 +88,11 @@ public class AlarmClockActivity extends Activity {
             new TimePickerDialog.OnTimeSetListener() {
               @Override
               public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                int minutesAfterMidnight =
-                  TimeUtil.minutesAfterMidnight(hourOfDay, minute, 0);
-                service.newAlarm(minutesAfterMidnight);
+                Calendar c = Calendar.getInstance();
+                c.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                c.set(Calendar.MINUTE, minute);
+                c.set(Calendar.SECOND, 0);
+                service.createAlarm(c);
                 alarmListCursor.requery();
               }
             },

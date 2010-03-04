@@ -4,10 +4,10 @@ import java.util.Calendar;
 
 public class TimeUtil {
 
-  public static int minutesAfterMidnight(int hour, int minute, int second) {
-    // TODO(cgallek): actually using seconds since midnight right now for testing.
-    // Change back to minutes.
-    return hour * 3600 + minute * 60 + second;
+  public static int minutesAfterMidnight(Calendar calendar) {
+    return calendar.get(Calendar.HOUR_OF_DAY) * 3600 +
+      calendar.get(Calendar.MINUTE) * 60 +
+      calendar.get(Calendar.SECOND);
   }
 
   public static Calendar minutesAfterMidnightToLocalCalendar(int minutesAfterMidnight) {
@@ -23,8 +23,7 @@ public class TimeUtil {
     return calendar;
   }
 
-  public static String minutesAfterMidnightToString(int minutesAfterMidnight) {
-    Calendar c = minutesAfterMidnightToLocalCalendar(minutesAfterMidnight);
+  public static String calendarToClockString(Calendar c) {
     return String.format("%02d", c.get(Calendar.HOUR_OF_DAY)) + ":" 
       + String.format("%02d", c.get(Calendar.MINUTE)) + ":" 
       + String.format("%02d", c.get(Calendar.SECOND));

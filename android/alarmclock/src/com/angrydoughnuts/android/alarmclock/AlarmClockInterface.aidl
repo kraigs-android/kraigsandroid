@@ -1,7 +1,9 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import com.angrydoughnuts.android.alarmclock.CalendarParcel;
+
 interface AlarmClockInterface {
-  void newAlarm(int minutesAfterMidnight);
+  void createAlarm(in CalendarParcel calendar);
   void deleteAlarm(long alarmId);
   void scheduleAlarm(long alarmId);
   void dismissAlarm(long alarmId);

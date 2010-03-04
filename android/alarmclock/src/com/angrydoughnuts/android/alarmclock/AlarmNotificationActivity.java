@@ -1,5 +1,7 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import java.util.Calendar;
+
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardLock;
@@ -98,7 +100,8 @@ public class AlarmNotificationActivity extends Activity {
       e.printStackTrace();
     }
 
-    String info = TimeUtil.minutesAfterMidnightToString(db.alarmTime(alarmId));
+    Calendar c = TimeUtil.minutesAfterMidnightToLocalCalendar(db.alarmTime(alarmId));
+    String info = TimeUtil.calendarToClockString(c);
     info += " [" + alarmId + "]";
     TextView alarmInfo = (TextView) findViewById(R.id.alarm_info);
     alarmInfo.setText(info);

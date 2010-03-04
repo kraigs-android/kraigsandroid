@@ -1,5 +1,6 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import java.util.Calendar;
 import java.util.TreeMap;
 
 import android.app.AlarmManager;
@@ -103,9 +104,11 @@ public class AlarmClockService extends Service {
     }
   }
 
-  public void newAlarm(int minutesAfterMidnight) {
+  public void createAlarm(Calendar calendar) {
     // TODO(cgallek): validate params??
     // Store the alarm in the persistent database.
+    // TODO(cgallek) switch db to use seconds after midnight.
+    int minutesAfterMidnight = TimeUtil.minutesAfterMidnight(calendar);
     long alarmId = db.newAlarm(minutesAfterMidnight);
     scheduleAlarm(alarmId);
   }
