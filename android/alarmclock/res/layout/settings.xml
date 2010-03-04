@@ -15,10 +15,8 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
 
-  <EditText android:text="Snooze"
+  <TextView android:text="Snooze"
     android:id="@+id/snooze"
-    android:inputType="number"
-    android:imeOptions="actionNext"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
 

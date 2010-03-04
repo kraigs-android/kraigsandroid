@@ -1,29 +1,31 @@
 package com.angrydoughnuts.android.alarmclock;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.TextView.OnEditorActionListener;
 
 public class SettingsActivity extends Activity {
   static public final String EXTRAS_ALARM_ID = "alarm_id";
 
   private final int MISSING_EXTRAS = -69;
   private final int TONE_PICK_ID = 1;
+  private final int SNOOZE_PICK_ID = 2;
 
   private long alarmId;
   private DbAccessor db;
   private AlarmSettings settings;
   private TextView tone;
+  private TextView snooze;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -60,20 +62,12 @@ public class SettingsActivity extends Activity {
       }
     });
 
-    EditText snooze = (EditText) findViewById(R.id.snooze);
-    snooze.setText("" + settings.getSnoozeMinutes());
-    // TODO(cgallek): this is not the correct handler for all text change
-    // events.
-    snooze.setOnEditorActionListener(new OnEditorActionListener() {
+    snooze = (TextView) findViewById(R.id.snooze);
+    snooze.setText("----------------" + settings.getSnoozeMinutes());
+    snooze.setOnClickListener(new OnClickListener() {
       @Override
-      public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-        try {
-          int minutes = Integer.parseInt(v.getText().toString());
-          settings.setSnoozeMinutes(minutes);
-          return true;
-        } catch (NumberFormatException e) {
-          return false;
-        }
+      public void onClick(View v) {
+        showDialog(SNOOZE_PICK_ID);
       }
     });
 
@@ -135,6 +129,35 @@ public class SettingsActivity extends Activity {
         settings.setTone(uri);
       default:
         super.onActivityResult(requestCode, resultCode, data);
+    }
+  }
+
+  @Override
+  protected Dialog onCreateDialog(int id) {
+    switch (id) {
+      case SNOOZE_PICK_ID:
+        // TODO(cgallek): this is silly...
+        final CharSequence[] items = {
+            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+            "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
+            "21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
+            "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
+            "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
+            "51", "52", "53", "54", "55", "56", "57", "58", "59", "60" };
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // TODO(cgallek): move this to strings.xml
+        builder.setTitle("Snooze (in minutes)");
+        builder.setSingleChoiceItems(items, settings.getSnoozeMinutes() - 1,
+            new DialogInterface.OnClickListener() {
+          public void onClick(DialogInterface dialog, int item) {
+            settings.setSnoozeMinutes(item + 1);
+            snooze.setText("----------------" + settings.getSnoozeMinutes());
+            dismissDialog(SNOOZE_PICK_ID);
+          }
+        });
+        return builder.create();
+      default:
+        return super.onCreateDialog(id);
     }
   }
 }
