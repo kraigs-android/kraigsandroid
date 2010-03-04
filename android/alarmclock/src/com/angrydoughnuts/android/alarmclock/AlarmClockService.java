@@ -1,6 +1,5 @@
 package com.angrydoughnuts.android.alarmclock;
 
-import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -46,7 +45,7 @@ public class AlarmClockService extends Service {
     }
 
     db = new DbAccessor(getApplicationContext());
-    pendingAlarms = new PendingAlarmList();
+    pendingAlarms = new PendingAlarmList(getApplicationContext());
 
     // TODO(cgallek): add a better notification icon.
     notification = new Notification(R.drawable.icon, null, 0);
@@ -150,52 +149,29 @@ public class AlarmClockService extends Service {
 
   public void scheduleAlarm(long alarmId) {
     // Schedule the next alarm.
-    setAlarm(alarmId, db.alarmTime(alarmId));
+    pendingAlarms.put(alarmId, db.alarmTime(alarmId));
 
     // Mark the alarm as enabled in the database.
     db.enableAlarm(alarmId, true);
+
+    refreshNotification();
   }
 
   public void dismissAlarm(long alarmId) {
     db.enableAlarm(alarmId, false);
-    clearAlarm(alarmId);
+    pendingAlarms.remove(alarmId);
     refreshNotification();
   }
 
   public void snoozeAlarm(long alarmId) {
+    // Clear the snoozed alarm.
+    pendingAlarms.remove(alarmId);
+
+    // Calculate the time for the next alarm.
     AlarmTime time = AlarmTime.snoozeInMillisUTC(db.readAlarmSettings(alarmId).getSnoozeMinutes());
-    clearAlarm(alarmId);
-    setAlarm(alarmId, time);
-  }
 
-  // In-memory only operations from here on...
-
-  private void setAlarm(long alarmId, AlarmTime time) {
-    // Intents are considered equal if they have the same action, data, type,
-    // class, and categories.  In order to schedule multiple alarms, every
-    // pending intent must be different.  This means that we must encode
-    // the alarm id in the data section of the intent rather than in
-    // the extras bundle.
-    Intent notifyIntent = new Intent(getApplicationContext(), AlarmBroadcastReceiver.class);
-    notifyIntent.setData(alarmIdToUri(alarmId));
-    PendingIntent scheduleIntent =
-      PendingIntent.getBroadcast(getApplicationContext(), 0, notifyIntent, 0);
-
-    // Previous instances of this intent will be overwritten in both
-    // the alarm manager and the pendingAlarms list.
-    AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-    alarmManager.set(AlarmManager.RTC_WAKEUP, time.calendar().getTimeInMillis(), scheduleIntent);
-    // Keep track of all scheduled alarms.
-    pendingAlarms.put(alarmId, time, scheduleIntent);
+    // Schedule it.
+    pendingAlarms.put(alarmId, time);
     refreshNotification();
-  }
-
-  private void clearAlarm(long alarmId) {
-    PendingIntent alarm = pendingAlarms.remove(alarmId);
-    if (alarm != null) {
-      AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-      alarmManager.cancel(alarm);
-      alarm.cancel();
-    }    
   }
 }
