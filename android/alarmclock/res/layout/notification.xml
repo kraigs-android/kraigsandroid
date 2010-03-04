@@ -4,6 +4,30 @@
   android:layout_width="fill_parent"
   android:layout_height="fill_parent">
 
+  <LinearLayout android:layout_weight="1"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
+    <Button android:text="@string/minus_five"
+      android:id="@+id/notify_snooze_minus_five"
+      android:layout_weight="1"
+      android:layout_width="wrap_content"
+      android:layout_height="fill_parent" />
+
+    <TextView android:id="@+id/notify_snooze_time"
+      android:layout_weight="1"
+      android:gravity="center"
+      android:inputType="textMultiLine"
+      android:textSize="18sp"
+      android:layout_width="wrap_content"
+      android:layout_height="fill_parent" />
+
+    <Button android:text="@string/plus_five"
+      android:id="@+id/notify_snooze_plus_five"
+      android:layout_weight="1"
+      android:layout_width="wrap_content"
+      android:layout_height="fill_parent" />
+  </LinearLayout>
+
   <DigitalClock android:id="@+id/clock"
     android:gravity="center"
     android:textSize="56sp"

@@ -48,6 +48,12 @@ public class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
     service.snoozeAlarm(alarmId);
   }
 
+  @Override
+  public void snoozeAlarmFor(long alarmId, int minutes) throws RemoteException {
+    debugToast("SNOOZE ALARM " + alarmId + " for " + minutes);
+    service.snoozeAlarmFor(alarmId, minutes);
+  }
+
   private void debugToast(String message) {
     if (AlarmClockService.debug(context)) {
       Toast.makeText(context, message, Toast.LENGTH_SHORT).show();

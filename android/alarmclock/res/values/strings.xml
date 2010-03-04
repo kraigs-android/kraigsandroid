@@ -8,4 +8,7 @@
     <string name="delete">Delete...</string>
     <string name="snooze">SNOOZE</string>
     <string name="dismiss">DISMISS</string>
+    <string name="plus_five">+5</string>
+    <string name="minus_five">-5</string>
+    <string name="minutes">minutes</string>
 </resources>

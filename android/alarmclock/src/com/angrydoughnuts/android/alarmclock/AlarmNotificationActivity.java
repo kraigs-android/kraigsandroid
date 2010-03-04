@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -21,6 +22,7 @@ public class AlarmNotificationActivity extends Activity {
   private AckStates ackState;
   private AlarmClockServiceBinder service;
   private DbAccessor db;
+  AlarmSettings settings;
   private KeyguardLock screenLock;
   private MediaPlayer mediaPlayer;
   private Handler handler;
@@ -38,6 +40,7 @@ public class AlarmNotificationActivity extends Activity {
 
     service = AlarmClockServiceBinder.newBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
+    settings = db.readAlarmSettings(alarmId);
     mediaPlayer = new MediaPlayer();
 
     handler = new Handler();
@@ -54,6 +57,32 @@ public class AlarmNotificationActivity extends Activity {
       public void onClick(View v) {
         ack(AckStates.SNOOZED);
         finish();
+      }
+    });
+
+    Button decreaseSnoozeButton = (Button) findViewById(R.id.notify_snooze_minus_five);
+    decreaseSnoozeButton.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        int snooze = settings.getSnoozeMinutes() - 5;
+        if (snooze < 5) {
+          snooze = 5;
+        }
+        settings.setSnoozeMinutes(snooze);
+        redraw();
+      }
+    });
+
+    Button increaseSnoozeButton = (Button) findViewById(R.id.notify_snooze_plus_five);
+    increaseSnoozeButton.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        int snooze = settings.getSnoozeMinutes() + 5;
+        if (snooze > 60) {
+          snooze = 60;
+        }
+        settings.setSnoozeMinutes(snooze);
+        redraw();
       }
     });
 
@@ -84,8 +113,8 @@ public class AlarmNotificationActivity extends Activity {
     super.onResume();
     screenLock.disableKeyguard();
     service.bind();
-    // TODO(cgallek): shouldn't be default.
-    Uri tone = db.readAlarmSettings(alarmId).getTone();
+
+    Uri tone = settings.getTone();
     mediaPlayer.reset();
     // TODO(cgallek): figure out how to make sure the volume is appropriate.
     mediaPlayer.setLooping(true);
@@ -100,16 +129,7 @@ public class AlarmNotificationActivity extends Activity {
 
     handler.post(volumeIncreaseCallback);
 
-    AlarmTime time = db.alarmTime(alarmId);
-    String info = time.toString();
-    if (AlarmClockService.debug(getApplicationContext())) {
-      info += " [" + alarmId + "]";
-      findViewById(R.id.volume).setVisibility(View.VISIBLE);
-    } else {
-      findViewById(R.id.volume).setVisibility(View.GONE);
-    }
-    TextView alarmInfo = (TextView) findViewById(R.id.alarm_info);
-    alarmInfo.setText(info);
+    redraw();
   }
 
   @Override
@@ -135,6 +155,22 @@ public class AlarmNotificationActivity extends Activity {
     }
   }
 
+  void redraw() {
+    AlarmTime time = db.alarmTime(alarmId);
+    String info = time.toString();
+    if (AlarmClockService.debug(getApplicationContext())) {
+      info += " [" + alarmId + "]";
+      findViewById(R.id.volume).setVisibility(View.VISIBLE);
+    } else {
+      findViewById(R.id.volume).setVisibility(View.GONE);
+    }
+    TextView alarmInfo = (TextView) findViewById(R.id.alarm_info);
+    alarmInfo.setText(info);
+    TextView snoozeInfo = (TextView) findViewById(R.id.notify_snooze_time);
+    snoozeInfo.setText(getString(R.string.snooze) + "\n"
+        + settings.getSnoozeMinutes() + " " + getString(R.string.minutes));
+  }
+
   // TODO(cgallek): this wake lock must be released once and exactly once
   // for every lock that is acquired in the BroadcastReceiver.  This
   // method should make sure it's released for every instance of this
@@ -150,7 +186,7 @@ public class AlarmNotificationActivity extends Activity {
 
     switch (ack) {
       case SNOOZED:
-        service.snoozeAlarm(alarmId);
+        service.snoozeAlarmFor(alarmId, settings.getSnoozeMinutes());
         AlarmBroadcastReceiver.wakeLock().release();
         break;
       case ACKED:

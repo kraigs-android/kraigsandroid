@@ -193,11 +193,15 @@ public class AlarmClockService extends Service {
   }
 
   public void snoozeAlarm(long alarmId) {
+    snoozeAlarmFor(alarmId, db.readAlarmSettings(alarmId).getSnoozeMinutes());
+  }
+
+  public void snoozeAlarmFor(long alarmId, int minutes) {
     // Clear the snoozed alarm.
     pendingAlarms.remove(alarmId);
 
     // Calculate the time for the next alarm.
-    AlarmTime time = AlarmTime.snoozeInMillisUTC(db.readAlarmSettings(alarmId).getSnoozeMinutes());
+    AlarmTime time = AlarmTime.snoozeInMillisUTC(minutes);
 
     // Schedule it.
     pendingAlarms.put(alarmId, time);

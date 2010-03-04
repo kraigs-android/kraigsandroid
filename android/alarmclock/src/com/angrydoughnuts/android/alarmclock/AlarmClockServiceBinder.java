@@ -122,4 +122,13 @@ public class AlarmClockServiceBinder {
       }
     });
   }
+
+  public void snoozeAlarmFor(final long alarmId, final int minutes) {
+    runOrDefer(new ServiceCallback() {
+      @Override
+      public void run() throws RemoteException {
+        clock.snoozeAlarmFor(alarmId, minutes);
+      }
+    });
+  }
 }

@@ -8,5 +8,6 @@ interface AlarmClockInterface {
   void scheduleAlarm(long alarmId);
   void dismissAlarm(long alarmId);
   void snoozeAlarm(long alarmId);
+  void snoozeAlarmFor(long alarmId, int minutes);
   AlarmTime[] pendingAlarmTimes();
 }
