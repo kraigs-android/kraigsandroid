@@ -1,5 +1,6 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import java.util.Set;
 import java.util.TreeMap;
 
 import android.app.AlarmManager;
@@ -95,6 +96,10 @@ public class PendingAlarmList {
     AlarmTime[] times = new AlarmTime[alarmTimes.size()];
     alarmTimes.keySet().toArray(times);
     return times;
+  }
+
+  public Set<Long> pendingAlarms() {
+    return pendingAlarms.keySet();
   }
 
   private class PendingAlarm {

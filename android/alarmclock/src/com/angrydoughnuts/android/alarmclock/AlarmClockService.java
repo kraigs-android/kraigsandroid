@@ -17,6 +17,7 @@ public class AlarmClockService extends Service {
   public final static int COMMAND_UNKNOWN = 1;
   public final static int COMMAND_NOTIFICATION_REFRESH = 2;
   public final static int COMMAND_DEVICE_BOOT = 3;
+  public final static int COMMAND_TIMEZONE_CHANGE = 4;
 
   private final int NOTIFICATION_ID = 1;
   private DbAccessor db;
@@ -90,6 +91,17 @@ public class AlarmClockService extends Service {
         case COMMAND_DEVICE_BOOT:
           handler.post(maybeShutdown);
           break;
+        case COMMAND_TIMEZONE_CHANGE:
+          if (DebugUtil.isDebugMode(getApplicationContext())) {
+            Toast.makeText(getApplicationContext(), "TIMEZONE CHANGE, RESCHEDULING...", Toast.LENGTH_SHORT).show();
+          }
+          for (long alarmId : pendingAlarms.pendingAlarms()) {
+            scheduleAlarm(alarmId);
+          }
+          handler.post(maybeShutdown);
+          break;
+        default:
+          throw new IllegalArgumentException("Unknown service command.");
       }
     }
   }

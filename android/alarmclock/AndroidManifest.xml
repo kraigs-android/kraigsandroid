@@ -20,6 +20,11 @@
         <action android:name="android.intent.action.BOOT_COMPLETED"></action>
       </intent-filter>
     </receiver>
+    <receiver android:name="RecevierTimeZoneChange">
+      <intent-filter>
+        <action android:name="android.intent.action.TIMEZONE_CHANGED"></action>
+      </intent-filter>
+    </receiver>
   </application>
 
   <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="5"/>
