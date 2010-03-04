@@ -30,11 +30,12 @@ class AlarmViewAdapter extends ResourceCursorAdapter {
     CheckBox enabledView = (CheckBox) view.findViewById(R.id.alarm_enabled);
 
     AlarmTime time = new AlarmTime(cursor.getInt(timeIndex));
-    String label = time.toString();
+    String timeStr = time.localizedString(context);
+    String alarmId = "";
     if (AlarmClockService.debug(context)) {
-      label += " [" + cursor.getLong(idIndex) + "]";
+      alarmId = " [" + cursor.getLong(idIndex) + "] ";
     }
-    timeView.setText(label);
+    timeView.setText(alarmId + timeStr);
     enabledView.setChecked(cursor.getInt(enabledIndex) != 0);
     // TODO(cgallek): This doesn't account for snoozed alarms :-\
     // Figure out how to get this information back from the service based

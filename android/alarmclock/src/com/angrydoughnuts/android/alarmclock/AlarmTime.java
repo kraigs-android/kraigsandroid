@@ -2,13 +2,17 @@ package com.angrydoughnuts.android.alarmclock;
 
 import java.util.Calendar;
 
+import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.format.DateFormat;
 
 public class AlarmTime implements Parcelable {
   private int secondsAfterMidnight;
   private Calendar asCalendar;
 
+  // TODO(cgallek) change this to use alarmId and pull the secondsAfterMidnight
+  // concept completely into this class.
   public AlarmTime(int secondsAfterMidnight) {
     this.secondsAfterMidnight = secondsAfterMidnight;
     this.asCalendar = Calendar.getInstance();
@@ -30,9 +34,35 @@ public class AlarmTime implements Parcelable {
   }
 
   public String toString() {
-    return String.format("%02d", asCalendar.get(Calendar.HOUR_OF_DAY)) + ":" 
+    return String.format("%02d", asCalendar.get(Calendar.HOUR_OF_DAY)) + ":"
     + String.format("%02d", asCalendar.get(Calendar.MINUTE)) + ":" 
     + String.format("%02d", asCalendar.get(Calendar.SECOND));
+  }
+
+  public String localizedString(Context context) {
+    boolean is24HourFormat = DateFormat.is24HourFormat(context);
+
+    String hour;
+    String suffix;
+    if (is24HourFormat) {
+      hour = String.format("%02d", asCalendar.get(Calendar.HOUR_OF_DAY));
+      suffix = "";
+    } else {
+      hour = String.format("%d", asCalendar.get(Calendar.HOUR));
+      if (asCalendar.get(Calendar.AM_PM) == Calendar.AM) {
+        suffix = " AM";
+      } else {
+        suffix = " PM";
+      }
+    }
+
+    String minute = String.format(":%02d", asCalendar.get(Calendar.MINUTE));
+    String second = "";
+    if (AlarmClockService.debug(context)) {
+      second = String.format(".%02d", asCalendar.get(Calendar.SECOND));
+    }
+
+    return hour + minute + second + suffix;
   }
 
   public int secondsAfterMidnight() {

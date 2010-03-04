@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -99,8 +100,7 @@ public class AlarmClockActivity extends Activity {
         // TODO(cgallek): replace this with default alarm time.
         int hour = now.get(Calendar.HOUR_OF_DAY);
         int minute = now.get(Calendar.MINUTE);
-
-        // TODO(cgallek): set 12hr/24hr based off of locale settings.
+        boolean is24Hour = DateFormat.is24HourFormat(getApplicationContext());
         return new TimePickerDialog(this,
             new TimePickerDialog.OnTimeSetListener() {
               @Override
@@ -113,7 +113,7 @@ public class AlarmClockActivity extends Activity {
                 alarmListCursor.requery();
               }
             },
-            hour, minute, false);
+            hour, minute, is24Hour);
       default:
         return super.onCreateDialog(id);
     }
