@@ -14,7 +14,10 @@ import android.widget.TextView;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public class AlarmNotificationActivity extends Activity {
+  enum AckStates { UNACKED, ACKED, SNOOZED }
+
   private long alarmId;
+  private AckStates ackState;
   private AlarmClockServiceBinder service;
   private DbAccessor db;
   private KeyguardLock screenLock;
@@ -28,6 +31,7 @@ public class AlarmNotificationActivity extends Activity {
     setContentView(R.layout.notification);
 
     alarmId = AlarmClockService.alarmUriToId(getIntent().getData());
+    ackState = AckStates.UNACKED;
 
     service = AlarmClockServiceBinder.newBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
@@ -42,12 +46,7 @@ public class AlarmNotificationActivity extends Activity {
     snoozeButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        // TODO(cgallek):  Currently the alarm will only be acknowledged if the ok
-        // button is pressed.  However, this dialog can be closed in other ways.
-        // figure out how to handle acknowledgements in those cases.  Maybe
-        // a notification item?
-        service.snoozeAlarm(alarmId);
-        AlarmBroadcastReceiver.wakeLock().release();
+        ack(AckStates.SNOOZED);
         finish();
       }
     });
@@ -66,12 +65,7 @@ public class AlarmNotificationActivity extends Activity {
       @Override
       public void onStopTrackingTouch(SeekBar seekBar) {
         if (seekBar.getProgress() > 75) {
-          // TODO(cgallek):  Currently the alarm will only be acknowledged if the ok
-          // button is pressed.  However, this dialog can be closed in other ways.
-          // figure out how to handle acknowledgements in those cases.  Maybe
-          // a notification item?
-          service.dismissAlarm(alarmId);
-          AlarmBroadcastReceiver.wakeLock().release();
+          ack(AckStates.ACKED);
           finish();
         }
         seekBar.setProgress(0);
@@ -108,6 +102,9 @@ public class AlarmNotificationActivity extends Activity {
   @Override
   protected void onPause() {
     super.onPause();
+    // If the user did not explicitly dismiss or snooze this alarm, snooze
+    // it as a default.
+    ack(AckStates.SNOOZED);
     mediaPlayer.stop();
     service.unbind();
     screenLock.reenableKeyguard();
@@ -118,7 +115,36 @@ public class AlarmNotificationActivity extends Activity {
     super.onDestroy();
     db.closeConnections();
     mediaPlayer.release();
+    if (ackState == AckStates.UNACKED) {
+      throw new IllegalStateException(
+          "Alarm notification was destroyed without ever being acknowledged.");
+    }
   }
-  // TODO(cgallek): Clicking the power button twice while this activity is
-  // in the foreground seems to bypass the keyguard...
+
+  // TODO(cgallek): this wake lock must be released once and exactly once
+  // for every lock that is acquired in the BroadcastReceiver.  This
+  // method should make sure it's released for every instance of this
+  // Activity, but I don't think that there is necessarily a one to one mappeing
+  // between broadcast events and instances of this activity.  Figure out how
+  // to handle this.
+  private void ack(AckStates ack) {
+    if (ackState != AckStates.UNACKED) {
+      return;
+    } else {
+      ackState = ack;
+    }
+
+    switch (ack) {
+      case SNOOZED:
+        service.snoozeAlarm(alarmId);
+        AlarmBroadcastReceiver.wakeLock().release();
+        break;
+      case ACKED:
+        service.dismissAlarm(alarmId);
+        AlarmBroadcastReceiver.wakeLock().release();
+        break;
+      default:
+        throw new IllegalStateException("Unknow alarm notification state.");
+    }
+  }
 }

@@ -123,14 +123,13 @@ public class AlarmClockService extends Service {
     db.enableAlarm(alarmId, true);
   }
 
-  public boolean dismissAlarm(long alarmId) {
+  public void dismissAlarm(long alarmId) {
     db.enableAlarm(alarmId, false);
     PendingIntent alarm = pendingAlarms.remove(alarmId);
     if (alarm != null) {
+      AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+      alarmManager.cancel(alarm);
       alarm.cancel();
-      return true;
-    } else {
-      return false;
     }
   }
 
@@ -150,9 +149,10 @@ public class AlarmClockService extends Service {
     PendingIntent scheduleIntent =
       PendingIntent.getBroadcast(getApplicationContext(), 0, notifyIntent, 0);
 
+    // Previous instances of this intent will be overwritten in both
+    // the alarm manager and the pendingAlarms list.
     AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
     alarmManager.set(AlarmManager.RTC_WAKEUP, time.nextLocalOccuranceInMillisUTC(), scheduleIntent);
-    // TODO(cgallek): make sure ID doesn't exist yet?
     // Keep track of all scheduled alarms.
     pendingAlarms.put(alarmId, scheduleIntent);
     
