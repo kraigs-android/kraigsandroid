@@ -7,14 +7,26 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 
 public class AlarmClockService extends Service {
   // TODO(cgallek): Move this to a utility file?
+  public enum DebugMode { DEFAULT, DEBUG, NO_DEBUG };
+  // TODO(cgallek):  This is a non-persistent thread local variable.
+  // Consider making it a preference.
+  public static DebugMode mode = DebugMode.DEFAULT;
   static public boolean debug(Context c) {
-    return (c.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) > 0;
+    switch (mode) {
+      case DEBUG:
+        return true;
+      case NO_DEBUG:
+        return false;
+      default:
+        return (c.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) > 0;
+    }
   }
 
   public final static String COMMAND_EXTRA = "command";
@@ -38,7 +50,7 @@ public class AlarmClockService extends Service {
   @Override
   public void onCreate() {
     super.onCreate();
-    if (debug(getApplicationContext())) {
+    if (getPackageManager().checkPermission("android.permission.WRITE_EXTERNAL_STORAGE", getPackageName()) == PackageManager.PERMISSION_GRANTED) {
       Thread.setDefaultUncaughtExceptionHandler(new LoggingUncaughtExceptionHandler("/sdcard"));
     }
 
