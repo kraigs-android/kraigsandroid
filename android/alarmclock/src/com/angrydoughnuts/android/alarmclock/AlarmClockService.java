@@ -109,7 +109,7 @@ public class AlarmClockService extends Service {
     timerThread.schedule(task, seconds * 1000);
   }
 
-  public boolean clearAlarm(int alarmId) {
+  public boolean acknowledgeAlarm(int alarmId) {
     AlarmClockTimerTask task = taskList.remove(alarmId);
     if (task != null) {
       task.cancel();

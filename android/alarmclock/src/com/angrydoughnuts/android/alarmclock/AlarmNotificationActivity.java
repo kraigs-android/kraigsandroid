@@ -47,7 +47,7 @@ public class AlarmNotificationActivity extends Activity {
       public void onClick(View v) {
         Bundle extras = getIntent().getExtras();
         int id = extras.getInt("task_id");
-        service.clearAlarm(id);
+        service.acknowledgeAlarm(id);
         finish();
       }
     });
