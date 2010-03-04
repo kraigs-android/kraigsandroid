@@ -18,6 +18,7 @@ public class AlarmClockService extends Service {
 
   private Timer timerThread;
   private Handler uiHandler;
+  private PowerManager.WakeLock wakeLock;
 
   @Override
   public void onStart(Intent intent, int startId) {
@@ -32,8 +33,14 @@ public class AlarmClockService extends Service {
     // to ensure this?
     uiHandler = new Handler();
 
-    final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    PowerManager powerManager =
+      (PowerManager) getSystemService(Context.POWER_SERVICE);
+    wakeLock = powerManager.newWakeLock(
+        PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
+        "Alarm Notification Wake Lock");
+    wakeLock.setReferenceCounted(false);
 
+    final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     // TODO(cgallek): add a better notification icon.
     Notification notification = new Notification(R.drawable.icon, null, 0);
     notification.flags |= Notification.FLAG_ONGOING_EVENT;
@@ -110,6 +117,7 @@ public class AlarmClockService extends Service {
   }
 
   public boolean acknowledgeAlarm(int alarmId) {
+    wakeLock.release();
     AlarmClockTimerTask task = taskList.remove(alarmId);
     if (task != null) {
       task.cancel();
@@ -132,23 +140,8 @@ public class AlarmClockService extends Service {
     notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     notifyIntent.putExtra("task_id", alarmId);
 
-    // TODO(cgallek) Currently, both this service and the Notification
-    // Activity manage power settings. It might make sense to move all
-    // power management into the service. This would require a callback
-    // from the Notification application. I'm not sure how to get a
-    // response from an activity started from a service...
-    // I think there also might be a race condition between the
-    // startActivity call and the wake lock release call below (ie if
-    // the lock is released before the activity actually starts). Moving
-    // all locking to this service would also fix that problem.
-    PowerManager manager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-    PowerManager.WakeLock wakeLock = manager.newWakeLock(
-        PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
-        "Alarm Service CPU wake lock");
     wakeLock.acquire();
 
     startActivity(notifyIntent);
-
-    wakeLock.release();
   }
 }
