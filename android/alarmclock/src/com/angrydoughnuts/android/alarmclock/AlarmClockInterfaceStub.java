@@ -14,6 +14,11 @@ public class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
   }
 
   @Override
+  public AlarmTime pendingAlarm(long alarmId) throws RemoteException {
+    return service.pendingAlarm(alarmId);
+  }
+
+  @Override
   public AlarmTime[] pendingAlarmTimes() throws RemoteException {
     return service.pendingAlarmTimes();
   }

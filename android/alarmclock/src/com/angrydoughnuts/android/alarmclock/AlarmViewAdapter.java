@@ -1,8 +1,15 @@
 package com.angrydoughnuts.android.alarmclock;
 
 import java.util.LinkedList;
+
+import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +23,7 @@ class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
   private LayoutInflater inflater;
   private DbAccessor db;
   private Cursor cursor;
+  private AlarmClockInterface clock;
 
   public AlarmViewAdapter(Context context, LayoutInflater inflater, AlarmClockServiceBinder service) {
     super(context, 0, new LinkedList<AlarmInfo>());
@@ -24,6 +32,10 @@ class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
     this.db = new DbAccessor(context);
     this.cursor = db.readAlarmInfo();
     loadData();
+
+    this.clock = null;
+    Intent i = new Intent(context, AlarmClockService.class);
+    context.bindService(i, connection, Service.BIND_AUTO_CREATE);
   }
 
   private void loadData() {
@@ -47,7 +59,18 @@ class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
     CheckBox enabledView = (CheckBox) view.findViewById(R.id.alarm_enabled);
 
     final AlarmInfo info = getItem(position);
-    AlarmTime time = new AlarmTime(info.getTime());
+
+    AlarmTime time = null;
+    // See if there is an instance of this alarm scheduled.
+    if (clock != null) {
+      try {
+        time = clock.pendingAlarm(info.getAlarmId());
+      } catch (RemoteException e) {}
+    }
+    // If we couldn't find a pending alarm, display the configured time.
+    if (time == null) {
+      time = new AlarmTime(info.getTime());
+    }
     String timeStr = time.localizedString(getContext());
     String alarmId = "";
     if (AlarmClockService.debug(getContext())) {
@@ -55,9 +78,7 @@ class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
     }
     timeView.setText(timeStr + alarmId);
     enabledView.setChecked(info.enabled());
-    // TODO(cgallek): This doesn't account for snoozed alarms :-\
-    // Figure out how to get this information back from the service based
-    // on actual scheduled times.
+
     nextView.setText(time.timeUntilString());
     enabledView.setOnClickListener(new OnClickListener() {
       @Override
@@ -65,17 +86,33 @@ class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
         CheckBox check = (CheckBox) v;
         if (check.isChecked()) {
           service.scheduleAlarm(info.getAlarmId());
+          requery();
         } else {
           service.dismissAlarm(info.getAlarmId());
+          requery();
         }
       }
     });
     return view;
   }
 
+  private ServiceConnection connection = new ServiceConnection() {
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+      clock = AlarmClockInterface.Stub.asInterface(service);
+      notifyDataSetChanged();
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+      clock = null;
+    }
+  };
+
   protected void finalize() throws Throwable {
     cursor.close();
     db.closeConnections();
+    getContext().unbindService(connection);
     super.finalize();
   }
 }

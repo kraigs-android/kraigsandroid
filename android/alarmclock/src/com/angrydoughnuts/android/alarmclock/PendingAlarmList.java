@@ -86,6 +86,11 @@ public class PendingAlarmList {
     return alarmTimes.firstKey();
   }
 
+  public AlarmTime pendingTime(long alarmId) {
+    PendingAlarm alarm = pendingAlarms.get(alarmId);
+    return alarm == null ? null : alarm.time();
+  }
+
   public AlarmTime[] pendingTimes() {
     AlarmTime[] times = new AlarmTime[alarmTimes.size()];
     alarmTimes.keySet().toArray(times);

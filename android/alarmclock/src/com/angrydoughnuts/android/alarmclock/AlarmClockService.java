@@ -188,6 +188,10 @@ public class AlarmClockService extends Service {
     }
   }
 
+  public AlarmTime pendingAlarm(long alarmId) {
+    return pendingAlarms.pendingTime(alarmId);
+  }
+
   public AlarmTime[] pendingAlarmTimes() {
     return pendingAlarms.pendingTimes();
   }
