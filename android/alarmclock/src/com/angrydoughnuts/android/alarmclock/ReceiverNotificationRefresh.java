@@ -31,9 +31,7 @@ public class ReceiverNotificationRefresh extends BroadcastReceiver {
     causeRefresh.putExtra(AlarmClockService.COMMAND_EXTRA, AlarmClockService.COMMAND_NOTIFICATION_REFRESH);
     context.startService(causeRefresh);
 
-    final int intervalMillis = 1000 * 60;  // every minute, on the minute.
-    long now = System.currentTimeMillis();
-    long next = now + intervalMillis - now % intervalMillis;
+    long next = AlarmUtil.nextIntervalInUTC(AlarmUtil.Interval.MINUTE);
     final AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
     manager.set(AlarmManager.RTC, next, pendingIntent(context));
   }

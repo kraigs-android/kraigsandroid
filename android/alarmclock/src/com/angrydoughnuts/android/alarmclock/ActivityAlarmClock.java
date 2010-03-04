@@ -104,12 +104,11 @@ public class ActivityAlarmClock extends Activity {
         redraw();
 
         // Schedule the next update on the next interval boundary.
-        int intervalMillis = 60 * 1000;  // every minute
+        AlarmUtil.Interval interval = AlarmUtil.Interval.MINUTE;
         if (DebugUtil.isDebugMode(getApplicationContext())) {
-          intervalMillis = 1000;  // every second
+          interval = AlarmUtil.Interval.SECOND;
         }
-        long now = System.currentTimeMillis();
-        long next = intervalMillis - now % intervalMillis;
+        long next = AlarmUtil.millisTillNextInterval(interval);
         handler.postDelayed(tickCallback, next);
       }
     };

@@ -87,9 +87,7 @@ public class ActivityAlarmNotification extends Activity {
           fallbackSound.play();
         }
 
-        int intervalMillis = 1000;  // every second
-        long now = System.currentTimeMillis();
-        long next = intervalMillis - now % intervalMillis;
+        long next = AlarmUtil.millisTillNextInterval(AlarmUtil.Interval.SECOND);
         handler.postDelayed(timeTick, next);
       }
     };
