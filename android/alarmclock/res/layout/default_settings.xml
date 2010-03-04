@@ -2,7 +2,7 @@
 <LinearLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:orientation="vertical"
-  android:layout_width="wrap_content"
+  android:layout_width="fill_parent"
   android:layout_height="wrap_content">
 
   <TextView android:text="Settings"
@@ -15,4 +15,21 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
 
+  <LinearLayout android:id="@+id/settings_buttons"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
+
+    <Button android:text="@string/ok"
+      android:id="@+id/settings_ok"
+      android:layout_weight="1"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content" />
+
+    <Button android:text="@string/cancel"
+      android:id="@+id/settings_cancel"
+      android:layout_weight="1"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content" />
+
+  </LinearLayout>
 </LinearLayout>

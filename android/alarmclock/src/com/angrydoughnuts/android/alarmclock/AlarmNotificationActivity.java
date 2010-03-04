@@ -57,7 +57,7 @@ public class AlarmNotificationActivity extends Activity {
     screenLock.disableKeyguard();
     service.bind();
     // TODO(cgallek): shouldn't be default.
-    Uri tone = Uri.parse(db.readDefaultAlarmSettings());
+    Uri tone = db.readDefaultAlarmSettings().getTone();
     mediaPlayer.reset();
     // TODO(cgallek): figure out how to make sure the volume is appropriate.
     mediaPlayer.setLooping(true);

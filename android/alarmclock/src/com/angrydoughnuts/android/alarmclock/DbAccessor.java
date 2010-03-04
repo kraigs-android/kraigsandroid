@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 
 public class DbAccessor {
   private DbHelper db;
@@ -74,45 +75,44 @@ public class DbAccessor {
 
   // TODO(cgallek): use a settings object instead of individual
   // parameters.
-  public boolean writeAlarmSettings(long alarmId, String tone) {
-    ContentValues values = new ContentValues(2);
-    values.put(DbHelper.SETTINGS_COL_ID, alarmId);
-    values.put(DbHelper.SETTINGS_COL_TONE_URL, tone);
-
+  public boolean writeAlarmSettings(long alarmId, AlarmSettings settings) {
     Cursor cursor = rDb.query(DbHelper.DB_TABLE_SETTINGS,
         new String[] { DbHelper.SETTINGS_COL_ID },
         DbHelper.SETTINGS_COL_ID + " = " + alarmId, null, null, null, null);
 
-    long count = 0;
+    boolean success = false;
     if (cursor.getCount() < 1) {
-      count = rwDb.insert(DbHelper.DB_TABLE_SETTINGS, null, values);
+      success = rwDb.insert(DbHelper.DB_TABLE_SETTINGS, null, settings.contentValues(alarmId)) > 0;
     } else {
-      count = rwDb.update(DbHelper.DB_TABLE_SETTINGS, values,
-          DbHelper.SETTINGS_COL_ID + " = " + alarmId, null);
+      success = rwDb.update(DbHelper.DB_TABLE_SETTINGS, settings.contentValues(alarmId),
+          DbHelper.SETTINGS_COL_ID + " = " + alarmId, null) == 1;
     }
     cursor.close();
-    return count == 1;
+    return success;
   }
 
-  public String readAlarmSettings(long alarmId) {
+  public AlarmSettings readAlarmSettings(long alarmId) {
     Cursor cursor = rDb.query(DbHelper.DB_TABLE_SETTINGS, 
         new String[] { DbHelper.SETTINGS_COL_ID, DbHelper.SETTINGS_COL_TONE_URL },
         DbHelper.SETTINGS_COL_ID + " = " + alarmId, null, null, null, null);
 
     if (cursor.getCount() != 1) {
       cursor.close();
-      return "default";
+      return new AlarmSettings();
     }
 
+    AlarmSettings settings = new AlarmSettings();
+
     cursor.moveToFirst();
-    String tone_url = cursor.getString(1);
+    Uri tone = Uri.parse(cursor.getString(cursor.getColumnIndex(DbHelper.SETTINGS_COL_TONE_URL)));
+    settings.setTone(tone);
     cursor.close();
-    return tone_url;
+    return settings;
   }
 
   // TODO(cgallek): remove this function in favor of returning
   // defaults from the previous function when id is not found.
-  public String readDefaultAlarmSettings() {
-    return readAlarmSettings(-1);
+  public AlarmSettings readDefaultAlarmSettings() {
+    return readAlarmSettings(AlarmSettings.DEFAULT_SETTINGS_ID);
   }
 }
