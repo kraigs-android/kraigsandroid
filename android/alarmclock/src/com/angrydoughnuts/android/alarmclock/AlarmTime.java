@@ -13,10 +13,15 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
   private Week daysOfWeek;
 
   public AlarmTime(int hourOfDay, int minute, int second) {
+    this(hourOfDay, minute, second, new Week());
+  }
+
+  public AlarmTime(int hourOfDay, int minute, int second, Week daysOfWeek) {
     this.calendar = Calendar.getInstance();
     calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
     calendar.set(Calendar.MINUTE, minute);
     calendar.set(Calendar.SECOND, second);
+    this.daysOfWeek = daysOfWeek;
     
     findNextOccurance();
   }
@@ -68,6 +73,10 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
 
   public Calendar calendar() {
     return calendar;
+  }
+
+  public Week getDaysOfWeek() {
+    return daysOfWeek;
   }
 
   public String timeUntilString(Context c) {

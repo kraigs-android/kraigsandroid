@@ -2,8 +2,6 @@ package com.angrydoughnuts.android.alarmclock;
 
 import java.util.Calendar;
 
-import com.angrydoughnuts.android.alarmclock.AlarmInfo.Day;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -114,7 +112,7 @@ public class ActivitySettings extends Activity {
         @Override
         public String name() { return getString(R.string.repeat); }
         @Override
-        public String value() { return info.getDaysOfWeekString(getApplicationContext()); }
+        public String value() { return info.getTime().getDaysOfWeek().toString(getApplicationContext()); }
       };
       alarmInfoAdapter = new SettingsAdapter(getApplicationContext(), alarmInfoObjects);
       alarmInfoList.setAdapter(alarmInfoAdapter);
@@ -256,15 +254,17 @@ public class ActivitySettings extends Activity {
         AlertDialog.Builder dowBuilder = new AlertDialog.Builder(this);
         dowBuilder.setTitle(R.string.scheduled_days);
         dowBuilder.setMultiChoiceItems(
-            info.getDaysOfWeek().names(getApplicationContext()),
-            info.getDaysOfWeek().bitmask(),
+            info.getTime().getDaysOfWeek().names(getApplicationContext()),
+            info.getTime().getDaysOfWeek().bitmask(),
             new OnMultiChoiceClickListener() {
               @Override
               public void onClick(DialogInterface dialog, int which, boolean isChecked) {
                 if (isChecked) {
-                  info.getDaysOfWeek().addDay(Day.values()[which]);
+                  info.getTime().getDaysOfWeek().addDay(Week.Day.values()[which]);
+                  info.makeDirty();
                 } else {
-                  info.getDaysOfWeek().removeDay(Day.values()[which]);
+                  info.getTime().getDaysOfWeek().removeDay(Week.Day.values()[which]);
+                  info.makeDirty();
                 }
               }
         });

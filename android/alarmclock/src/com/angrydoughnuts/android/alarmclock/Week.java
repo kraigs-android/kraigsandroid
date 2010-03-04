@@ -1,5 +1,6 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -13,6 +14,104 @@ public class Week implements Parcelable {
   @Override
   public void writeToParcel(Parcel dest, int flags) {
     dest.writeBooleanArray(bitmask);
+  }
+
+  public Week() {
+    bitmask = new boolean[Day.values().length];
+  }
+
+  public Week(boolean[] bitmask) {
+    if (bitmask.length != Day.values().length) {
+      throw new IllegalArgumentException("Wrong sized bitmask: " + bitmask.length);
+    }
+    this.bitmask = bitmask;
+  }
+
+  public boolean[] bitmask() {
+    return bitmask;
+  }
+
+  public void addDay(Day day) {
+    bitmask[day.ordinal()] = true;
+  }
+
+  public void removeDay(Day day) {
+    bitmask[day.ordinal()] = false;
+  }
+
+  public boolean hasDay(Day day) {
+    return bitmask[day.ordinal()];
+  }
+
+  public CharSequence[] names(Context context) {
+    CharSequence[] nameList = new CharSequence[Day.values().length];
+    for (Day day : Day.values()) {
+      nameList[day.ordinal()] = context.getString(day.stringId());
+    }
+    return nameList;
+  }
+
+  public String toString(Context context) {
+    final Week everyday = new Week(new boolean[] {true, true, true, true, true, true, true});
+    final Week weekdays = new Week(new boolean[] {false, true, true, true, true, true, false});
+    final Week weekends = new Week(new boolean[] {true, false, false, false, false, false, true});
+
+    if (this.equals(everyday)) {
+      return context.getString(R.string.everyday);
+    }
+    if (this.equals(weekdays)) {
+      return context.getString(R.string.weekdays);
+    }
+    if (this.equals(weekends)) {
+      return context.getString(R.string.weekends);
+    }
+    String list = "";
+    for (Day day : Day.values()) {
+      if (!bitmask[day.ordinal()]) {
+        continue;
+      }
+      switch (day) {
+        case SUN:
+          list += " " + context.getString(R.string.dow_sun_short);
+          break;
+        case MON:
+          list += " " + context.getString(R.string.dow_mon_short);
+          break;
+        case TUE:
+          list += " " + context.getString(R.string.dow_tue_short);
+          break;
+        case WED:
+          list += " " + context.getString(R.string.dow_wed_short);
+          break;
+        case THU:
+          list += " " + context.getString(R.string.dow_thu_short);
+          break;
+        case FRI:
+          list += " " + context.getString(R.string.dow_fri_short);
+          break;
+        case SAT:
+          list += " " + context.getString(R.string.dow_sat_short);
+          break;
+      }
+    }
+    return list;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof Week)) {
+      return false;
+    }
+    Week rhs = (Week) o;
+    if (bitmask.length != rhs.bitmask.length) {
+      return false;
+    }
+    for (Day day : Day.values()) {
+      if (bitmask[day.ordinal()] != rhs.bitmask[day.ordinal()]) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override
@@ -32,6 +131,7 @@ public class Week implements Parcelable {
       }
     };
 
+  // TODO(cgallek): This can probably be made private.
   public enum Day {
     SUN(R.string.dow_sun),
     MON(R.string.dow_mon),
