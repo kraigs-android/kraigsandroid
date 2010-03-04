@@ -92,16 +92,22 @@ public class AlarmNotificationActivity extends Activity {
     try {
       mediaPlayer.setDataSource(getApplicationContext(), tone);
       mediaPlayer.prepare();
-      handler.post(volumeIncreaseCallback);
       mediaPlayer.start();
     } catch (Exception e) {
       // TODO(cgallek): Come up with a better failure mode.
       e.printStackTrace();
     }
 
+    handler.post(volumeIncreaseCallback);
+
     AlarmTime time = db.alarmTime(alarmId);
     String info = time.toString();
-    info += " [" + alarmId + "]";
+    if (AlarmClockService.debug(getApplicationContext())) {
+      info += " [" + alarmId + "]";
+      findViewById(R.id.volume).setVisibility(View.VISIBLE);
+    } else {
+      findViewById(R.id.volume).setVisibility(View.GONE);
+    }
     TextView alarmInfo = (TextView) findViewById(R.id.alarm_info);
     alarmInfo.setText(info);
   }
@@ -171,6 +177,8 @@ public class AlarmNotificationActivity extends Activity {
     @Override
     public void run() {
       mediaPlayer.setVolume(value, value);
+      TextView volume = (TextView) findViewById(R.id.volume);
+      volume.setText("Volume: " + value);
       if (value >= 1) {
         return;
       }
