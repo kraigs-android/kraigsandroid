@@ -1,5 +1,7 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import java.util.Calendar;
+
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -134,6 +136,11 @@ public class Week implements Parcelable {
         return new Week[size];
       }
     };
+
+  public static Day calendarToDay(int dow) {
+    int ordinalOffset = dow - Calendar.SUNDAY;
+    return Day.values()[ordinalOffset];
+  }
 
   // TODO(cgallek): This can probably be made private.
   public enum Day {

@@ -3,6 +3,8 @@ package com.angrydoughnuts.android.alarmclock;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import com.angrydoughnuts.android.alarmclock.Week.Day;
+
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -33,10 +35,23 @@ public class AlarmTime implements Parcelable, Comparable<AlarmTime> {
       calendar.add(Calendar.DATE, 1);
     }
 
-    // TODO(cgallek): this is a little sloppy, clean it up.
     if (calendar.before(now)) {
       throw new IllegalStateException("Inconsistent calendar.");
-    }   
+    }
+
+    if (daysOfWeek.equals(Week.NO_REPEATS)) {
+      return;
+    }
+
+    for (int i = 0; i < Day.values().length; ++i) {
+      Day alarmDay = Week.calendarToDay(calendar.get(Calendar.DAY_OF_WEEK));
+      if (daysOfWeek.hasDay(alarmDay)) {
+        return;
+      }
+      calendar.add(Calendar.DATE, 1);
+    }
+
+    throw new IllegalStateException("Didn't find a suitable date for alarm.");
   }
 
   @Override
