@@ -54,6 +54,7 @@
   <string name="dow_thu">Thursday</string>
   <string name="dow_fri">Friday</string>
   <string name="dow_sat">Saturday</string>
+  <string name="no_repeats">No repeats</string>
   <string name="everyday">Every day</string>
   <string name="weekdays">Weekdays</string>
   <string name="weekends">Weekends</string>

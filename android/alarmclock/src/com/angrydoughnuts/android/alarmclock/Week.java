@@ -5,6 +5,11 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Week implements Parcelable {
+  public static final Week NO_REPEATS = new Week(new boolean[] {false, false, false, false, false, false, false});
+  public static final Week EVERYDAY = new Week(new boolean[] {true, true, true, true, true, true, true});
+  public static final Week WEEKDAYS = new Week(new boolean[] {false, true, true, true, true, true, false});
+  public static final Week WEEKENDS = new Week(new boolean[] {true, false, false, false, false, false, true});
+
   private boolean[] bitmask;
 
   public Week(Parcel source) {
@@ -52,17 +57,16 @@ public class Week implements Parcelable {
   }
 
   public String toString(Context context) {
-    final Week everyday = new Week(new boolean[] {true, true, true, true, true, true, true});
-    final Week weekdays = new Week(new boolean[] {false, true, true, true, true, true, false});
-    final Week weekends = new Week(new boolean[] {true, false, false, false, false, false, true});
-
-    if (this.equals(everyday)) {
+    if (this.equals(NO_REPEATS)) {
+      return context.getString(R.string.no_repeats);
+    }
+    if (this.equals(EVERYDAY)) {
       return context.getString(R.string.everyday);
     }
-    if (this.equals(weekdays)) {
+    if (this.equals(WEEKDAYS)) {
       return context.getString(R.string.weekdays);
     }
-    if (this.equals(weekends)) {
+    if (this.equals(WEEKENDS)) {
       return context.getString(R.string.weekends);
     }
     String list = "";
