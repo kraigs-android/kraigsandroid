@@ -119,11 +119,11 @@ public class AlarmClockServiceBinder {
     });
   }
 
-  public void snoozeAlarm(final long alarmId, final int minutes) {
+  public void snoozeAlarm(final long alarmId) {
     runOrDefer(new ServiceCallback() {
       @Override
       public void run() throws RemoteException {
-        clock.snoozeAlarm(alarmId, minutes);
+        clock.snoozeAlarm(alarmId);
       }
     });
   }

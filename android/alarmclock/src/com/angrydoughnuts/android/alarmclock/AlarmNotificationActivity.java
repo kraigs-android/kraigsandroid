@@ -46,8 +46,7 @@ public class AlarmNotificationActivity extends Activity {
         // button is pressed.  However, this dialog can be closed in other ways.
         // figure out how to handle acknowledgements in those cases.  Maybe
         // a notification item?
-        // TODO(cgallek): make snooze time configurable.
-        service.snoozeAlarm(alarmId, 10);
+        service.snoozeAlarm(alarmId);
         AlarmBroadcastReceiver.wakeLock().release();
         finish();
       }

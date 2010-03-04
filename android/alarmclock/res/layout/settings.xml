@@ -15,6 +15,17 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
 
+  <EditText android:text="Snooze"
+    android:id="@+id/snooze"
+    android:digits="true"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" />
+
+  <TextView android:id="@+id/spacer"
+    android:layout_weight="1"
+    android:layout_width="wrap_content"
+    android:layout_height="fill_parent" />
+
   <LinearLayout android:id="@+id/settings_buttons"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
@@ -39,4 +50,5 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
   
+
 </LinearLayout>

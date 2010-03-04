@@ -41,8 +41,8 @@ public class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
   }
 
   @Override
-  public void snoozeAlarm(long alarmId, int minutes) throws RemoteException {
-    Toast.makeText(context, "SNOOZE ALARM " + alarmId + " FOR " + minutes, Toast.LENGTH_SHORT).show();
-    service.snoozeAlarm(alarmId, minutes);
+  public void snoozeAlarm(long alarmId) throws RemoteException {
+    Toast.makeText(context, "SNOOZE ALARM " + alarmId, Toast.LENGTH_SHORT).show();
+    service.snoozeAlarm(alarmId);
   }
 }

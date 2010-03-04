@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 
 public class DbAccessor {
   private DbHelper db;
@@ -96,7 +95,7 @@ public class DbAccessor {
 
   public AlarmSettings readAlarmSettings(long alarmId) {
     Cursor cursor = rDb.query(DbHelper.DB_TABLE_SETTINGS, 
-        new String[] { DbHelper.SETTINGS_COL_ID, DbHelper.SETTINGS_COL_TONE_URL },
+        AlarmSettings.contentColumns(),
         DbHelper.SETTINGS_COL_ID + " = " + alarmId, null, null, null, null);
 
     if (cursor.getCount() != 1) {
@@ -109,11 +108,7 @@ public class DbAccessor {
       return readAlarmSettings(AlarmSettings.DEFAULT_SETTINGS_ID);
     }
 
-    AlarmSettings settings = new AlarmSettings();
-
-    cursor.moveToFirst();
-    Uri tone = Uri.parse(cursor.getString(cursor.getColumnIndex(DbHelper.SETTINGS_COL_TONE_URL)));
-    settings.setTone(tone);
+    AlarmSettings settings = new AlarmSettings(cursor);
     cursor.close();
     return settings;
   }

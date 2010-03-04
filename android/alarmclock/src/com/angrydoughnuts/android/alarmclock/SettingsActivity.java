@@ -6,10 +6,13 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 
 public class SettingsActivity extends Activity {
   static public final String EXTRAS_ALARM_ID = "alarm_id";
@@ -54,6 +57,23 @@ public class SettingsActivity extends Activity {
         i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Default Alarm Tone");
         // TODO(cgallek): Set the initially selected item.
         startActivityForResult(i, TONE_PICK_ID);
+      }
+    });
+
+    EditText snooze = (EditText) findViewById(R.id.snooze);
+    snooze.setText("" + settings.getSnoozeMinutes());
+    // TODO(cgallek): this is not the correct handler for all text change
+    // events.
+    snooze.setOnEditorActionListener(new OnEditorActionListener() {
+      @Override
+      public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        try {
+          int minutes = Integer.parseInt(v.getText().toString());
+          settings.setSnoozeMinutes(minutes);
+          return true;
+        } catch (NumberFormatException e) {
+          return false;
+        }
       }
     });
 

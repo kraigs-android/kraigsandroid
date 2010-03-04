@@ -130,8 +130,8 @@ public class AlarmClockService extends Service {
     }
   }
 
-  public void snoozeAlarm(long alarmId, int minutes) {
-    long alarmTime = TimeUtil.snoozeInUTC(minutes);
+  public void snoozeAlarm(long alarmId) {
+    long alarmTime = TimeUtil.snoozeInUTC(db.readAlarmSettings(alarmId).getSnoozeMinutes());
     setAlarm(alarmId, alarmTime);
   }
 
