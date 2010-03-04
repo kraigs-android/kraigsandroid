@@ -28,7 +28,9 @@ public class ActivityPendingAlarms extends Activity {
   protected void onResume() {
     super.onResume();
     Intent i = new Intent(getApplicationContext(), AlarmClockService.class);
-    bindService(i, connection, Service.BIND_AUTO_CREATE);
+    if (!bindService(i, connection, Service.BIND_AUTO_CREATE)) {
+      throw new IllegalStateException("Unable to bind to AlarmClockService.");
+    }
   }
 
   @Override
