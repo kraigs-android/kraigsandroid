@@ -92,6 +92,15 @@ public class AlarmClockServiceBinder {
     });
   }
 
+  public void deleteAlarm(final long alarmId) {
+    runOrDefer(new ServiceCallback() {
+      @Override
+      public void run() throws RemoteException {
+        clock.deleteAlarm(alarmId);
+      }
+    });
+  }
+
   public void scheduleAlarm(final long alarmId) {
     runOrDefer(new ServiceCallback() {
       @Override

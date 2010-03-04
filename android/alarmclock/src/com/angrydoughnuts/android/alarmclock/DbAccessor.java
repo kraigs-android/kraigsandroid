@@ -44,6 +44,12 @@ public class DbAccessor {
     return id;
   }
 
+  public boolean deleteAlarm(long alarmId) {
+    int count = rDb.delete(DbHelper.DB_TABLE_ALARMS,
+        DbHelper.ALARMS_COL_ID + " = " + alarmId, null);
+    return count > 0;
+  }
+
   public boolean enableAlarm(long alarmId, boolean enabled) {
     ContentValues values = new ContentValues(1);
     values.put(DbHelper.ALARMS_COL_ENABLED, enabled);

@@ -23,6 +23,12 @@ public class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
   }
 
   @Override
+  public void deleteAlarm(long alarmId) throws RemoteException {
+    Toast.makeText(context, "DELETE ALARM! " + alarmId, Toast.LENGTH_SHORT).show();
+    service.deleteAlarm(alarmId);
+  }
+
+  @Override
   public void scheduleAlarm(long alarmId) throws RemoteException {
     Toast.makeText(context, "SCHEDULE ALARM " + alarmId, Toast.LENGTH_SHORT).show();
     service.scheduleAlarm(alarmId);

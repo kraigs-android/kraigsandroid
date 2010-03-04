@@ -93,6 +93,11 @@ public class AlarmClockService extends Service {
     scheduleAlarm(alarmId);
   }
 
+  public void deleteAlarm(long alarmId) {
+    dismissAlarm(alarmId);
+    db.deleteAlarm(alarmId);
+  }
+
   public void scheduleAlarm(long alarmId) {
     // Schedule the next alarm.
     int minutesAfterMidnight = db.alarmTime(alarmId);

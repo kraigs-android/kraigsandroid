@@ -6,8 +6,10 @@ import android.app.Activity;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.AdapterView.OnItemClickListener;
 
 public class AlarmClockActivity extends Activity {
   private AlarmClockServiceBinder service;
@@ -40,6 +42,17 @@ public class AlarmClockActivity extends Activity {
     AlarmViewAdapter adapter = new AlarmViewAdapter(getApplicationContext(), R.layout.alarm_description, alarmListCursor, service);
     ListView alarmList = (ListView) findViewById(R.id.alarm_list);
     alarmList.setAdapter(adapter);
+    alarmList.setOnItemClickListener(new OnItemClickListener() {
+      @Override
+      public void onItemClick(AdapterView<?> adapter, View view, int position,
+          long id) {
+        alarmListCursor.moveToPosition(position);
+        long alarmId = alarmListCursor.getLong(
+            alarmListCursor.getColumnIndex(DbHelper.ALARMS_COL_ID));
+        service.deleteAlarm(alarmId);
+        alarmListCursor.requery();
+      }
+    });
   }
 
   @Override
