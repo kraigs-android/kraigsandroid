@@ -23,14 +23,19 @@ class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
     this.inflater = inflater;
     this.db = new DbAccessor(context);
     this.cursor = db.readAlarmInfo();
+    loadData();
+  }
+
+  private void loadData() {
+    while (cursor.moveToNext()) {
+      add(new AlarmInfo(cursor));
+    }
   }
 
   public void requery() {
     clear();
     cursor.requery();
-    while (cursor.moveToNext()) {
-      add(new AlarmInfo(cursor));
-    }
+    loadData();
     notifyDataSetChanged();
   }
 

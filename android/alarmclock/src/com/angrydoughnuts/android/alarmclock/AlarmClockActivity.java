@@ -64,7 +64,7 @@ public class AlarmClockActivity extends Activity {
             Calendar.HOUR_OF_DAY),
             testTime.get(Calendar.MINUTE),
             testTime.get(Calendar.SECOND)));
-        redraw();
+        adapter.requery();
       }
     });
 
@@ -84,8 +84,8 @@ public class AlarmClockActivity extends Activity {
       }
     });
 
-    adapter = new AlarmViewAdapter(getApplicationContext(), getLayoutInflater(), service);
     final ListView alarmList = (ListView) findViewById(R.id.alarm_list);
+    adapter = new AlarmViewAdapter(getApplicationContext(), getLayoutInflater(), service);
     alarmList.setAdapter(adapter);
     alarmList.setOnItemClickListener(new OnItemClickListener() {
       @Override
@@ -106,7 +106,7 @@ public class AlarmClockActivity extends Activity {
         // Schedule the next update on the next interval boundary.
         int intervalMillis = 60 * 1000;  // every minute
         if (AlarmClockService.debug(getApplicationContext())) {
-          intervalMillis = 5 * 1000;  // every 5 seconds
+          intervalMillis = 1000;  // every second
         }
         long now = System.currentTimeMillis();
         long next = intervalMillis - now % intervalMillis;
@@ -120,6 +120,7 @@ public class AlarmClockActivity extends Activity {
     super.onResume();
     service.bind();
     handler.post(tickCallback);
+    adapter.requery();
   }
 
   @Override
@@ -167,6 +168,9 @@ public class AlarmClockActivity extends Activity {
       pendingBtn.setVisibility(View.GONE);
     }
 
+    // Recompute expiration times in the list view
+    adapter.notifyDataSetChanged();
+
     // Update clock
     Calendar c = Calendar.getInstance();
     AlarmTime time = new AlarmTime(
@@ -174,9 +178,6 @@ public class AlarmClockActivity extends Activity {
         c.get(Calendar.MINUTE),
         c.get(Calendar.SECOND));
     clock.setText(time.localizedString(getApplicationContext()));
-
-    // Update the alarm list.
-    adapter.requery();
   }
 
   @Override
@@ -193,7 +194,7 @@ public class AlarmClockActivity extends Activity {
               @Override
               public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                 service.createAlarm(new AlarmTime(hourOfDay, minute, 0));
-                redraw();
+                adapter.requery();
               }
             },
             hour, minute, is24Hour);
