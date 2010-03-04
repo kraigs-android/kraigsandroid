@@ -43,7 +43,9 @@ public class AlarmSettings {
   }
 
   public AlarmSettings() {
-    tone = Settings.System.DEFAULT_ALARM_ALERT_URI;
+    // It would be nice to use DEFAULT_ALARM_ALERT_URI, but it's not available
+    // until SDK 5.
+    tone = Settings.System.DEFAULT_NOTIFICATION_URI;
     toneName = "Default";
     snoozeMinutes = 10;
     vibrate = false;

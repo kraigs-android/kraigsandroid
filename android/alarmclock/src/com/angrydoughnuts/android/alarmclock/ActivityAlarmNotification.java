@@ -64,7 +64,7 @@ public class ActivityAlarmNotification extends Activity {
     mediaPlayer = new MediaPlayer();
     mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
     fallbackSound = RingtoneManager.getRingtone(getApplicationContext(),
-        Settings.System.DEFAULT_ALARM_ALERT_URI); 
+        Settings.System.DEFAULT_NOTIFICATION_URI);
     if (fallbackSound == null) {
       Uri superFallback = RingtoneManager.getValidRingtoneUri(getApplicationContext());
       fallbackSound = RingtoneManager.getRingtone(getApplicationContext(), superFallback);

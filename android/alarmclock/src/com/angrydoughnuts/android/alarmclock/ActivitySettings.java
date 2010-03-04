@@ -209,7 +209,7 @@ public class ActivitySettings extends Activity {
         if (uri == null) {
           // This should never happen, but fall back to the phone ringer just
           // in case.
-          uri = Settings.System.DEFAULT_ALARM_ALERT_URI;
+          uri = Settings.System.DEFAULT_NOTIFICATION_URI;
         }
         Context c = getApplicationContext();
         Ringtone tone = RingtoneManager.getRingtone(c, uri);
@@ -374,7 +374,7 @@ public class ActivitySettings extends Activity {
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALL);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
-          i.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, Settings.System.DEFAULT_ALARM_ALERT_URI);
+          i.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, Settings.System.DEFAULT_NOTIFICATION_URI);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_INCLUDE_DRM, true);
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, getString(R.string.alarm_tone));
           i.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, current_tone);
