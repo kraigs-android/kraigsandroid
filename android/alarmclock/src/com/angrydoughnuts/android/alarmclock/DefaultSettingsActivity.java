@@ -24,7 +24,9 @@ public class DefaultSettingsActivity extends Activity {
       @Override
       public void onClick(View v) {
         Intent i = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
-        i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION);
+        i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALL);
+        i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
+        i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
         i.putExtra(RingtoneManager.EXTRA_RINGTONE_INCLUDE_DRM, true);
         i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Default Alarm Tone");
         startActivityForResult(i, TONE_PICK_ID);
@@ -40,12 +42,10 @@ public class DefaultSettingsActivity extends Activity {
 
     switch (requestCode) {
       case TONE_PICK_ID:
+        // This can be null if 'Silent' was selected, but it was disabled
+        // above so that should never happen.
         Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
-        if (uri != null) {
-          tone.setText(uri.toString());
-        } else {
-          tone.setText("none");
-        }
+        tone.setText(uri.toString());
       default:
         super.onActivityResult(requestCode, resultCode, data);
     }
