@@ -92,8 +92,6 @@ public class AlarmNotificationActivity extends Activity {
     try {
       mediaPlayer.setDataSource(getApplicationContext(), tone);
       mediaPlayer.prepare();
-      // The following 'post' can be delayed, so set a low volume to start.
-      mediaPlayer.setVolume((float)0.10, (float)0.10);
       handler.post(volumeIncreaseCallback);
       mediaPlayer.start();
     } catch (Exception e) {
@@ -165,6 +163,8 @@ public class AlarmNotificationActivity extends Activity {
     public VolumeIncreaser() {
       // TODO(cgallek): Do we need to make sure that the system media volume
       // is on?? See AudioManager.
+      // TODO(cgallek): Do these need to check for error state first?
+      mediaPlayer.setVolume((float)0.10, (float)0.10);
       value = (float) 0.10;
     }
 
