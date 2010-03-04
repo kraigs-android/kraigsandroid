@@ -123,8 +123,10 @@ public class AlarmClockService extends Service {
     final PendingIntent launch = PendingIntent.getActivity(this, 0,
         notificationIntent, 0);
 
+    // TODO(cgallek); Figure out how to get the application name
+    // programatically.
     notification.setLatestEventInfo(
-        getApplicationContext(), getApplication().getPackageName(), nextString, launch);
+        getApplicationContext(), "Alarm Clock", nextString, launch);
 
     final NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     manager.notify(NOTIFICATION_ID, notification);
