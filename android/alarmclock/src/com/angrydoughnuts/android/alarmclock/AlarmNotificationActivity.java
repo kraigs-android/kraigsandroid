@@ -11,6 +11,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Vibrator;
 import android.provider.Settings;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,6 +31,7 @@ public class AlarmNotificationActivity extends Activity {
   private KeyguardLock screenLock;
   private MediaPlayer mediaPlayer;
   private Ringtone fallbackSound;
+  private Vibrator vibrator;
   private Handler handler;
   private VolumeIncreaser volumeIncreaseCallback; 
   private Runnable timeTick;
@@ -55,6 +57,7 @@ public class AlarmNotificationActivity extends Activity {
     fallbackSound = RingtoneManager.getRingtone(getApplicationContext(),
         Settings.System.DEFAULT_ALARM_ALERT_URI); 
     fallbackSound.setStreamType(AudioManager.STREAM_ALARM);
+    vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
     handler = new Handler();
     volumeIncreaseCallback = new VolumeIncreaser();
@@ -143,6 +146,9 @@ public class AlarmNotificationActivity extends Activity {
     screenLock.disableKeyguard();
     service.bind();
 
+    // TODO(cgallek): Do this based on a setting.
+    vibrator.vibrate(new long[] {500, 500}, 0);
+
     Uri tone = settings.getTone();
     mediaPlayer.reset();
     mediaPlayer.setLooping(true);
@@ -168,6 +174,7 @@ public class AlarmNotificationActivity extends Activity {
     ack(AckStates.SNOOZED);
     handler.removeCallbacks(volumeIncreaseCallback);
     handler.removeCallbacks(timeTick);
+    vibrator.cancel();
     mediaPlayer.stop();
     fallbackSound.stop();
     service.unbind();

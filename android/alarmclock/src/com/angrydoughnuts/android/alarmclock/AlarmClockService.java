@@ -100,6 +100,8 @@ public class AlarmClockService extends Service {
         case COMMAND_DEVICE_BOOT:
           // If we were started as a result of a phone reboot, terminate if there
           // are now alarms scheduled.
+          // TODO(cgallek): This seems to work on the emulator, but not
+          // the actual phone :-(
           if (pendingAlarms.size() == 0) {
             // Can't call selfStop from within start, so make it happen soon.
             Handler handler = new Handler();
