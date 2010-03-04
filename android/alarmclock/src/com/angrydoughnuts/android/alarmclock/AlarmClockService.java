@@ -9,10 +9,16 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.net.Uri;
 import android.os.IBinder;
 
 public class AlarmClockService extends Service {
+  // TODO(cgallek): Move this to a utility file?
+  static public boolean debug(Context c) {
+    return (c.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) > 0;
+  }
+
   private final int NOTIFICATION_ID = 1;
   private DbAccessor db;
   private TreeMap<Long, PendingIntent> pendingAlarms;
@@ -33,8 +39,9 @@ public class AlarmClockService extends Service {
   @Override
   public void onCreate() {
     super.onCreate();
-    // TODO(cgallek): consider removing this for release.  At least make it configurable.
-    Thread.setDefaultUncaughtExceptionHandler(new LoggingUncaughtExceptionHandler("/sdcard"));
+    if (debug(getApplicationContext())) {
+      Thread.setDefaultUncaughtExceptionHandler(new LoggingUncaughtExceptionHandler("/sdcard"));
+    }
 
     db = new DbAccessor(getApplicationContext());
     pendingAlarms = new TreeMap<Long, PendingIntent>();
