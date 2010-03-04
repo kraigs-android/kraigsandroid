@@ -98,7 +98,12 @@ public class DbAccessor {
 
     if (cursor.getCount() != 1) {
       cursor.close();
-      return new AlarmSettings();
+      if (alarmId == AlarmSettings.DEFAULT_SETTINGS_ID) {
+        // TODO(cgallek): Make sure this isn't possible.  The default
+        // settings should always be available.
+        return null;
+      }
+      return readAlarmSettings(AlarmSettings.DEFAULT_SETTINGS_ID);
     }
 
     AlarmSettings settings = new AlarmSettings();
@@ -108,11 +113,5 @@ public class DbAccessor {
     settings.setTone(tone);
     cursor.close();
     return settings;
-  }
-
-  // TODO(cgallek): remove this function in favor of returning
-  // defaults from the previous function when id is not found.
-  public AlarmSettings readDefaultAlarmSettings() {
-    return readAlarmSettings(AlarmSettings.DEFAULT_SETTINGS_ID);
   }
 }

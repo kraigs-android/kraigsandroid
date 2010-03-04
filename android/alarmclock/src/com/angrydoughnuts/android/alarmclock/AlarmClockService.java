@@ -106,7 +106,7 @@ public class AlarmClockService extends Service {
     long alarmTime = TimeUtil.nextLocalOccuranceInUTC(minutesAfterMidnight);
 
     Intent notifyIntent = new Intent(getApplicationContext(), AlarmBroadcastReceiver.class);
-    notifyIntent.putExtra("task_id", alarmId);
+    notifyIntent.putExtra(AlarmNotificationActivity.EXTRAS_ALARM_ID, alarmId);
     PendingIntent scheduleIntent =
       PendingIntent.getBroadcast(getApplicationContext(), 0, notifyIntent, 0);
 

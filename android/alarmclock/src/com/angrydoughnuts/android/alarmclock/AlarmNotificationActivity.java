@@ -11,6 +11,8 @@ import android.view.View;
 import android.widget.Button;
 
 public class AlarmNotificationActivity extends Activity {
+  static public final String EXTRAS_ALARM_ID = "alarm_id";
+  private final int MISSING_EXTRAS = -69;
 
   private long alarmId;
   private AlarmClockServiceBinder service;
@@ -24,8 +26,11 @@ public class AlarmNotificationActivity extends Activity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.notification);
-    Bundle extras = getIntent().getExtras();
-    this.alarmId = extras.getLong("task_id");
+
+    alarmId = getIntent().getExtras().getLong(EXTRAS_ALARM_ID, MISSING_EXTRAS);
+    if (alarmId == MISSING_EXTRAS) {
+      throw new IllegalStateException("EXTRAS_ALARM_ID not supplied in intent.");
+    }
 
     service = AlarmClockServiceBinder.newBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
@@ -57,7 +62,7 @@ public class AlarmNotificationActivity extends Activity {
     screenLock.disableKeyguard();
     service.bind();
     // TODO(cgallek): shouldn't be default.
-    Uri tone = db.readDefaultAlarmSettings().getTone();
+    Uri tone = db.readAlarmSettings(alarmId).getTone();
     mediaPlayer.reset();
     // TODO(cgallek): figure out how to make sure the volume is appropriate.
     mediaPlayer.setLooping(true);

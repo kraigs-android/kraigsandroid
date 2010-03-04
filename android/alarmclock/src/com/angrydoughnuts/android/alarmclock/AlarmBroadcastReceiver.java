@@ -20,7 +20,7 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
   @Override
   public void onReceive(Context context, Intent recvIntent) {
     Bundle input = recvIntent.getExtras();
-    long alarmId = input.getLong("task_id");
+    long alarmId = input.getLong(AlarmNotificationActivity.EXTRAS_ALARM_ID);
 
     if (wakeLock == null) {
       PowerManager powerManager =
@@ -34,7 +34,7 @@ public class AlarmBroadcastReceiver extends BroadcastReceiver {
 
     Intent notifyIntent = new Intent(context, AlarmNotificationActivity.class);
     notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    notifyIntent.putExtra("task_id", alarmId);
+    notifyIntent.putExtra(AlarmNotificationActivity.EXTRAS_ALARM_ID, alarmId);
 
     context.startActivity(notifyIntent);
   }

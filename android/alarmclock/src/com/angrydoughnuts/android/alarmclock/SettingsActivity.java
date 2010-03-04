@@ -37,7 +37,7 @@ public class SettingsActivity extends Activity {
     settings = db.readAlarmSettings(alarmId);
 
     tone = (TextView) findViewById(R.id.tone);
-    tone.setText(db.readDefaultAlarmSettings().getTone().toString());
+    tone.setText(settings.getTone().toString());
     tone.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
