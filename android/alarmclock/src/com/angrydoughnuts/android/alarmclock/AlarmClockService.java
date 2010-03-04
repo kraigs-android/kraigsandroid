@@ -6,6 +6,8 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -14,12 +16,19 @@ import android.os.IBinder;
 
 public class AlarmClockService extends Service {
   // TODO(cgallek): Move this to a utility file?
+  private static String APP_PREFS = "AlarmClockPreferences";
+  private static String DEBUG_PREF = "debug";
   public enum DebugMode { DEFAULT, DEBUG, NO_DEBUG };
-  // TODO(cgallek):  This is a non-persistent thread local variable.
-  // Consider making it a preference.
-  public static DebugMode mode = DebugMode.DEFAULT;
+  static public void setDebug(Context c, DebugMode mode) {
+    SharedPreferences prefs = c.getSharedPreferences(APP_PREFS, 0);
+    Editor editor = prefs.edit();
+    editor.putInt(DEBUG_PREF, mode.ordinal());
+    editor.commit();
+  }
   static public boolean debug(Context c) {
-    switch (mode) {
+    SharedPreferences prefs = c.getSharedPreferences(APP_PREFS, 0);
+    int value = prefs.getInt(DEBUG_PREF, DebugMode.DEFAULT.ordinal());
+    switch (DebugMode.values()[value]) {
       case DEBUG:
         return true;
       case NO_DEBUG:

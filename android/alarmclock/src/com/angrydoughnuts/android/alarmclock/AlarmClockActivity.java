@@ -216,7 +216,8 @@ public class AlarmClockActivity extends Activity {
         builder.setSingleChoiceItems(adapter, 0,
             new DialogInterface.OnClickListener() {
              public void onClick(DialogInterface dialog, int item) {
-               AlarmClockService.mode = AlarmClockService.DebugMode.values()[item];
+               AlarmClockService.setDebug(getApplicationContext(),
+                   AlarmClockService.DebugMode.values()[item]);
                redraw();
                dismissDialog(Dialogs.DEBUG.ordinal());
              }
