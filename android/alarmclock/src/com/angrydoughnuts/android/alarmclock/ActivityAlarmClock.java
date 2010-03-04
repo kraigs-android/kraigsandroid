@@ -202,7 +202,6 @@ public class ActivityAlarmClock extends Activity {
               getApplicationContext(), R.layout.dialog_item,
               AlarmClockService.DebugMode.values());
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        // TODO(cgallek): move this to strings.xml
         builder.setTitle("Debug Mode");
         builder.setSingleChoiceItems(adapter, 0,
             new DialogInterface.OnClickListener() {
