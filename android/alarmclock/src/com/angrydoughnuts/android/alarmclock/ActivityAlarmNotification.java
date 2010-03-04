@@ -251,7 +251,7 @@ public class ActivityAlarmNotification extends Activity {
     infoText.setText(info);
     TextView snoozeInfo = (TextView) findViewById(R.id.notify_snooze_time);
     snoozeInfo.setText(getString(R.string.snooze) + "\n"
-        + settings.getSnoozeMinutes() + " " + getString(R.string.minutes));
+        + getString(R.string.minutes, settings.getSnoozeMinutes()));
   }
 
   private void ack(AckStates ack) {
