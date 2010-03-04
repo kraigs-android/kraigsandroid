@@ -62,7 +62,7 @@ public final class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
 
   @Override
   public View getView(int position, View convertView, ViewGroup parent) {
-    View view = inflater.inflate(R.layout.alarm_description, null);
+    View view = inflater.inflate(R.layout.alarm_list_item, null);
     TextView timeView = (TextView) view.findViewById(R.id.alarm_time);
     TextView nextView = (TextView) view.findViewById(R.id.next_alarm);
     TextView labelView = (TextView) view.findViewById(R.id.alarm_label);

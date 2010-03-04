@@ -67,7 +67,7 @@ public final class ActivityPendingAlarms extends Activity {
       AlarmClockInterface clock = AlarmClockInterface.Stub.asInterface(service);
       try {
         ArrayAdapter<AlarmTime> adapter = new ArrayAdapter<AlarmTime>(
-            getApplicationContext(), R.layout.pending_alarm, clock.pendingAlarmTimes());
+            getApplicationContext(), R.layout.pending_alarms_item, clock.pendingAlarmTimes());
         listView.setAdapter(adapter);
       } catch (RemoteException e) {
         e.printStackTrace();

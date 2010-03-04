@@ -62,7 +62,7 @@ public final class ActivityAlarmClock extends Activity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.main);
+    setContentView(R.layout.alarm_list);
 
     // Access to in-memory and persistent data structures.
     service = new AlarmClockServiceBinder(getApplicationContext());
