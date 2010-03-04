@@ -100,7 +100,7 @@ public class AlarmClockService extends Service {
   // Is there anyway around this?
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
-    if (intent.hasExtra(COMMAND_EXTRA)) {
+    if (intent != null && intent.hasExtra(COMMAND_EXTRA)) {
       Bundle extras = intent.getExtras();
       int command = extras.getInt(COMMAND_EXTRA, COMMAND_UNKNOWN);
       switch (command) {
