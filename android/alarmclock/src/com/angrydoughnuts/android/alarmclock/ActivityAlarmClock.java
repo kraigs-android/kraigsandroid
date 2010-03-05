@@ -116,7 +116,7 @@ public final class ActivityAlarmClock extends Activity {
     // Setup the alarm list and the underlying adapter.  Clicking an individual
     // item will start the settings activity.
     final ListView alarmList = (ListView) findViewById(R.id.alarm_list);
-    adapter = new AlarmViewAdapter(getApplicationContext(), service);
+    adapter = new AlarmViewAdapter(this, db, service);
     alarmList.setAdapter(adapter);
     alarmList.setOnItemClickListener(new OnItemClickListener() {
       @Override

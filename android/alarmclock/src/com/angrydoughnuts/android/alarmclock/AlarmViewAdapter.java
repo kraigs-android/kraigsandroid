@@ -17,6 +17,7 @@ package com.angrydoughnuts.android.alarmclock;
 
 import java.util.LinkedList;
 
+import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.RemoteException;
@@ -35,15 +36,14 @@ import android.widget.TextView;
 public final class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
   private AlarmClockServiceBinder service;
   private LayoutInflater inflater;
-  private DbAccessor db;
   private Cursor cursor;
 
-  public AlarmViewAdapter(Context context, AlarmClockServiceBinder service) {
-    super(context, 0, new LinkedList<AlarmInfo>());
+  public AlarmViewAdapter(Activity activity, DbAccessor db, AlarmClockServiceBinder service) {
+    super(activity, 0, new LinkedList<AlarmInfo>());
     this.service = service;
-    this.inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    this.db = new DbAccessor(context);
+    this.inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     this.cursor = db.readAlarmInfo();
+    activity.startManagingCursor(cursor);
     loadData();
   }
 
@@ -109,11 +109,5 @@ public final class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
       }
     });
     return view;
-  }
-
-  protected void finalize() throws Throwable {
-    cursor.close();
-    db.closeConnections();
-    super.finalize();
   }
 }
