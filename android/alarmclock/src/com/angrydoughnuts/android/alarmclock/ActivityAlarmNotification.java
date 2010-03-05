@@ -28,6 +28,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -243,9 +244,6 @@ public final class ActivityAlarmNotification extends Activity {
   @Override
   protected void onPause() {
     super.onPause();
-    // If the user did not explicitly dismiss or snooze this alarm, snooze
-    // it as a default.
-    ack(AckStates.SNOOZED);
     handler.removeCallbacks(volumeIncreaseCallback);
     handler.removeCallbacks(timeTick);
     vibrator.cancel();
@@ -267,6 +265,26 @@ public final class ActivityAlarmNotification extends Activity {
       throw new IllegalStateException(
           "Alarm notification was destroyed without ever being acknowledged.");
     }
+  }
+
+  @Override
+  public boolean onKeyDown(int keyCode, KeyEvent event) {
+    // If the user dismisses the notification screen by a method other than
+    // hitting the 'dismiss' or 'snooze' button, we want to implicitly
+    // snooze the alarm.  This could be done in the onPause() handler, but
+    // there seem to be cases when the device is waking up that the
+    // onResume()/onPause() cycle happens more than once (especially on the
+    // G1).  Instead, we do this implicit snooze behavior when a 'navigate
+    // away' event occurs.  There are probably more ways for this to happen
+    // than those listed here, but this is kind of a corner case anyway...
+    switch (keyCode) {
+      case KeyEvent.KEYCODE_BACK:
+      case KeyEvent.KEYCODE_HOME:
+      case KeyEvent.KEYCODE_SEARCH:
+        ack(AckStates.SNOOZED);
+      break;
+    }
+    return super.onKeyDown(keyCode, event);
   }
 
   private final void redraw() {
