@@ -59,7 +59,7 @@ import android.widget.AdapterView.OnItemClickListener;
  * being edited.  AlarmSettings.DEFAULT_SETTINGS_ID can be used to edit the
  * default settings.
  */
-public final class ActivitySettings extends Activity {
+public final class ActivityAlarmSettings extends Activity {
   public static final String EXTRAS_ALARM_ID = "alarm_id";
   private final int MISSING_EXTRAS = -69;
 

@@ -122,8 +122,8 @@ public final class ActivityAlarmClock extends Activity {
       @Override
       public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
         final AlarmInfo info = (AlarmInfo) adapter.getItemAtPosition(position);
-        final Intent i = new Intent(getApplicationContext(), ActivitySettings.class);
-        i.putExtra(ActivitySettings.EXTRAS_ALARM_ID, info.getAlarmId());
+        final Intent i = new Intent(getApplicationContext(), ActivityAlarmSettings.class);
+        i.putExtra(ActivityAlarmSettings.EXTRAS_ALARM_ID, info.getAlarmId());
         startActivity(i);
       }
     });
@@ -180,9 +180,9 @@ public final class ActivityAlarmClock extends Activity {
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (Menus.values()[item.getItemId()]) {
       case DEFAULT_SETTINGS:
-        Intent i = new Intent(getApplicationContext(), ActivitySettings.class);
+        Intent i = new Intent(getApplicationContext(), ActivityAlarmSettings.class);
         i.putExtra(
-            ActivitySettings.EXTRAS_ALARM_ID, AlarmSettings.DEFAULT_SETTINGS_ID);
+            ActivityAlarmSettings.EXTRAS_ALARM_ID, AlarmSettings.DEFAULT_SETTINGS_ID);
         startActivity(i);
     }
     return super.onOptionsItemSelected(item);
