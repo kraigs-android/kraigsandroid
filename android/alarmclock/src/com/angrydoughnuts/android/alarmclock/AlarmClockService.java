@@ -149,7 +149,11 @@ public final class AlarmClockService extends Service {
 
     final NotificationManager manager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    manager.notify(NOTIFICATION_ID, notification);
+    if (pendingAlarms.size() > 0 && AppSettings.displayNotificationIcon(c)) {
+      manager.notify(NOTIFICATION_ID, notification);
+    } else {
+      manager.cancel(NOTIFICATION_ID);
+    }
 
     // Set the system alarm string for display on the lock screen.
     if (nextTime != null) {

@@ -24,6 +24,13 @@ import android.preference.PreferenceManager;
  * Utility class for accessing each of the global application settings.
  */
 public final class AppSettings {
+  public static final boolean displayNotificationIcon(Context c) {
+    final String NOTIFICATION_SETTING = c.getString(R.string.notification_icon_setting);
+
+    final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
+    return prefs.getBoolean(NOTIFICATION_SETTING, true);
+  }
+
   public static final boolean isDebugMode(Context c) {
     final String DEBUG_MODE_SETTING = c.getString(R.string.debug_mode_setting);
     final String DEBUG_ON = c.getString(R.string.debug_on);

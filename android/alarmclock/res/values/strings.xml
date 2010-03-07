@@ -65,4 +65,8 @@
   <string name="debug_default">Default</string>
   <string name="debug_on">On</string>
   <string name="debug_off">Off</string>
+  <string name="notification_icon_setting">NOTFICATION_ICON</string>
+  <string name="notification_icon_title">Display notification icon</string>
+  <string name="notification_icon_on">Display an icon when there are pending alarms</string>
+  <string name="notification_icon_off">Do not display an icon when there are pending alarms</string>
 </resources>

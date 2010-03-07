@@ -15,8 +15,11 @@
 
 package com.angrydoughnuts.android.alarmclock;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.Preference.OnPreferenceChangeListener;
 
 /**
  * Simple preferences activity to display/manage the shared preferences
@@ -28,5 +31,17 @@ public class ActivityAppSettings extends PreferenceActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     addPreferencesFromResource(R.xml.app_settings);
+
+    // Refresh the notification icon when the user changes this prefernce.
+    Preference notification_icon = findPreference(getString(R.string.notification_icon_setting));
+    notification_icon.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+      @Override
+      public boolean onPreferenceChange(Preference preference, Object newValue) {
+        final Intent causeRefresh = new Intent(getApplicationContext(), AlarmClockService.class);
+        causeRefresh.putExtra(AlarmClockService.COMMAND_EXTRA, AlarmClockService.COMMAND_NOTIFICATION_REFRESH);
+        startService(causeRefresh);
+        return true;
+      }
+    });
   }
 }

@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+  <CheckBoxPreference android:persistent="true"
+    android:key="@string/notification_icon_setting"
+    android:title="@string/notification_icon_title"
+    android:summaryOn="@string/notification_icon_on"
+    android:summaryOff="@string/notification_icon_off"
+    android:defaultValue="true" />
   <ListPreference android:persistent="true"
     android:key="@string/debug_mode_setting"
     android:title="@string/debug_mode_title"
