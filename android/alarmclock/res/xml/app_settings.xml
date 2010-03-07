@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+  <ListPreference android:persistent="true"
+    android:key="@string/debug_mode_setting"
+    android:title="@string/debug_mode_title"
+    android:dialogTitle="@string/debug_mode_title"
+    android:summary="@string/debug_mode_summary"
+    android:entries="@array/debug_types"
+    android:entryValues="@array/debug_types"
+    android:defaultValue="@string/debug_default" />
+</PreferenceScreen>

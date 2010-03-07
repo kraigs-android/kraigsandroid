@@ -13,6 +13,7 @@
     </activity>
     <activity android:name="ActivityAlarmNotification" android:screenOrientation="portrait" android:launchMode="singleInstance"></activity>
     <activity android:name="ActivityAlarmSettings"></activity>
+    <activity android:name="ActivityAppSettings"></activity>
     <activity android:name="ActivityPendingAlarms"></activity>
     <service android:name="AlarmClockService"></service>
     <receiver android:name="ReceiverAlarm"></receiver>

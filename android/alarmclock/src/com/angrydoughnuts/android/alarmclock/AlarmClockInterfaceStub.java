@@ -80,7 +80,7 @@ public final class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
   }
 
   private void debugToast(String message) {
-    if (DebugUtil.isDebugMode(context)) {
+    if (AppSettings.isDebugMode(context)) {
       Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
     }
   }

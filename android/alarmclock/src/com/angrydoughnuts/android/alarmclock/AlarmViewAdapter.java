@@ -84,7 +84,7 @@ public final class AlarmViewAdapter extends ArrayAdapter<AlarmInfo> {
     }
     String timeStr = time.localizedString(getContext());
     String alarmId = "";
-    if (DebugUtil.isDebugMode(getContext())) {
+    if (AppSettings.isDebugMode(getContext())) {
       alarmId = " [" + info.getAlarmId() + "]";
     }
     timeView.setText(timeStr + alarmId);

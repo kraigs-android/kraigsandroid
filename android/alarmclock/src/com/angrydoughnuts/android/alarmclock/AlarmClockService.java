@@ -62,7 +62,7 @@ public final class AlarmClockService extends Service {
       if (pendingAlarms.pendingTime(alarmId) != null) {
         continue;
       }
-      if (DebugUtil.isDebugMode(getApplicationContext())) {
+      if (AppSettings.isDebugMode(getApplicationContext())) {
         Toast.makeText(getApplicationContext(), "RENABLE " + alarmId, Toast.LENGTH_SHORT).show();
       }
       pendingAlarms.put(alarmId, db.readAlarmInfo(alarmId).getTime());
@@ -111,12 +111,12 @@ public final class AlarmClockService extends Service {
           handler.post(maybeShutdown);
           break;
         case COMMAND_TIMEZONE_CHANGE:
-          if (DebugUtil.isDebugMode(getApplicationContext())) {
+          if (AppSettings.isDebugMode(getApplicationContext())) {
             Toast.makeText(getApplicationContext(), "TIMEZONE CHANGE, RESCHEDULING...", Toast.LENGTH_SHORT).show();
           }
           for (long alarmId : pendingAlarms.pendingAlarms()) {
             scheduleAlarm(alarmId);
-            if (DebugUtil.isDebugMode(getApplicationContext())) {
+            if (AppSettings.isDebugMode(getApplicationContext())) {
               Toast.makeText(getApplicationContext(), "ALARM " + alarmId, Toast.LENGTH_SHORT).show();
             }
           }

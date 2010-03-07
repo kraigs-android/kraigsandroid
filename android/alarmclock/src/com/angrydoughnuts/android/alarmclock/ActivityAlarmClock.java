@@ -18,10 +18,8 @@ package com.angrydoughnuts.android.alarmclock;
 import java.util.Calendar;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,9 +28,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -47,8 +43,8 @@ import android.widget.AdapterView.OnItemClickListener;
  * mode.'
  */
 public final class ActivityAlarmClock extends Activity {
-  private enum Dialogs { DEBUG, TIME_PICKER };
-  private enum Menus { DEFAULT_SETTINGS };
+  private enum Dialogs { TIME_PICKER };
+  private enum Menus { DEFAULT_ALARM_SETTINGS, APP_SETTINGS };
 
   private AlarmClockServiceBinder service;
   private DbAccessor db;
@@ -72,13 +68,6 @@ public final class ActivityAlarmClock extends Activity {
     // Setup individual UI elements.
     // A simple clock.
     clock = (TextView) findViewById(R.id.clock);
-    clock.setOnLongClickListener(new OnLongClickListener() {
-      @Override
-      public boolean onLongClick(View v) {
-        showDialog(Dialogs.DEBUG.ordinal());
-        return true;
-      }
-    });
 
     // Used in debug mode.  Schedules an alarm for 5 seconds in the future
     // when clicked.
@@ -138,7 +127,7 @@ public final class ActivityAlarmClock extends Activity {
 
         // Schedule the next update on the next interval boundary.
         AlarmUtil.Interval interval = AlarmUtil.Interval.MINUTE;
-        if (DebugUtil.isDebugMode(getApplicationContext())) {
+        if (AppSettings.isDebugMode(getApplicationContext())) {
           interval = AlarmUtil.Interval.SECOND;
         }
         long next = AlarmUtil.millisTillNextInterval(interval);
@@ -170,27 +159,35 @@ public final class ActivityAlarmClock extends Activity {
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
-    MenuItem defaults =
-      menu.add(0, Menus.DEFAULT_SETTINGS.ordinal(), 0, R.string.default_settings);
-    defaults.setIcon(android.R.drawable.ic_lock_idle_alarm);
+    MenuItem alarm_settings =
+      menu.add(0, Menus.DEFAULT_ALARM_SETTINGS.ordinal(), 0, R.string.default_settings);
+    alarm_settings.setIcon(android.R.drawable.ic_lock_idle_alarm);
+    MenuItem app_settings =
+      menu.add(0, Menus.APP_SETTINGS.ordinal(), 0, R.string.app_settings);
+    app_settings.setIcon(android.R.drawable.ic_menu_preferences);
     return super.onCreateOptionsMenu(menu);
   }
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (Menus.values()[item.getItemId()]) {
-      case DEFAULT_SETTINGS:
-        Intent i = new Intent(getApplicationContext(), ActivityAlarmSettings.class);
-        i.putExtra(
+      case DEFAULT_ALARM_SETTINGS:
+        Intent alarm_settings = new Intent(getApplicationContext(), ActivityAlarmSettings.class);
+        alarm_settings.putExtra(
             ActivityAlarmSettings.EXTRAS_ALARM_ID, AlarmSettings.DEFAULT_SETTINGS_ID);
-        startActivity(i);
+        startActivity(alarm_settings);
+        break;
+      case APP_SETTINGS:
+        Intent app_settings = new Intent(getApplicationContext(), ActivityAppSettings.class);
+        startActivity(app_settings);
+        break;
     }
     return super.onOptionsItemSelected(item);
   }
 
   private final void redraw() {
     // Show/hide debug buttons.
-    if (DebugUtil.isDebugMode(getApplicationContext())) {
+    if (AppSettings.isDebugMode(getApplicationContext())) {
       testBtn.setVisibility(View.VISIBLE);
       pendingBtn.setVisibility(View.VISIBLE);
     } else {
@@ -236,24 +233,6 @@ public final class ActivityAlarmClock extends Activity {
               }
             },
             hour, minute, is24Hour);
-
-      case DEBUG:
-        ArrayAdapter<DebugUtil.DebugMode> adapter =
-          new ArrayAdapter<DebugUtil.DebugMode>(getApplicationContext(),
-              R.layout.dialog_item, DebugUtil.DebugMode.values());
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Debug Mode");
-        builder.setSingleChoiceItems(adapter, 0,
-            new DialogInterface.OnClickListener() {
-             public void onClick(DialogInterface dialog, int item) {
-               DebugUtil.setDebugMode(getApplicationContext(),
-                   DebugUtil.DebugMode.values()[item]);
-               redraw();
-               dismissDialog(Dialogs.DEBUG.ordinal());
-             }
-          });
-        return builder.create();
-
       default:
         return super.onCreateDialog(id);
     }

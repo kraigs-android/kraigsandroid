@@ -290,7 +290,7 @@ public final class ActivityAlarmNotification extends Activity {
   private final void redraw() {
     AlarmInfo alarmInfo = db.readAlarmInfo(alarmId);
     String info = alarmInfo.getTime().toString() + "\n" + alarmInfo.getName();
-    if (DebugUtil.isDebugMode(getApplicationContext())) {
+    if (AppSettings.isDebugMode(getApplicationContext())) {
       info += " [" + alarmId + "]";
       findViewById(R.id.volume).setVisibility(View.VISIBLE);
     } else {

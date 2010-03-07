@@ -2,7 +2,8 @@
 <resources>
   <string name="app_name">Alarm Klock</string>
   <string name="add_alarm">Add alarm...</string>
-  <string name="default_settings">Default Settings...</string>
+  <string name="default_settings">Default Alarm Settings...</string>
+  <string name="app_settings">Application Settings...</string>
   <string name="settings">Settings</string>
   <string name="time">Time</string>
   <string name="label">Label</string>
@@ -58,4 +59,10 @@
   <string name="everyday">Every day</string>
   <string name="weekdays">Weekdays</string>
   <string name="weekends">Weekends</string>
+  <string name="debug_mode_setting">DEBUG_MODE"</string>
+  <string name="debug_mode_title">Debug Mode</string>
+  <string name="debug_mode_summary">Turn on various debugging features</string>
+  <string name="debug_default">Default</string>
+  <string name="debug_on">On</string>
+  <string name="debug_off">Off</string>
 </resources>

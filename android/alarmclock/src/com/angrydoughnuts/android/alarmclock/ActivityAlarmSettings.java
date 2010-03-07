@@ -202,7 +202,7 @@ public final class ActivityAlarmSettings extends Activity {
       @Override
       public String value() {
         String value = settings.getToneName();
-        if (DebugUtil.isDebugMode(getApplicationContext())) {
+        if (AppSettings.isDebugMode(getApplicationContext())) {
           value += " " + settings.getTone().toString();
         }
         return value;
