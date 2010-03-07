@@ -156,12 +156,8 @@ public final class AlarmClockService extends Service {
     }
 
     // Set the system alarm string for display on the lock screen.
-    if (nextTime != null) {
-      Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED,
-          nextTime.timeUntilString(getApplicationContext()));
-    } else {
-      Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED, "");
-    }
+    Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED,
+        AppSettings.lockScreenString(getApplicationContext(), nextTime));
   }
 
   @Override

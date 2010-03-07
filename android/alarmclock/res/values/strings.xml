@@ -69,4 +69,11 @@
   <string name="notification_icon_title">Display notification icon</string>
   <string name="notification_icon_on">Display an icon when there are pending alarms</string>
   <string name="notification_icon_off">Do not display an icon when there are pending alarms</string>
+  <string name="lock_screen_setting">LOCK_SCREEN"</string>
+  <string name="lock_screen_title">Lock screen text</string>
+  <string name="lock_screen_summary">Configure alarm information displayed on the lock screen</string>
+  <string name="lock_screen_countdown">Countdown</string>
+  <string name="lock_screen_time">Alarm time</string>
+  <string name="lock_screen_both">Both</string>
+  <string name="lock_screen_nothing">Nothing</string>
 </resources>

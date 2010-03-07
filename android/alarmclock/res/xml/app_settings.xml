@@ -6,6 +6,16 @@
     android:summaryOn="@string/notification_icon_on"
     android:summaryOff="@string/notification_icon_off"
     android:defaultValue="true" />
+
+  <ListPreference android:persistent="true"
+    android:key="@string/lock_screen_setting"
+    android:title="@string/lock_screen_title"
+    android:dialogTitle="@string/lock_screen_title"
+    android:summary="@string/lock_screen_summary"
+    android:entries="@array/lock_screen_types"
+    android:entryValues="@array/lock_screen_types"
+    android:defaultValue="@string/lock_screen_countdown" />
+
   <ListPreference android:persistent="true"
     android:key="@string/debug_mode_setting"
     android:title="@string/debug_mode_title"

@@ -32,9 +32,7 @@ public class ActivityAppSettings extends PreferenceActivity {
     super.onCreate(savedInstanceState);
     addPreferencesFromResource(R.xml.app_settings);
 
-    // Refresh the notification icon when the user changes this prefernce.
-    Preference notification_icon = findPreference(getString(R.string.notification_icon_setting));
-    notification_icon.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+    OnPreferenceChangeListener refreshListener = new OnPreferenceChangeListener() {
       @Override
       public boolean onPreferenceChange(Preference preference, Object newValue) {
         final Intent causeRefresh = new Intent(getApplicationContext(), AlarmClockService.class);
@@ -42,6 +40,12 @@ public class ActivityAppSettings extends PreferenceActivity {
         startService(causeRefresh);
         return true;
       }
-    });
+    };
+
+    // Refresh the notification icon when the user changes these preferences.
+    final Preference notification_icon = findPreference(getString(R.string.notification_icon_setting));
+    notification_icon.setOnPreferenceChangeListener(refreshListener);
+    final Preference lock_screen = findPreference(getString(R.string.lock_screen_setting));
+    lock_screen.setOnPreferenceChangeListener(refreshListener);
   }
 }
