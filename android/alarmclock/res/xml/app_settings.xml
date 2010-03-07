@@ -13,8 +13,8 @@
     android:dialogTitle="@string/lock_screen_title"
     android:summary="@string/lock_screen_summary"
     android:entries="@array/lock_screen_types"
-    android:entryValues="@array/lock_screen_types"
-    android:defaultValue="@string/lock_screen_countdown" />
+    android:entryValues="@array/lock_screen_values"
+    android:defaultValue="lock_screen_countdown" />
 
   <ListPreference android:persistent="true"
     android:key="@string/debug_mode_setting"
@@ -22,6 +22,6 @@
     android:dialogTitle="@string/debug_mode_title"
     android:summary="@string/debug_mode_summary"
     android:entries="@array/debug_types"
-    android:entryValues="@array/debug_types"
-    android:defaultValue="@string/debug_default" />
+    android:entryValues="@array/debug_values"
+    android:defaultValue="debug_default" />
 </PreferenceScreen>

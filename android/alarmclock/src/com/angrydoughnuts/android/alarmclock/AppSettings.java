@@ -35,16 +35,12 @@ public final class AppSettings {
     if (nextTime == null) {
       return "";
     }
-    // TODO(cgallek): These constant values should really map to fixed values.
-    // Currently, they map to the keys of the list preference, which could be
-    // different in different languages (the keys and values currently map to
-    // the same array).  If this internationalizes, the values will need to
-    // become fixed.
     final String LOCK_SCREEN_SETTING = c.getString(R.string.lock_screen_setting);
-    final String LOCK_SCREEN_COUNTDOWN = c.getString(R.string.lock_screen_countdown);
-    final String LOCK_SCREEN_TIME = c.getString(R.string.lock_screen_time);
-    final String LOCK_SCREEN_BOTH = c.getString(R.string.lock_screen_both);
-    final String LOCK_SCREEN_NOTHING = c.getString(R.string.lock_screen_nothing);
+    final String[] values = c.getResources().getStringArray(R.array.lock_screen_values);
+    final String LOCK_SCREEN_COUNTDOWN = values[0];
+    final String LOCK_SCREEN_TIME = values[1];
+    final String LOCK_SCREEN_BOTH = values[2];
+    final String LOCK_SCREEN_NOTHING = values[3];
 
     final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
     final String value = prefs.getString(LOCK_SCREEN_SETTING, LOCK_SCREEN_COUNTDOWN);
@@ -67,9 +63,10 @@ public final class AppSettings {
 
   public static final boolean isDebugMode(Context c) {
     final String DEBUG_MODE_SETTING = c.getString(R.string.debug_mode_setting);
-    final String DEBUG_ON = c.getString(R.string.debug_on);
-    final String DEBUG_OFF = c.getString(R.string.debug_off);
-    final String DEBUG_DEFAULT = c.getString(R.string.debug_default);
+    final String[] values = c.getResources().getStringArray(R.array.debug_values);
+    final String DEBUG_DEFAULT = values[0];
+    final String DEBUG_ON = values[1];
+    final String DEBUG_OFF = values[2];
 
     final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
     final String value = prefs.getString(DEBUG_MODE_SETTING, DEBUG_DEFAULT);
