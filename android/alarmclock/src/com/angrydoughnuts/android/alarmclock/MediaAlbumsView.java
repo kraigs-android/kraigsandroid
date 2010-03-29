@@ -35,6 +35,7 @@ public class MediaAlbumsView extends MediaListView {
   public MediaAlbumsView(Context context, AttributeSet attrs, int defStyle) {
     super(context, attrs, defStyle);
     songsView = new MediaSongsView(context);
+    songsView.overrideSortOrder(null);
   }
 
   public void addToFlipper(ViewFlipper flipper) {

@@ -23,6 +23,7 @@ public class MediaListView extends ListView implements OnItemClickListener {
   private ViewFlipper flipper = null;
   private Uri contentUri = null;
   private String nameColumn = null;
+  private String sortOrder = null;
 
   private String selectedName;
   private Uri selectedUri;
@@ -93,7 +94,7 @@ public class MediaListView extends ListView implements OnItemClickListener {
     // TODO(cgallek) figure out a way to manage this cursor rather than return it.
     this.cursor = getContext().getContentResolver().query(
         contentUri, queryColumns.toArray(new String[] {}),
-        selection, null, null);
+        selection, null, sortOrder);
     this.contentUri = contentUri;
 
     final SimpleCursorAdapter adapter = new SimpleCursorAdapter(
@@ -102,6 +103,10 @@ public class MediaListView extends ListView implements OnItemClickListener {
     setOnItemClickListener(this);
 
     return cursor;
+  }
+
+  public void overrideSortOrder(String sortOrder) {
+    this.sortOrder = sortOrder;
   }
 
   public String getLastSelectedName() {

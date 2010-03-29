@@ -47,7 +47,6 @@ public class MediaPickerDialog extends AlertDialog {
     tabs.addTab(tabs.newTabSpec(ALBUMS_TAB).setContent(R.id.media_picker_albums).setIndicator(context.getString(R.string.albums)));
     tabs.addTab(tabs.newTabSpec(ALL_SONGS_TAB).setContent(R.id.media_picker_songs).setIndicator(context.getString(R.string.songs)));
 
-    // TODO(cgallek): add methods to hide artist/album.
     final MediaSongsView internalList = (MediaSongsView) body_view.findViewById(R.id.media_picker_internal);
     internalList.query(Media.INTERNAL_CONTENT_URI);
     internalList.setMediaPlayer(mediaPlayer);
