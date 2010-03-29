@@ -165,6 +165,8 @@ public final class TimePickerDialog extends AlertDialog {
       secondPicker = new PickerView(Calendar.SECOND, "%02d");
       secondPicker.inflate(body_view, R.id.picker_second, true, defaultIncrement);
     }
+
+    dialogRefresh();
   }
 
   private void dialogRefresh() {
