@@ -105,16 +105,16 @@ public final class TimePicker extends AlertDialog {
 
     if (DateFormat.is24HourFormat(getContext())) {
       amPmButton.setVisibility(View.GONE);
-      hourPicker = new PickerView(Calendar.HOUR_OF_DAY);
+      hourPicker = new PickerView(Calendar.HOUR_OF_DAY, "%02d");
     } else {
       amPmButton.setVisibility(View.VISIBLE);
-      hourPicker = new PickerView(Calendar.HOUR);
+      hourPicker = new PickerView(Calendar.HOUR, "%d");
     }
     hourPicker.inflate(body_view, R.id.picker_hour, false, IncrementValue.ONE);
-    minutePicker = new PickerView(Calendar.MINUTE);
+    minutePicker = new PickerView(Calendar.MINUTE, "%02d");
     minutePicker.inflate(body_view, R.id.picker_minute, true, defaultIncrement);
     if (showSeconds) {
-      secondPicker = new PickerView(Calendar.SECOND);
+      secondPicker = new PickerView(Calendar.SECOND, "%02d");
       secondPicker.inflate(body_view, R.id.picker_second, true, defaultIncrement);
     }
   }
@@ -147,14 +147,16 @@ public final class TimePicker extends AlertDialog {
 
   private final class PickerView {
     private int calendarField;
+    private String formatString;
     private EditText text = null;
     private Increment increment = null;
     private Button incrementValueButton = null;
     private Button plus = null;
     private Button minus = null;
 
-    public PickerView(int calendarField) {
+    public PickerView(int calendarField, String formatString) {
       this.calendarField = calendarField;
+      this.formatString = formatString;
     }
 
     public void inflate(View parentView, int resourceId, boolean showIncrement, IncrementValue defaultIncrement) {
@@ -197,7 +199,7 @@ public final class TimePicker extends AlertDialog {
       if (calendarField == Calendar.HOUR && fieldValue == 0) {
         fieldValue = 12;
       }
-      text.setText("" + fieldValue);
+      text.setText(String.format(formatString, fieldValue));
       incrementValueButton.setText("+/- " + increment.nextValue().value());
       plus.setText("+" + increment.value());
       minus.setText("-" + increment.value());
