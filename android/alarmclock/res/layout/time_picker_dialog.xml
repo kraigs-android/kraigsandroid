@@ -24,5 +24,8 @@
       android:layout="@layout/numeric_picker"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content" />
+    <Button android:id="@+id/picker_am_pm"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content" />
   </LinearLayout>
 </LinearLayout>

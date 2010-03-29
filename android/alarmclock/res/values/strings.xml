@@ -41,6 +41,8 @@
   <string name="hours">%d hours</string>
   <string name="minute">%d minute</string>
   <string name="minutes">%d minutes</string>
+  <string name="am">AM</string>
+  <string name="pm">PM</string>
   <string name="dow_sun_short">Su</string>
   <string name="dow_mon_short">Mo</string>
   <string name="dow_tue_short">Tu</string>

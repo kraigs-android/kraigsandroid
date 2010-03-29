@@ -15,6 +15,7 @@ import android.widget.TextView;
 public final class TimePicker extends AlertDialog {
   private Calendar calendar;
   private TextView timeText;
+  private Button amPmButton;
   private PickerView hourPicker;
   private PickerView minutePicker;
   private PickerView secondPicker;
@@ -44,12 +45,41 @@ public final class TimePicker extends AlertDialog {
     setView(body_view);
 
     timeText = (TextView) body_view.findViewById(R.id.picker_text);
+
+    amPmButton = (Button) body_view.findViewById(R.id.picker_am_pm);
+    amPmButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        if (calendar.get(Calendar.AM_PM) == Calendar.AM) {
+          calendar.set(Calendar.AM_PM, Calendar.PM);
+        } else {
+          calendar.set(Calendar.AM_PM, Calendar.AM);
+        }
+        dialogRefresh();
+      }
+    });
+
     hourPicker = new PickerView(Calendar.HOUR);
     hourPicker.inflate(body_view, R.id.picker_hour, false, IncrementValue.ONE);
     minutePicker = new PickerView(Calendar.MINUTE);
     minutePicker.inflate(body_view, R.id.picker_minute, true, IncrementValue.THIRTY);
     secondPicker = new PickerView(Calendar.SECOND);
     secondPicker.inflate(body_view, R.id.picker_second, true, IncrementValue.THIRTY);
+  }
+
+  void dialogRefresh() {
+    AlarmTime time = new AlarmTime(calendar.get(
+        Calendar.HOUR_OF_DAY),
+        calendar.get(Calendar.MINUTE),
+        calendar.get(Calendar.SECOND));
+    // TODO(cgallek): should this have a timer as well to make it refresh when
+    // the minutes tick??
+    timeText.setText(time.timeUntilString(getContext()));
+    if (calendar.get(Calendar.AM_PM) == Calendar.AM) {
+      amPmButton.setText(getContext().getString(R.string.am));
+    } else {
+      amPmButton.setText(getContext().getString(R.string.pm));
+    }
   }
 
   private enum IncrementValue {
@@ -84,7 +114,7 @@ public final class TimePicker extends AlertDialog {
         @Override
         public void onClick(View v) {
           increment.next();
-          refresh();
+          pickerRefresh();
         }
       });
 
@@ -99,17 +129,13 @@ public final class TimePicker extends AlertDialog {
       final Button minus = (Button) view.findViewById(R.id.time_minus);
       minus.setOnClickListener(new TimeDecrementListener());
 
-      refresh();
+      pickerRefresh();
     }
 
-    private void refresh() {
-      AlarmTime time = new AlarmTime(calendar.get(
-          Calendar.HOUR_OF_DAY),
-          calendar.get(Calendar.MINUTE),
-          calendar.get(Calendar.SECOND));
-      timeText.setText(time.timeUntilString(getContext()));
+    private void pickerRefresh() {
       text.setText("" + calendar.get(calendarField));
       incrementValueButton.setText("+/- " + increment.value());
+      dialogRefresh();
     }
 
     private final class Increment {
@@ -143,7 +169,7 @@ public final class TimePicker extends AlertDialog {
           }
           calendar.roll(calendarField, difference);
         }
-        refresh();
+        pickerRefresh();
       }
     }
     private final class TimeIncrementListener extends TimeAdjustListener {
