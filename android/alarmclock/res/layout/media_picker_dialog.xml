@@ -21,7 +21,6 @@
     android:layout_height="wrap_content" />
 
   <ViewFlipper android:id="@+id/media_picker_artists"
-    android:inAnimation="@android:anim/slide_in_left"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
 

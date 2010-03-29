@@ -59,6 +59,8 @@ public class MediaArtistsView extends MediaListView {
     super.onItemClick(parent, view, position, id);
     // TODO(cgallek) manage this cursor.
     albumsView.query(Albums.EXTERNAL_CONTENT_URI, ArtistColumns.ARTIST_KEY + " = '" + getLastSelectedName() + "'");
+    getFlipper().setInAnimation(getContext(), R.anim.slide_in_left);
+    getFlipper().setOutAnimation(getContext(), R.anim.slide_out_left);
     getFlipper().showNext();
   }
 }

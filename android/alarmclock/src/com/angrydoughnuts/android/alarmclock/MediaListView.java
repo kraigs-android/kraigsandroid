@@ -49,6 +49,8 @@ public class MediaListView extends ListView implements OnItemClickListener {
             if (mPlayer != null) {
               mPlayer.stop();
             }
+            flipper.setInAnimation(getContext(), R.anim.slide_in_right);
+            flipper.setOutAnimation(getContext(), R.anim.slide_out_right);
             flipper.showPrevious();
           }
           return true;
@@ -68,6 +70,7 @@ public class MediaListView extends ListView implements OnItemClickListener {
 
   public void addToFlipper(ViewFlipper flipper) {
     this.flipper = flipper;
+    flipper.setAnimateFirstView(false);
     flipper.addView(this);
   }
 
