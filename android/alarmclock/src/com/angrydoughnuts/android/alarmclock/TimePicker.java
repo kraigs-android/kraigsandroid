@@ -19,9 +19,14 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 public final class TimePicker extends AlertDialog {
+  public interface OnTimeSetListener {
+    public void onTimeSet(int hourOfDay, int minute, int second);
+  }
+
   private static String PICKER_PREFS = "TimePickerPreferences";
   private static String INCREMENT_PREF = "increment";
 
+  private OnTimeSetListener listener;
   private SharedPreferences prefs;
   private Calendar calendar;
   private TextView timeText;
@@ -30,8 +35,10 @@ public final class TimePicker extends AlertDialog {
   private PickerView minutePicker;
   private PickerView secondPicker;
 
-  public TimePicker(Context context, String title, boolean showSeconds) {
+  public TimePicker(Context context, String title, final boolean showSeconds,
+      OnTimeSetListener setListener) {
     super(context);
+    listener = setListener;
     prefs = context.getSharedPreferences(PICKER_PREFS, Context.MODE_PRIVATE);
     calendar = Calendar.getInstance();
     final int incPref = prefs.getInt(INCREMENT_PREF, IncrementValue.FIVE.ordinal());
@@ -40,6 +47,14 @@ public final class TimePicker extends AlertDialog {
     setButton(AlertDialog.BUTTON_POSITIVE, context.getString(R.string.ok),
         new OnClickListener(){
           public void onClick(DialogInterface dialog, int which) {
+            if (listener == null) {
+              return;
+            }
+            int seconds = showSeconds ? calendar.get(Calendar.SECOND) : 0;
+            listener.onTimeSet(
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                seconds);
           }
     });
     setButton(AlertDialog.BUTTON_NEGATIVE, context.getString(R.string.cancel),
