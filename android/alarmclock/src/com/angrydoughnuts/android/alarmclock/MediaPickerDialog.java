@@ -8,6 +8,10 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.provider.MediaStore.MediaColumns;
+import android.provider.MediaStore.Audio.AlbumColumns;
+import android.provider.MediaStore.Audio.Albums;
+import android.provider.MediaStore.Audio.ArtistColumns;
+import android.provider.MediaStore.Audio.Artists;
 import android.provider.MediaStore.Audio.AudioColumns;
 import android.provider.MediaStore.Audio.Media;
 import android.view.LayoutInflater;
@@ -59,11 +63,11 @@ public class MediaPickerDialog extends AlertDialog {
       MediaColumns.TITLE,
     };
     final int[] internalSoundResIDs = new int[] {
-      R.id.media_title,
+      R.id.media_value,
     };
     MediaListView internalList = (MediaListView) body_view.findViewById(R.id.media_picker_internal);
     context.startManagingCursor(
-      internalList.query(Media.INTERNAL_CONTENT_URI, R.layout.media_picker_internal_sound_row,
+      internalList.query(Media.INTERNAL_CONTENT_URI, R.layout.media_picker_row,
       internalSoundColumns, internalSoundResIDs));
     internalList.setOnItemClickListener(MediaColumns.TITLE, songPickListener);
 
@@ -79,39 +83,56 @@ public class MediaPickerDialog extends AlertDialog {
     };
     MediaListView songList = (MediaListView) body_view.findViewById(R.id.media_picker_songs);
     context.startManagingCursor(
-      songList.query(Media.EXTERNAL_CONTENT_URI, R.layout.media_picker_external_sound_row,
+      songList.query(Media.EXTERNAL_CONTENT_URI, R.layout.media_picker_sound_row,
       songsColumns, songsResIDs));
     songList.setOnItemClickListener(MediaColumns.TITLE, songPickListener);
 
-    /*
-    final String[] artistColumns = new String[] {
-        BaseColumns._ID,
-        ArtistColumns.ARTIST,
-      };
-    final int[] artistLayoutIds = new int[] {
-        R.id.media_artist,
-      };
-
-    Cursor artists_cursor = context.managedQuery(Artists.EXTERNAL_CONTENT_URI, artistColumns, null, null, null);
-    SimpleCursorAdapter artists_adapter = new SimpleCursorAdapter(context, R.layout.media_picker_song_row, artists_cursor, artistColumns, artistLayoutIds);
-    ListView artists_view = (ListView) body_view.findViewById(R.id.media_picker_artists);
-    artists_view.setAdapter(artists_adapter);
+    final String[] artistsColumns = new String[] {
+      ArtistColumns.ARTIST,
+      ArtistColumns.ARTIST_KEY
+    };
+    final int[] artistsResIDs = new int[] {
+      R.id.media_value,
+      R.id.media_key
+    };
+    MediaListView artistsList = (MediaListView) body_view.findViewById(R.id.media_picker_artists);
+    context.startManagingCursor(
+      artistsList.query(Artists.EXTERNAL_CONTENT_URI, R.layout.media_picker_row,
+      artistsColumns, artistsResIDs));
+    artistsList.setOnItemClickListener(ArtistColumns.ARTIST_KEY,
+      new OnItemClickListener() {
+        @Override
+        public void onItemClick(String name, Uri media) {
+          Toast.makeText(getContext(),
+              "Key: " + name +
+              "\nURI: " + media.toString(),
+              Toast.LENGTH_SHORT).show();
+        }
+    });
 
     final String[] albumsColumns = new String[] {
-        AlbumColumns.ARTIST,
         AlbumColumns.ALBUM,
-        //AlbumColumns.ALBUM_ART,
+        AlbumColumns.ALBUM_KEY
       };
-    final int[] albumsLayoutIds = new int[] {
-        R.id.media_artist,
-        R.id.media_album
+    final int[] albumsResIDs = new int[] {
+        R.id.media_value,
+        R.id.media_key
       };
 
-    Cursor albums_cursor = context.managedQuery(Albums.EXTERNAL_CONTENT_URI, albumsColumns, null, null, null);
-    SimpleCursorAdapter albums_adapter = new SimpleCursorAdapter(context, R.layout.media_picker_song_row, albums_cursor, albumsColumns, albumsLayoutIds);
-    ListView albums_view = (ListView) body_view.findViewById(R.id.media_picker_albums);
-    albums_view.setAdapter(albums_adapter);
-    */
+    MediaListView albumsList = (MediaListView) body_view.findViewById(R.id.media_picker_albums);
+    context.startManagingCursor(
+      albumsList.query(Albums.EXTERNAL_CONTENT_URI, R.layout.media_picker_row,
+      albumsColumns, albumsResIDs));
+    albumsList.setOnItemClickListener(AlbumColumns.ALBUM_KEY,
+      new OnItemClickListener() {
+        @Override
+        public void onItemClick(String name, Uri media) {
+          Toast.makeText(getContext(),
+              "Key: " + name +
+              "\nURI: " + media.toString(),
+              Toast.LENGTH_SHORT).show();
+        }
+    });
   }
 
   @Override

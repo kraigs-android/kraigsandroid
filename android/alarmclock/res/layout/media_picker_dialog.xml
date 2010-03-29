@@ -20,11 +20,13 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
 
-  <ListView android:id="@+id/media_picker_artists"
+  <com.angrydoughnuts.android.alarmclock.MediaListView
+    android:id="@+id/media_picker_artists"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
 
-  <ListView android:id="@+id/media_picker_albums"
+  <com.angrydoughnuts.android.alarmclock.MediaListView
+    android:id="@+id/media_picker_albums"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
 
