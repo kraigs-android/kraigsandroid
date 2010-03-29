@@ -5,6 +5,8 @@ import java.util.Calendar;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.text.format.DateFormat;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -17,6 +19,10 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 public final class TimePicker extends AlertDialog {
+  private static String PICKER_PREFS = "TimePickerPreferences";
+  private static String INCREMENT_PREF = "increment";
+
+  private SharedPreferences prefs;
   private Calendar calendar;
   private TextView timeText;
   private Button amPmButton;
@@ -26,8 +32,10 @@ public final class TimePicker extends AlertDialog {
 
   public TimePicker(Context context, String title, boolean showSeconds) {
     super(context);
-
+    prefs = context.getSharedPreferences(PICKER_PREFS, Context.MODE_PRIVATE);
     calendar = Calendar.getInstance();
+    final int incPref = prefs.getInt(INCREMENT_PREF, IncrementValue.FIVE.ordinal());
+    final IncrementValue defaultIncrement = IncrementValue.values()[incPref];
 
     setButton(AlertDialog.BUTTON_POSITIVE, context.getString(R.string.ok),
         new OnClickListener(){
@@ -74,10 +82,10 @@ public final class TimePicker extends AlertDialog {
     }
     hourPicker.inflate(body_view, R.id.picker_hour, false, IncrementValue.ONE);
     minutePicker = new PickerView(Calendar.MINUTE);
-    minutePicker.inflate(body_view, R.id.picker_minute, true, IncrementValue.THIRTY);
+    minutePicker.inflate(body_view, R.id.picker_minute, true, defaultIncrement);
     if (showSeconds) {
       secondPicker = new PickerView(Calendar.SECOND);
-      secondPicker.inflate(body_view, R.id.picker_second, true, IncrementValue.THIRTY);
+      secondPicker.inflate(body_view, R.id.picker_second, true, defaultIncrement);
     }
   }
 
@@ -133,6 +141,9 @@ public final class TimePicker extends AlertDialog {
         @Override
         public void onClick(View v) {
           increment.cycleToNext();
+          Editor editor = prefs.edit();
+          editor.putInt(INCREMENT_PREF, increment.value.ordinal());
+          editor.commit();
           pickerRefresh();
         }
       });
