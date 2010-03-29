@@ -21,7 +21,7 @@ public final class TimePicker extends AlertDialog {
   private PickerView minutePicker;
   private PickerView secondPicker;
 
-  public TimePicker(Context context) {
+  public TimePicker(Context context, String title, boolean showSeconds) {
     super(context);
 
     calendar = Calendar.getInstance();
@@ -37,8 +37,10 @@ public final class TimePicker extends AlertDialog {
           }
     });
 
-    setTitle("TESTING TITLE");
-    //setIcon(android.R.drawable.ic_dialog_time);
+    if (title.length() != 0) {
+      setTitle(title);
+      //setIcon(android.R.drawable.ic_dialog_time);
+    }
 
     final LayoutInflater inflater =
       (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -70,8 +72,10 @@ public final class TimePicker extends AlertDialog {
     hourPicker.inflate(body_view, R.id.picker_hour, false, IncrementValue.ONE);
     minutePicker = new PickerView(Calendar.MINUTE);
     minutePicker.inflate(body_view, R.id.picker_minute, true, IncrementValue.THIRTY);
-    secondPicker = new PickerView(Calendar.SECOND);
-    secondPicker.inflate(body_view, R.id.picker_second, true, IncrementValue.THIRTY);
+    if (showSeconds) {
+      secondPicker = new PickerView(Calendar.SECOND);
+      secondPicker.inflate(body_view, R.id.picker_second, true, IncrementValue.THIRTY);
+    }
   }
 
   void dialogRefresh() {
