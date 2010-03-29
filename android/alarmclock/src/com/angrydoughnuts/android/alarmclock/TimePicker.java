@@ -80,7 +80,7 @@ public final class TimePicker extends AlertDialog {
 
     if (title.length() != 0) {
       setTitle(title);
-      //setIcon(android.R.drawable.ic_dialog_time);
+      setIcon(R.drawable.ic_dialog_time);
     }
 
     final LayoutInflater inflater =
