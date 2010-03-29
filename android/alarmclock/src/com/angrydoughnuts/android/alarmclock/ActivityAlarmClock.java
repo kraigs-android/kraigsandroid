@@ -19,7 +19,9 @@ import java.util.Calendar;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.DialogInterface.OnCancelListener;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
@@ -208,7 +210,7 @@ public final class ActivityAlarmClock extends Activity {
   protected Dialog onCreateDialog(int id) {
     switch (Dialogs.values()[id]) {
       case TIME_PICKER:
-        return new TimePickerDialog(
+        Dialog picker = new TimePickerDialog(
             this, getString(R.string.add_alarm), AppSettings.isDebugMode(this),
             new TimePickerDialog.OnTimeSetListener() {
               @Override
@@ -221,6 +223,13 @@ public final class ActivityAlarmClock extends Activity {
                 removeDialog(Dialogs.TIME_PICKER.ordinal());
               }
             });
+        picker.setOnCancelListener(new OnCancelListener() {
+          @Override
+          public void onCancel(DialogInterface dialog) {
+            removeDialog(Dialogs.TIME_PICKER.ordinal());
+          }
+        });
+        return picker;
       default:
         return super.onCreateDialog(id);
     }

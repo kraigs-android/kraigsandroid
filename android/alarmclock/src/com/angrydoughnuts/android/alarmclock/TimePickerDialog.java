@@ -118,6 +118,7 @@ public final class TimePickerDialog extends AlertDialog {
     setButton(AlertDialog.BUTTON_NEGATIVE, context.getString(R.string.cancel),
         new OnClickListener(){
           public void onClick(DialogInterface dialog, int which) {
+            cancel();
           }
     });
 
