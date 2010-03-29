@@ -10,9 +10,11 @@ import android.view.View;
 import android.view.ViewStub;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 public final class TimePicker extends AlertDialog {
   private Calendar calendar;
+  private TextView timeText;
   private PickerView hourPicker;
   private PickerView minutePicker;
   private PickerView secondPicker;
@@ -41,6 +43,7 @@ public final class TimePicker extends AlertDialog {
     final View body_view = inflater.inflate(R.layout.time_picker_dialog, null);
     setView(body_view);
 
+    timeText = (TextView) body_view.findViewById(R.id.picker_text);
     hourPicker = new PickerView(Calendar.HOUR);
     hourPicker.inflate(body_view, R.id.picker_hour, false, IncrementValue.ONE);
     minutePicker = new PickerView(Calendar.MINUTE);
@@ -100,6 +103,11 @@ public final class TimePicker extends AlertDialog {
     }
 
     private void refresh() {
+      AlarmTime time = new AlarmTime(calendar.get(
+          Calendar.HOUR_OF_DAY),
+          calendar.get(Calendar.MINUTE),
+          calendar.get(Calendar.SECOND));
+      timeText.setText(time.timeUntilString(getContext()));
       text.setText("" + calendar.get(calendarField));
       incrementValueButton.setText("+/- " + increment.value());
     }
