@@ -5,22 +5,13 @@ import com.angrydoughnuts.android.alarmclock.MediaListView.OnItemClickListener;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.provider.BaseColumns;
-import android.provider.Settings;
 import android.provider.MediaStore.MediaColumns;
-import android.provider.MediaStore.Audio.AlbumColumns;
-import android.provider.MediaStore.Audio.Albums;
-import android.provider.MediaStore.Audio.ArtistColumns;
-import android.provider.MediaStore.Audio.Artists;
 import android.provider.MediaStore.Audio.AudioColumns;
 import android.provider.MediaStore.Audio.Media;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
 import android.widget.TabHost;
 import android.widget.Toast;
 
@@ -46,23 +37,7 @@ public class MediaPickerDialog extends AlertDialog {
     tabs.addTab(tabs.newTabSpec("albums").setContent(R.id.media_picker_albums).setIndicator("Album"));
     tabs.addTab(tabs.newTabSpec("songs").setContent(R.id.media_picker_songs).setIndicator("Songs"));
 
-    final String[] from = new String[] {
-      BaseColumns._ID,
-      MediaColumns.TITLE,
-      AudioColumns.ARTIST,
-      AudioColumns.ALBUM
-    };
-    final int[] to = new int[] {
-      R.id.media_id,
-      R.id.media_title,
-      R.id.media_artist,
-      R.id.media_album
-    };
-
-    MediaListView internalList = (MediaListView) body_view.findViewById(R.id.media_picker_internal);
-    internalList.query(Media.INTERNAL_CONTENT_URI, R.layout.media_picker_row, from, to);
-    internalList.setMediaPlayer(mediaPlayer);
-    internalList.setOnItemClickListener(MediaColumns.TITLE, new OnItemClickListener() {
+    final OnItemClickListener songPickListener = new OnItemClickListener() {
       @Override
       public void onItemClick(String name, Uri media) {
         Toast.makeText(getContext(),
@@ -70,53 +45,67 @@ public class MediaPickerDialog extends AlertDialog {
             "\nURI: " + media.toString(),
             Toast.LENGTH_SHORT).show();
       }
-    });
+    };
 
+    final String[] internalSoundColumns = new String[] {
+      MediaColumns.TITLE,
+    };
+    final int[] internalSoundResIDs = new int[] {
+      R.id.media_title,
+    };
+    MediaListView internalList = (MediaListView) body_view.findViewById(R.id.media_picker_internal);
+    context.startManagingCursor(
+      internalList.query(Media.INTERNAL_CONTENT_URI, R.layout.media_picker_internal_sound_row,
+      internalSoundColumns, internalSoundResIDs));
+    internalList.setMediaPlayer(mediaPlayer);
+    internalList.setOnItemClickListener(MediaColumns.TITLE, songPickListener);
+
+    final String[] songsColumns = new String[] {
+      MediaColumns.TITLE,
+      AudioColumns.ARTIST,
+      AudioColumns.ALBUM
+    };
+    final int[] songsResIDs = new int[] {
+      R.id.media_title,
+      R.id.media_artist,
+      R.id.media_album
+    };
+    MediaListView songList = (MediaListView) body_view.findViewById(R.id.media_picker_songs);
+    context.startManagingCursor(
+      songList.query(Media.EXTERNAL_CONTENT_URI, R.layout.media_picker_external_sound_row,
+      songsColumns, songsResIDs));
+    songList.setMediaPlayer(mediaPlayer);
+    songList.setOnItemClickListener(MediaColumns.TITLE, songPickListener);
+
+    /*
     final String[] artistColumns = new String[] {
         BaseColumns._ID,
         ArtistColumns.ARTIST,
       };
     final int[] artistLayoutIds = new int[] {
-        R.id.media_id,
         R.id.media_artist,
       };
 
     Cursor artists_cursor = context.managedQuery(Artists.EXTERNAL_CONTENT_URI, artistColumns, null, null, null);
-    SimpleCursorAdapter artists_adapter = new SimpleCursorAdapter(context, R.layout.media_picker_row, artists_cursor, artistColumns, artistLayoutIds);
+    SimpleCursorAdapter artists_adapter = new SimpleCursorAdapter(context, R.layout.media_picker_song_row, artists_cursor, artistColumns, artistLayoutIds);
     ListView artists_view = (ListView) body_view.findViewById(R.id.media_picker_artists);
     artists_view.setAdapter(artists_adapter);
 
     final String[] albumsColumns = new String[] {
-        BaseColumns._ID,
         AlbumColumns.ARTIST,
         AlbumColumns.ALBUM,
         //AlbumColumns.ALBUM_ART,
       };
     final int[] albumsLayoutIds = new int[] {
-        R.id.media_id,
         R.id.media_artist,
         R.id.media_album
       };
 
     Cursor albums_cursor = context.managedQuery(Albums.EXTERNAL_CONTENT_URI, albumsColumns, null, null, null);
-    SimpleCursorAdapter albums_adapter = new SimpleCursorAdapter(context, R.layout.media_picker_row, albums_cursor, albumsColumns, albumsLayoutIds);
+    SimpleCursorAdapter albums_adapter = new SimpleCursorAdapter(context, R.layout.media_picker_song_row, albums_cursor, albumsColumns, albumsLayoutIds);
     ListView albums_view = (ListView) body_view.findViewById(R.id.media_picker_albums);
     albums_view.setAdapter(albums_adapter);
-
-    MediaListView songList = (MediaListView) body_view.findViewById(R.id.media_picker_songs);
-    Cursor songCursor = songList.query(
-      Media.EXTERNAL_CONTENT_URI, R.layout.media_picker_row, from, to);
-    context.startManagingCursor(songCursor);
-    songList.setMediaPlayer(mediaPlayer);
-    songList.setOnItemClickListener(MediaColumns.TITLE, new OnItemClickListener() {
-      @Override
-      public void onItemClick(String name, Uri media) {
-        Toast.makeText(getContext(),
-            "TITLE: " + name +
-            "\nURI: " + media.toString(),
-            Toast.LENGTH_SHORT).show();
-      }
-    });
+    */
   }
 
   @Override
