@@ -5,6 +5,7 @@ import java.util.Calendar;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewStub;
@@ -59,7 +60,13 @@ public final class TimePicker extends AlertDialog {
       }
     });
 
-    hourPicker = new PickerView(Calendar.HOUR);
+    if (DateFormat.is24HourFormat(getContext())) {
+      amPmButton.setVisibility(View.GONE);
+      hourPicker = new PickerView(Calendar.HOUR_OF_DAY);
+    } else {
+      amPmButton.setVisibility(View.VISIBLE);
+      hourPicker = new PickerView(Calendar.HOUR);
+    }
     hourPicker.inflate(body_view, R.id.picker_hour, false, IncrementValue.ONE);
     minutePicker = new PickerView(Calendar.MINUTE);
     minutePicker.inflate(body_view, R.id.picker_minute, true, IncrementValue.THIRTY);
@@ -133,7 +140,11 @@ public final class TimePicker extends AlertDialog {
     }
 
     private void pickerRefresh() {
-      text.setText("" + calendar.get(calendarField));
+      int fieldValue = calendar.get(calendarField);
+      if (calendarField == Calendar.HOUR && fieldValue == 0) {
+        fieldValue = 12;
+      }
+      text.setText("" + fieldValue);
       incrementValueButton.setText("+/- " + increment.value());
       dialogRefresh();
     }
