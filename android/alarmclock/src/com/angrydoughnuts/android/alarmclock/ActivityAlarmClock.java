@@ -208,9 +208,9 @@ public final class ActivityAlarmClock extends Activity {
   protected Dialog onCreateDialog(int id) {
     switch (Dialogs.values()[id]) {
       case TIME_PICKER:
-        return new TimePicker(
+        return new TimePickerDialog(
             this, getString(R.string.add_alarm), AppSettings.isDebugMode(this),
-            new TimePicker.OnTimeSetListener() {
+            new TimePickerDialog.OnTimeSetListener() {
               @Override
               public void onTimeSet(int hourOfDay, int minute, int second) {
                 // When a time is selected, create it via the service and

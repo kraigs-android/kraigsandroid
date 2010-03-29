@@ -1,3 +1,18 @@
+/****************************************************************************
+ * Copyright 2010 kraigs.android@gmail.com
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. 
+ ****************************************************************************/
+
 package com.angrydoughnuts.android.alarmclock;
 
 import java.util.Calendar;
@@ -18,13 +33,19 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
-public final class TimePicker extends AlertDialog {
+/**
+ * This class is a slight improvement over the android time picker dialog.
+ * It allows the user to select hour, minute, and second (the android picker
+ * does not support seconds).  It also has a configurable increment feature
+ * (30, 5, and 1).
+ */
+public final class TimePickerDialog extends AlertDialog {
   public interface OnTimeSetListener {
     public void onTimeSet(int hourOfDay, int minute, int second);
   }
 
-  private static String PICKER_PREFS = "TimePickerPreferences";
-  private static String INCREMENT_PREF = "increment";
+  private static final String PICKER_PREFS = "TimePickerPreferences";
+  private static final String INCREMENT_PREF = "increment";
 
   private OnTimeSetListener listener;
   private SharedPreferences prefs;
@@ -35,7 +56,17 @@ public final class TimePicker extends AlertDialog {
   private PickerView minutePicker;
   private PickerView secondPicker;
 
-  public TimePicker(Context context, String title,
+  /**
+   * Construct a time picker with the supplied hour minute and second.
+   * @param context
+   * @param title Dialog title.
+   * @param hourOfDay 0 to 23.
+   * @param minute  0 to 60.
+   * @param second 0 to 60.
+   * @param showSeconds Show/hide the seconds field.
+   * @param setListener Callback for when the user selects 'OK'.
+   */
+  public TimePickerDialog(Context context, String title,
       int hourOfDay, int minute, int second, final boolean showSeconds,
       OnTimeSetListener setListener) {
     this(context, title, showSeconds, setListener);
@@ -49,16 +80,26 @@ public final class TimePicker extends AlertDialog {
     }
   }
 
-  public TimePicker(Context context, String title, final boolean showSeconds,
+  /**
+   * Construct a time picker with 'now' as the starting time.
+   * @param context
+   * @param title Dialog title.
+   * @param showSeconds Show/hid the seconds field.
+   * @param setListener Callback for when the user selects 'OK'.
+   */
+  public TimePickerDialog(Context context, String title, final boolean showSeconds,
       OnTimeSetListener setListener) {
     super(context);
     listener = setListener;
     prefs = context.getSharedPreferences(PICKER_PREFS, Context.MODE_PRIVATE);
     calendar = Calendar.getInstance();
 
+    // The default increment amount is stored in a shared preference.  Look
+    // it up.
     final int incPref = prefs.getInt(INCREMENT_PREF, IncrementValue.FIVE.ordinal());
     final IncrementValue defaultIncrement = IncrementValue.values()[incPref];
 
+    // OK button setup.
     setButton(AlertDialog.BUTTON_POSITIVE, context.getString(R.string.ok),
         new OnClickListener(){
           public void onClick(DialogInterface dialog, int which) {
@@ -72,22 +113,27 @@ public final class TimePicker extends AlertDialog {
                 seconds);
           }
     });
+
+    // Cancel button setup.
     setButton(AlertDialog.BUTTON_NEGATIVE, context.getString(R.string.cancel),
         new OnClickListener(){
           public void onClick(DialogInterface dialog, int which) {
           }
     });
 
+    // Set title and icon.
     if (title.length() != 0) {
       setTitle(title);
       setIcon(R.drawable.ic_dialog_time);
     }
 
+    // Set the view for the body section of the AlertDialog.
     final LayoutInflater inflater =
       (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     final View body_view = inflater.inflate(R.layout.time_picker_dialog, null);
     setView(body_view);
 
+    // Setup each of the components of the body section.
     timeText = (TextView) body_view.findViewById(R.id.picker_text);
 
     amPmButton = (Button) body_view.findViewById(R.id.picker_am_pm);
@@ -103,6 +149,7 @@ public final class TimePicker extends AlertDialog {
       }
     });
 
+    // Setup the three time fields.
     if (DateFormat.is24HourFormat(getContext())) {
       amPmButton.setVisibility(View.GONE);
       hourPicker = new PickerView(Calendar.HOUR_OF_DAY, "%02d");
@@ -119,13 +166,11 @@ public final class TimePicker extends AlertDialog {
     }
   }
 
-  void dialogRefresh() {
+  private void dialogRefresh() {
     AlarmTime time = new AlarmTime(calendar.get(
         Calendar.HOUR_OF_DAY),
         calendar.get(Calendar.MINUTE),
         calendar.get(Calendar.SECOND));
-    // TODO(cgallek): should this have a timer as well to make it refresh when
-    // the minutes tick??
     timeText.setText(time.timeUntilString(getContext()));
     if (calendar.get(Calendar.AM_PM) == Calendar.AM) {
       amPmButton.setText(getContext().getString(R.string.am));
@@ -134,6 +179,9 @@ public final class TimePicker extends AlertDialog {
     }
   }
 
+  /**
+   * Enum that represents the states of the increment picker button.
+   */
   private enum IncrementValue {
     THIRTY(30), FIVE(5), ONE(1);
     private int value;
@@ -145,6 +193,10 @@ public final class TimePicker extends AlertDialog {
     }
   }
 
+  /**
+   * Helper class that wraps up the view elements of each number picker
+   * (plus/minus button, text field, increment picker). 
+   */
   private final class PickerView {
     private int calendarField;
     private String formatString;
@@ -154,11 +206,24 @@ public final class TimePicker extends AlertDialog {
     private Button plus = null;
     private Button minus = null;
 
+    /**
+     * Construct a numeric picker for the supplied calendar field and formats
+     * it according to the supplied format string.
+     * @param calendarField
+     * @param formatString
+     */
     public PickerView(int calendarField, String formatString) {
       this.calendarField = calendarField;
       this.formatString = formatString;
     }
 
+    /**
+     * Inflates the ViewStub for this numeric picker.
+     * @param parentView
+     * @param resourceId
+     * @param showIncrement
+     * @param defaultIncrement
+     */
     public void inflate(View parentView, int resourceId, boolean showIncrement, IncrementValue defaultIncrement) {
       final ViewStub stub = (ViewStub) parentView.findViewById(resourceId);
       final View view = stub.inflate();
@@ -194,7 +259,7 @@ public final class TimePicker extends AlertDialog {
       pickerRefresh();
     }
 
-    private void pickerRefresh() {
+    public void pickerRefresh() {
       int fieldValue = calendar.get(calendarField);
       if (calendarField == Calendar.HOUR && fieldValue == 0) {
         fieldValue = 12;
@@ -223,6 +288,12 @@ public final class TimePicker extends AlertDialog {
       }
     }
 
+    /**
+     * Listener that figures out what the next value should be when a numeric
+     * picker plus/minus button is clicked.  It will round up/down to the next
+     * interval increment then increment by the increment amount on subsequent
+     * clicks.
+     */
     private abstract class TimeAdjustListener implements View.OnClickListener {
       protected abstract int sign();
       @Override
@@ -254,6 +325,11 @@ public final class TimePicker extends AlertDialog {
       protected int sign() { return -1; }
     }
 
+    /**
+     * Listener to handle direct user input into the time picker text fields.
+     * Updates after the editor confirmation button is picked or when the
+     * text field loses focus.
+     */
     private final class TextChangeListener implements OnFocusChangeListener, OnEditorActionListener {
       private void handleChange() {
         try {

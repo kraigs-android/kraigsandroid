@@ -301,9 +301,9 @@ public final class ActivityAlarmSettings extends Activity {
         int hour = time.calendar().get(Calendar.HOUR_OF_DAY);
         int minute = time.calendar().get(Calendar.MINUTE);
         int second = time.calendar().get(Calendar.SECOND);
-        return new TimePicker(this, getString(R.string.time),
+        return new TimePickerDialog(this, getString(R.string.time),
             hour, minute, second, AppSettings.isDebugMode(this),
-            new TimePicker.OnTimeSetListener() {
+            new TimePickerDialog.OnTimeSetListener() {
               @Override
               public void onTimeSet(int hourOfDay, int minute, int second) {
                 info.setTime(new AlarmTime(hourOfDay, minute, second));
