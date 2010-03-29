@@ -1,3 +1,18 @@
+/****************************************************************************
+ * Copyright 2010 kraigs.android@gmail.com
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ****************************************************************************/
+
 package com.angrydoughnuts.android.alarmclock;
 
 import java.util.ArrayList;
@@ -18,6 +33,11 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.ViewFlipper;
 import android.widget.AdapterView.OnItemClickListener;
 
+/**
+ * An extension to the ListView widget specialized for selecting audio media.
+ * Use one of the concrete implementations MediaSongsView, MediaArtistsView
+ * or MediaAlbumsView.
+ */
 public class MediaListView extends ListView implements OnItemClickListener {
   public interface OnItemPickListener {
     public void onItemPick(Uri uri, String name);
@@ -126,6 +146,8 @@ public class MediaListView extends ListView implements OnItemClickListener {
     this.sortOrder = sortOrder;
   }
 
+  // TODO(cgallek): get rid of these two accessor methods in favor of
+  // onClick callbacks.
   public String getLastSelectedName() {
     return selectedName;
   }
