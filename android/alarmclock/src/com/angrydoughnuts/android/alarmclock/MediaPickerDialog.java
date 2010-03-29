@@ -1,22 +1,28 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import com.angrydoughnuts.android.alarmclock.MediaListView.OnItemClickListener;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.database.Cursor;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.provider.BaseColumns;
 import android.provider.Settings;
+import android.provider.MediaStore.MediaColumns;
 import android.provider.MediaStore.Audio.AlbumColumns;
 import android.provider.MediaStore.Audio.Albums;
 import android.provider.MediaStore.Audio.ArtistColumns;
 import android.provider.MediaStore.Audio.Artists;
+import android.provider.MediaStore.Audio.AudioColumns;
 import android.provider.MediaStore.Audio.Media;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TabHost;
+import android.widget.Toast;
 
 // TODO(cgallek): maybe make this an activity instead of a dialog?
 public class MediaPickerDialog extends AlertDialog {
@@ -40,9 +46,31 @@ public class MediaPickerDialog extends AlertDialog {
     tabs.addTab(tabs.newTabSpec("albums").setContent(R.id.media_picker_albums).setIndicator("Album"));
     tabs.addTab(tabs.newTabSpec("songs").setContent(R.id.media_picker_songs).setIndicator("Songs"));
 
+    final String[] from = new String[] {
+      BaseColumns._ID,
+      MediaColumns.TITLE,
+      AudioColumns.ARTIST,
+      AudioColumns.ALBUM
+    };
+    final int[] to = new int[] {
+      R.id.media_id,
+      R.id.media_title,
+      R.id.media_artist,
+      R.id.media_album
+    };
+
     MediaListView internalList = (MediaListView) body_view.findViewById(R.id.media_picker_internal);
-    internalList.query(Media.INTERNAL_CONTENT_URI, Settings.System.DEFAULT_NOTIFICATION_URI);
+    internalList.query(Media.INTERNAL_CONTENT_URI, R.layout.media_picker_row, from, to);
     internalList.setMediaPlayer(mediaPlayer);
+    internalList.setOnItemClickListener(MediaColumns.TITLE, new OnItemClickListener() {
+      @Override
+      public void onItemClick(String name, Uri media) {
+        Toast.makeText(getContext(),
+            "TITLE: " + name +
+            "\nURI: " + media.toString(),
+            Toast.LENGTH_SHORT).show();
+      }
+    });
 
     final String[] artistColumns = new String[] {
         BaseColumns._ID,
@@ -76,9 +104,19 @@ public class MediaPickerDialog extends AlertDialog {
     albums_view.setAdapter(albums_adapter);
 
     MediaListView songList = (MediaListView) body_view.findViewById(R.id.media_picker_songs);
-    Cursor songCursor = songList.query(Media.EXTERNAL_CONTENT_URI, Settings.System.DEFAULT_NOTIFICATION_URI);
+    Cursor songCursor = songList.query(
+      Media.EXTERNAL_CONTENT_URI, R.layout.media_picker_row, from, to);
     context.startManagingCursor(songCursor);
     songList.setMediaPlayer(mediaPlayer);
+    songList.setOnItemClickListener(MediaColumns.TITLE, new OnItemClickListener() {
+      @Override
+      public void onItemClick(String name, Uri media) {
+        Toast.makeText(getContext(),
+            "TITLE: " + name +
+            "\nURI: " + media.toString(),
+            Toast.LENGTH_SHORT).show();
+      }
+    });
   }
 
   @Override
