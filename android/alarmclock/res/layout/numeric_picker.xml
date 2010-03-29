@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
   android:orientation="vertical"
-  android:padding="5px"
+  android:layout_weight="1"
   android:layout_width="wrap_content"
   android:layout_height="wrap_content">
   <Button android:id="@+id/time_plus"
     android:textSize="20sp"
-    android:padding="15px"
-    android:minWidth="60sp"
+    android:paddingTop="25px"
+    android:paddingBottom="25px"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
   <EditText android:id="@+id/time_value"
@@ -15,18 +15,17 @@
     android:numeric="integer"
     android:inputType="phone"
     android:digits="0123456789"
-    android:width="50sp"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
   <Button android:id="@+id/time_minus"
     android:textSize="20sp"
-    android:padding="15px"
-    android:minWidth="60sp"
+    android:paddingTop="25px"
+    android:paddingBottom="25px"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
   <Button android:id="@+id/time_increment"
-    android:layout_marginTop="10px"
     android:visibility="gone"
+	android:layout_marginTop="15px"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
 </LinearLayout>
