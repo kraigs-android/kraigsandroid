@@ -35,12 +35,27 @@ public final class TimePicker extends AlertDialog {
   private PickerView minutePicker;
   private PickerView secondPicker;
 
+  public TimePicker(Context context, String title,
+      int hourOfDay, int minute, int second, final boolean showSeconds,
+      OnTimeSetListener setListener) {
+    this(context, title, showSeconds, setListener);
+    calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+    hourPicker.pickerRefresh();
+    calendar.set(Calendar.MINUTE, minute);
+    minutePicker.pickerRefresh();
+    calendar.set(Calendar.SECOND, second);
+    if (showSeconds) {
+      secondPicker.pickerRefresh();
+    }
+  }
+
   public TimePicker(Context context, String title, final boolean showSeconds,
       OnTimeSetListener setListener) {
     super(context);
     listener = setListener;
     prefs = context.getSharedPreferences(PICKER_PREFS, Context.MODE_PRIVATE);
     calendar = Calendar.getInstance();
+
     final int incPref = prefs.getInt(INCREMENT_PREF, IncrementValue.FIVE.ordinal());
     final IncrementValue defaultIncrement = IncrementValue.values()[incPref];
 
