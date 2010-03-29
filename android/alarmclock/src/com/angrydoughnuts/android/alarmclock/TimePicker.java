@@ -112,6 +112,8 @@ public final class TimePicker extends AlertDialog {
     private EditText text = null;
     private Increment increment = null;
     private Button incrementValueButton = null;
+    private Button plus = null;
+    private Button minus = null;
 
     public PickerView(int calendarField) {
       this.calendarField = calendarField;
@@ -130,7 +132,7 @@ public final class TimePicker extends AlertDialog {
       incrementValueButton.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-          increment.next();
+          increment.cycleToNext();
           pickerRefresh();
         }
       });
@@ -141,9 +143,9 @@ public final class TimePicker extends AlertDialog {
         incrementValueButton.setVisibility(View.GONE);
       }
 
-      final Button plus = (Button) view.findViewById(R.id.time_plus);
+      plus = (Button) view.findViewById(R.id.time_plus);
       plus.setOnClickListener(new TimeIncrementListener());
-      final Button minus = (Button) view.findViewById(R.id.time_minus);
+      minus = (Button) view.findViewById(R.id.time_minus);
       minus.setOnClickListener(new TimeDecrementListener());
 
       pickerRefresh();
@@ -155,7 +157,9 @@ public final class TimePicker extends AlertDialog {
         fieldValue = 12;
       }
       text.setText("" + fieldValue);
-      incrementValueButton.setText("+/- " + increment.value());
+      incrementValueButton.setText("+/- " + increment.nextValue().value());
+      plus.setText("+" + increment.value());
+      minus.setText("-" + increment.value());
       dialogRefresh();
     }
 
@@ -164,9 +168,12 @@ public final class TimePicker extends AlertDialog {
       public Increment(IncrementValue value) {
         this.value = value;
       }
-      public void next() {
-        int new_value = (value.ordinal() + 1) % IncrementValue.values().length;
-        value = IncrementValue.values()[new_value];
+      public IncrementValue nextValue() {
+        int nextIndex = (value.ordinal() + 1) % IncrementValue.values().length;
+        return IncrementValue.values()[nextIndex];
+      }
+      public void cycleToNext() {
+        value = nextValue();
       }
       public int value() {
         return value.value();
