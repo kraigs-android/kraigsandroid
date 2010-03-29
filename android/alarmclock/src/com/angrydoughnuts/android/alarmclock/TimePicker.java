@@ -6,12 +6,15 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.text.format.DateFormat;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewStub;
+import android.view.View.OnFocusChangeListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 
 public final class TimePicker extends AlertDialog {
   private Calendar calendar;
@@ -118,6 +121,9 @@ public final class TimePicker extends AlertDialog {
       final ViewStub stub = (ViewStub) parentView.findViewById(resourceId);
       final View view = stub.inflate();
       text = (EditText) view.findViewById(R.id.time_value);
+      text.setOnFocusChangeListener(new TextChangeListener());
+      text.setOnEditorActionListener(new TextChangeListener());
+
       increment = new Increment(defaultIncrement);
       incrementValueButton = (Button) view.findViewById(R.id.time_increment);
 
@@ -196,6 +202,25 @@ public final class TimePicker extends AlertDialog {
     private final class TimeDecrementListener extends TimeAdjustListener {
       @Override
       protected int sign() { return -1; }
+    }
+
+    private final class TextChangeListener implements OnFocusChangeListener, OnEditorActionListener {
+      private void handleChange() {
+        try {
+          int newValue = Integer.parseInt(text.getText().toString());
+          calendar.set(calendarField, newValue);
+        } catch (NumberFormatException e) {}
+        pickerRefresh();
+      }
+      @Override
+      public void onFocusChange(View v, boolean hasFocus) {
+        handleChange();
+      }
+      @Override
+      public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        handleChange();
+        return false;
+      }
     }
   }
 }
