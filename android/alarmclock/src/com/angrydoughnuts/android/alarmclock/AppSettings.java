@@ -32,9 +32,6 @@ public final class AppSettings {
   }
 
   public static final String lockScreenString(Context c, AlarmTime nextTime) {
-    if (nextTime == null) {
-      return "";
-    }
     final String LOCK_SCREEN_SETTING = c.getString(R.string.lock_screen_setting);
     final String[] values = c.getResources().getStringArray(R.array.lock_screen_values);
     final String LOCK_SCREEN_COUNTDOWN = values[0];
@@ -45,6 +42,14 @@ public final class AppSettings {
     final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
     final String value = prefs.getString(LOCK_SCREEN_SETTING, LOCK_SCREEN_COUNTDOWN);
 
+    if (value.equals(LOCK_SCREEN_NOTHING)) {
+      return null;
+    }
+
+    if (nextTime == null) {
+      return "";
+    }
+
     final String time = nextTime.localizedString(c);
     final String countdown = nextTime.timeUntilString(c);
 
@@ -54,8 +59,6 @@ public final class AppSettings {
       return time;
     } else if (value.equals(LOCK_SCREEN_BOTH)) {
       return time + " (" + countdown + ")";
-    } else if (value.equals(LOCK_SCREEN_NOTHING)) {
-      return "";
     } else {
       throw new IllegalStateException("Unknown lockscreen preference: " + value);
     }

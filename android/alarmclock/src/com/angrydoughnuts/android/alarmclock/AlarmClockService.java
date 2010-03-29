@@ -156,8 +156,10 @@ public final class AlarmClockService extends Service {
     }
 
     // Set the system alarm string for display on the lock screen.
-    Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED,
-        AppSettings.lockScreenString(getApplicationContext(), nextTime));
+    String lockScreenText = AppSettings.lockScreenString(getApplicationContext(), nextTime);
+    if (lockScreenText != null) {
+      Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED, lockScreenText);
+    }
   }
 
   @Override
@@ -171,7 +173,11 @@ public final class AlarmClockService extends Service {
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     manager.cancel(NOTIFICATION_ID);
 
-    Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED, "");
+    String lockScreenText = AppSettings.lockScreenString(getApplicationContext(), null);
+    // Only clear the lock screen if the preference is set.
+    if (lockScreenText != null) {
+      Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED, "");
+    }
   }
 
   @Override
