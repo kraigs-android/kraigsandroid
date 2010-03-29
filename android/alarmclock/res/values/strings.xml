@@ -78,4 +78,8 @@
   <string name="lock_screen_time">Alarm time</string>
   <string name="lock_screen_both">Both</string>
   <string name="lock_screen_nothing">Nothing</string>
+  <string name="internal">Internal</string>
+  <string name="artists">Artists</string>
+  <string name="albums">Albums</string>
+  <string name="songs">Songs</string>
 </resources>

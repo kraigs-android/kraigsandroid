@@ -15,7 +15,6 @@ import android.widget.TabHost;
 import android.widget.ViewFlipper;
 import android.widget.TabHost.OnTabChangeListener;
 
-// TODO(cgallek): maybe make this an activity instead of a dialog?
 public class MediaPickerDialog extends AlertDialog {
   public interface OnMediaPickListener {
     public void onMediaPick(String name, Uri media);
@@ -43,11 +42,10 @@ public class MediaPickerDialog extends AlertDialog {
     TabHost tabs = (TabHost) body_view.findViewById(R.id.media_tabs);
     tabs.setup();
 
-    // TODO(cgallek): move this to strings.xml
-    tabs.addTab(tabs.newTabSpec(INTERNAL_TAB).setContent(R.id.media_picker_internal).setIndicator("Internal"));
-    tabs.addTab(tabs.newTabSpec(ARTISTS_TAB).setContent(R.id.media_picker_artists).setIndicator("Artist"));
-    tabs.addTab(tabs.newTabSpec(ALBUMS_TAB).setContent(R.id.media_picker_albums).setIndicator("Album"));
-    tabs.addTab(tabs.newTabSpec(ALL_SONGS_TAB).setContent(R.id.media_picker_songs).setIndicator("Songs"));
+    tabs.addTab(tabs.newTabSpec(INTERNAL_TAB).setContent(R.id.media_picker_internal).setIndicator(context.getString(R.string.internal)));
+    tabs.addTab(tabs.newTabSpec(ARTISTS_TAB).setContent(R.id.media_picker_artists).setIndicator(context.getString(R.string.artists)));
+    tabs.addTab(tabs.newTabSpec(ALBUMS_TAB).setContent(R.id.media_picker_albums).setIndicator(context.getString(R.string.albums)));
+    tabs.addTab(tabs.newTabSpec(ALL_SONGS_TAB).setContent(R.id.media_picker_songs).setIndicator(context.getString(R.string.songs)));
 
     // TODO(cgallek): add methods to hide artist/album.
     final MediaSongsView internalList = (MediaSongsView) body_view.findViewById(R.id.media_picker_internal);
