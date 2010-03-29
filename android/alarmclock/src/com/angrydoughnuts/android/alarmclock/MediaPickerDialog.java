@@ -14,6 +14,7 @@ import android.provider.MediaStore.Audio.Media;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TabHost;
+import android.widget.TextView;
 import android.widget.ViewFlipper;
 import android.widget.TabHost.OnTabChangeListener;
 
@@ -52,11 +53,13 @@ public class MediaPickerDialog extends AlertDialog {
     // TODO(cgallek) cleanup this name.  it kind of collides with the
     // interface defined in this class.  also, are the 'last selected' variables
     // still needed in the list view??
+    final TextView lastSelected = (TextView) body_view.findViewById(R.id.media_picker_status);
     final MediaPickListener listener = new MediaPickListener() {
       @Override
       public void onMediaPick(Uri uri, String name) {
         selectedUri = uri;
         selectedName = name;
+        lastSelected.setText(name);
       }
     };
 
@@ -119,6 +122,7 @@ public class MediaPickerDialog extends AlertDialog {
           public void onClick(DialogInterface dialog, int which) {
             selectedName = null;
             selectedUri = null;
+            lastSelected.setText("");
             cancel();
           }
       });
