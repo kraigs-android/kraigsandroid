@@ -34,7 +34,7 @@ public class MediaPickerDialog extends AlertDialog {
   private OnMediaPickListener pickListener;
   private MediaPlayer mediaPlayer;
 
-  public MediaPickerDialog(Activity context) {
+  public MediaPickerDialog(final Activity context) {
     super(context);
     mediaPlayer = new MediaPlayer();
 
@@ -118,11 +118,13 @@ public class MediaPickerDialog extends AlertDialog {
     };
 
     final ViewFlipper artistsFlipper = (ViewFlipper) body_view.findViewById(R.id.media_picker_artists);
+    artistsFlipper.setAnimateFirstView(false);
     final MediaListView artistsList = new MediaListView(context);
     artistsFlipper.addView(artistsList);
     final MediaListView artistsAlbumList = new MediaListView(context);
     artistsFlipper.addView(artistsAlbumList);
-    artistsFlipper.setAnimateFirstView(false);
+    final MediaListView artistsAlbumSongList = new MediaListView(context);
+    artistsFlipper.addView(artistsAlbumSongList);
 
     context.startManagingCursor(
       artistsList.query(Artists.EXTERNAL_CONTENT_URI, R.layout.media_picker_row,
@@ -131,7 +133,9 @@ public class MediaPickerDialog extends AlertDialog {
       new OnItemClickListener() {
         @Override
         public void onItemClick(String name, Uri media) {
-          artistsAlbumList.query(Albums.EXTERNAL_CONTENT_URI, ArtistColumns.ARTIST_KEY + " = '" + name + "'", R.layout.media_picker_row, albumsColumns, albumsResIDs);
+          // TODO(cgallek): these cursors can be re-used.
+          context.startManagingCursor(
+              artistsAlbumList.query(Albums.EXTERNAL_CONTENT_URI, ArtistColumns.ARTIST_KEY + " = '" + name + "'", R.layout.media_picker_row, albumsColumns, albumsResIDs));
           artistsFlipper.showNext();
         }
     });
@@ -139,10 +143,10 @@ public class MediaPickerDialog extends AlertDialog {
         new OnItemClickListener() {
           @Override
           public void onItemClick(String name, Uri media) {
-            Toast.makeText(getContext(),
-                "Key: " + name +
-                "\nURI: " + media.toString(),
-                Toast.LENGTH_SHORT).show();
+            context.startManagingCursor(
+                artistsAlbumSongList.query(Media.EXTERNAL_CONTENT_URI, AlbumColumns.ALBUM_KEY + " = '" + name + "'", R.layout.media_picker_sound_row,
+                songsColumns, songsResIDs));
+            artistsFlipper.showNext();
           }
       });
     artistsAlbumList.setOnKeyListener(new View.OnKeyListener() {
@@ -151,6 +155,23 @@ public class MediaPickerDialog extends AlertDialog {
         if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
           if (event.getAction() == KeyEvent.ACTION_UP) {
             artistsFlipper.showPrevious();
+            mediaPlayer.stop();
+          }
+          return true;
+        } else {
+          return false;
+        }
+      }
+    });
+
+    artistsAlbumSongList.setOnItemClickListener(MediaColumns.TITLE, songPickListener);
+    artistsAlbumSongList.setOnKeyListener(new View.OnKeyListener() {
+      @Override
+      public boolean onKey(View v, int keyCode, KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+          if (event.getAction() == KeyEvent.ACTION_UP) {
+            artistsFlipper.showPrevious();
+            mediaPlayer.stop();
           }
           return true;
         } else {
