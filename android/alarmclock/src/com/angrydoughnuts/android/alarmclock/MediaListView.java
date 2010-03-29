@@ -38,6 +38,11 @@ public final class MediaListView extends ListView implements OnItemClickListener
 
   public Cursor query(Uri contentUri, int rowResId,
       String[] displayColumns, int[] resIDs) {
+    return query(contentUri, null, rowResId, displayColumns, resIDs);
+  }
+
+  public Cursor query(Uri contentUri, String selection, int rowResId,
+      String[] displayColumns, int[] resIDs) {
     final ArrayList<String> queryColumns =
       new ArrayList<String>(displayColumns.length + 1);
     queryColumns.addAll(Arrays.asList(displayColumns));
@@ -48,7 +53,7 @@ public final class MediaListView extends ListView implements OnItemClickListener
     }
     this.cursor = getContext().getContentResolver().query(
         contentUri, queryColumns.toArray(new String[] {}),
-        null, null, null);
+        selection, null, null);
     this.contentUri = contentUri;
 
     final SimpleCursorAdapter adapter = new SimpleCursorAdapter(

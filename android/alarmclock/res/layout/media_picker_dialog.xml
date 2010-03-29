@@ -20,7 +20,7 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
 
-  <com.angrydoughnuts.android.alarmclock.MediaListView
+  <ViewFlipper
     android:id="@+id/media_picker_artists"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />

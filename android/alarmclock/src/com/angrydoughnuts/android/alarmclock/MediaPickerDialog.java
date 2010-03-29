@@ -15,10 +15,13 @@ import android.provider.MediaStore.Audio.ArtistColumns;
 import android.provider.MediaStore.Audio.Artists;
 import android.provider.MediaStore.Audio.AudioColumns;
 import android.provider.MediaStore.Audio.Media;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TabHost;
 import android.widget.Toast;
+import android.widget.ViewFlipper;
+import android.widget.TabHost.OnTabChangeListener;
 
 // TODO(cgallek): maybe make this an activity instead of a dialog?
 public class MediaPickerDialog extends AlertDialog {
@@ -105,7 +108,22 @@ public class MediaPickerDialog extends AlertDialog {
       R.id.media_value,
       R.id.media_key
     };
-    MediaListView artistsList = (MediaListView) body_view.findViewById(R.id.media_picker_artists);
+    final String[] albumsColumns = new String[] {
+      AlbumColumns.ALBUM,
+      AlbumColumns.ALBUM_KEY
+    };
+    final int[] albumsResIDs = new int[] {
+      R.id.media_value,
+      R.id.media_key
+    };
+
+    final ViewFlipper artistsFlipper = (ViewFlipper) body_view.findViewById(R.id.media_picker_artists);
+    final MediaListView artistsList = new MediaListView(context);
+    artistsFlipper.addView(artistsList);
+    final MediaListView artistsAlbumList = new MediaListView(context);
+    artistsFlipper.addView(artistsAlbumList);
+    artistsFlipper.setAnimateFirstView(false);
+
     context.startManagingCursor(
       artistsList.query(Artists.EXTERNAL_CONTENT_URI, R.layout.media_picker_row,
       artistsColumns, artistsResIDs));
@@ -113,21 +131,38 @@ public class MediaPickerDialog extends AlertDialog {
       new OnItemClickListener() {
         @Override
         public void onItemClick(String name, Uri media) {
-          Toast.makeText(getContext(),
-              "Key: " + name +
-              "\nURI: " + media.toString(),
-              Toast.LENGTH_SHORT).show();
+          artistsAlbumList.query(Albums.EXTERNAL_CONTENT_URI, ArtistColumns.ARTIST_KEY + " = '" + name + "'", R.layout.media_picker_row, albumsColumns, albumsResIDs);
+          // TODO(cgallek): I don't think these animations work correctly yet...
+          artistsFlipper.setInAnimation(getContext(), android.R.anim.slide_in_left);
+          artistsFlipper.setOutAnimation(getContext(), android.R.anim.slide_in_left);
+          artistsFlipper.showNext();
         }
     });
-
-    final String[] albumsColumns = new String[] {
-        AlbumColumns.ALBUM,
-        AlbumColumns.ALBUM_KEY
-      };
-    final int[] albumsResIDs = new int[] {
-        R.id.media_value,
-        R.id.media_key
-      };
+    artistsAlbumList.setOnItemClickListener(AlbumColumns.ALBUM_KEY,
+        new OnItemClickListener() {
+          @Override
+          public void onItemClick(String name, Uri media) {
+            Toast.makeText(getContext(),
+                "Key: " + name +
+                "\nURI: " + media.toString(),
+                Toast.LENGTH_SHORT).show();
+          }
+      });
+    artistsAlbumList.setOnKeyListener(new View.OnKeyListener() {
+      @Override
+      public boolean onKey(View v, int keyCode, KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+          if (event.getAction() == KeyEvent.ACTION_UP) {
+            artistsFlipper.setInAnimation(getContext(), android.R.anim.slide_out_right);
+            artistsFlipper.setOutAnimation(getContext(), android.R.anim.slide_out_right);
+            artistsFlipper.showPrevious();
+          }
+          return true;
+        } else {
+          return false;
+        }
+      }
+    });
 
     MediaListView albumsList = (MediaListView) body_view.findViewById(R.id.media_picker_albums);
     context.startManagingCursor(
@@ -142,6 +177,16 @@ public class MediaPickerDialog extends AlertDialog {
               "\nURI: " + media.toString(),
               Toast.LENGTH_SHORT).show();
         }
+    });
+
+    tabs.setOnTabChangedListener(new OnTabChangeListener() {
+      @Override
+      public void onTabChanged(String tabId) {
+        // TODO(cgallek): make these constants.
+        if (tabId.equals("artist")) {
+          artistsFlipper.setDisplayedChild(0);
+        }
+      }
     });
 
     // TODO(cgallek) make these methods final or something so
