@@ -184,7 +184,7 @@ public final class TimePickerDialog extends AlertDialog {
    * Enum that represents the states of the increment picker button.
    */
   private enum IncrementValue {
-    THIRTY(30), FIVE(5), ONE(1);
+    FIVE(5), ONE(1);
     private int value;
     IncrementValue(int value) {
       this.value = value;
