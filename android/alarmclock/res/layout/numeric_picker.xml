@@ -11,6 +11,7 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
   <EditText android:id="@+id/time_value"
+    android:textSize="24sp"
     android:gravity="center"
     android:numeric="integer"
     android:inputType="phone"

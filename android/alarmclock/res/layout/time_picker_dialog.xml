@@ -26,7 +26,8 @@
       android:layout_height="wrap_content" />
 
     <!-- Holds the AM/PM picker -->
-    <LinearLayout android:orientation="vertical"
+    <LinearLayout android:id="@+id/picker_am_pm_layout"
+      android:orientation="vertical"
       android:layout_weight="1"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content">

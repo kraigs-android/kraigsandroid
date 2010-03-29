@@ -151,10 +151,10 @@ public final class TimePickerDialog extends AlertDialog {
 
     // Setup the three time fields.
     if (DateFormat.is24HourFormat(getContext())) {
-      amPmButton.setVisibility(View.GONE);
+      body_view.findViewById(R.id.picker_am_pm_layout).setVisibility(View.GONE);
       hourPicker = new PickerView(Calendar.HOUR_OF_DAY, "%02d");
     } else {
-      amPmButton.setVisibility(View.VISIBLE);
+      body_view.findViewById(R.id.picker_am_pm_layout).setVisibility(View.VISIBLE);
       hourPicker = new PickerView(Calendar.HOUR, "%d");
     }
     hourPicker.inflate(body_view, R.id.picker_hour, false, IncrementValue.ONE);
