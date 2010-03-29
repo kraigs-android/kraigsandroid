@@ -1,7 +1,7 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import android.app.Activity;
 import android.content.Context;
-import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.provider.MediaStore.Audio.Albums;
@@ -38,6 +38,12 @@ public class MediaArtistsView extends MediaListView {
   }
 
   @Override
+  public void setCursorManager(Activity activity) {
+    super.setCursorManager(activity);
+    albumsView.setCursorManager(activity);
+  }
+
+  @Override
   public void addToFlipper(ViewFlipper flipper) {
     super.addToFlipper(flipper);
     albumsView.addToFlipper(flipper);
@@ -47,12 +53,12 @@ public class MediaArtistsView extends MediaListView {
     albumsView.setMediaPlayer(mPlayer);
   }
 
-  public Cursor query(Uri contentUri) {
-    return query(contentUri, null);
+  public void query(Uri contentUri) {
+    query(contentUri, null);
   }
 
-  public Cursor query(Uri contentUri, String selection) {
-    return super.query(contentUri, ArtistColumns.ARTIST_KEY, selection, R.layout.media_picker_row, artistsColumns, artistsResIDs);
+  public void query(Uri contentUri, String selection) {
+    super.query(contentUri, ArtistColumns.ARTIST_KEY, selection, R.layout.media_picker_row, artistsColumns, artistsResIDs);
   }
 
   @Override
@@ -63,7 +69,6 @@ public class MediaArtistsView extends MediaListView {
   @Override
   public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
     super.onItemClick(parent, view, position, id);
-    // TODO(cgallek) manage this cursor.
     albumsView.query(Albums.EXTERNAL_CONTENT_URI, ArtistColumns.ARTIST_KEY + " = '" + getLastSelectedName() + "'");
     getFlipper().setInAnimation(getContext(), R.anim.slide_in_left);
     getFlipper().setOutAnimation(getContext(), R.anim.slide_out_left);

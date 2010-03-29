@@ -3,6 +3,7 @@ package com.angrydoughnuts.android.alarmclock;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
 import android.media.MediaPlayer;
@@ -22,13 +23,14 @@ public class MediaListView extends ListView implements OnItemClickListener {
     public void onMediaPick(Uri uri, String name);
   }
 
-  private Cursor cursor = null;
-  private MediaPlayer mPlayer = null;
-  private ViewFlipper flipper = null;
-  private Uri contentUri = null;
-  private String nameColumn = null;
-  private String sortOrder = null;
-  private MediaPickListener listener = null;
+  private Cursor cursor;
+  private MediaPlayer mPlayer;
+  private ViewFlipper flipper;
+  private Activity cursorManager;
+  private Uri contentUri;
+  private String nameColumn;
+  private String sortOrder;
+  private MediaPickListener listener;
 
   private String selectedName;
   private Uri selectedUri;
@@ -83,12 +85,20 @@ public class MediaListView extends ListView implements OnItemClickListener {
     return flipper;
   }
 
-  protected Cursor query(Uri contentUri, String nameColumn,
-      int rowResId, String[] displayColumns, int[] resIDs) {
-    return query(contentUri, nameColumn, null, rowResId, displayColumns, resIDs);
+  public void setCursorManager(Activity activity) {
+    this.cursorManager = activity;
   }
 
-  protected Cursor query(Uri contentUri, String nameColumn, String selection,
+  protected void manageCursor(Cursor cursor) {
+    cursorManager.startManagingCursor(cursor);
+  }
+
+  protected void query(Uri contentUri, String nameColumn,
+      int rowResId, String[] displayColumns, int[] resIDs) {
+    query(contentUri, nameColumn, null, rowResId, displayColumns, resIDs);
+  }
+
+  protected void query(Uri contentUri, String nameColumn, String selection,
       int rowResId, String[] displayColumns, int[] resIDs) {
     this.nameColumn = nameColumn;
     final ArrayList<String> queryColumns =
@@ -99,18 +109,17 @@ public class MediaListView extends ListView implements OnItemClickListener {
     if (!queryColumns.contains(BaseColumns._ID)) {
       queryColumns.add(BaseColumns._ID);
     }
-    // TODO(cgallek) figure out a way to manage this cursor rather than return it.
-    this.cursor = getContext().getContentResolver().query(
+
+    cursor = getContext().getContentResolver().query(
         contentUri, queryColumns.toArray(new String[] {}),
         selection, null, sortOrder);
+    manageCursor(cursor);
     this.contentUri = contentUri;
 
     final SimpleCursorAdapter adapter = new SimpleCursorAdapter(
         getContext(), rowResId, cursor, displayColumns, resIDs);
     setAdapter(adapter);
     setOnItemClickListener(this);
-
-    return cursor;
   }
 
   public void overrideSortOrder(String sortOrder) {

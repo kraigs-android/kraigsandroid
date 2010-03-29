@@ -61,18 +61,20 @@ public class MediaPickerDialog extends AlertDialog {
     };
 
     final MediaSongsView internalList = (MediaSongsView) body_view.findViewById(R.id.media_picker_internal);
+    internalList.setCursorManager(context);
     internalList.query(Media.INTERNAL_CONTENT_URI);
     internalList.setMediaPlayer(mediaPlayer);
     internalList.setMediaPickListener(listener);
 
     final MediaSongsView songsList = (MediaSongsView) body_view.findViewById(R.id.media_picker_songs);
-    // TODO(cgallek): this returns a cursor.  Who manages it?
+    songsList.setCursorManager(context);
     songsList.query(Media.EXTERNAL_CONTENT_URI);
     songsList.setMediaPlayer(mediaPlayer);
     songsList.setMediaPickListener(listener);
 
     final ViewFlipper artistsFlipper = (ViewFlipper) body_view.findViewById(R.id.media_picker_artists);
     final MediaArtistsView artistsList = new MediaArtistsView(context);
+    artistsList.setCursorManager(context);
     artistsList.addToFlipper(artistsFlipper);
     artistsList.query(Artists.EXTERNAL_CONTENT_URI);
     artistsList.setMediaPlayer(mediaPlayer);
@@ -80,6 +82,7 @@ public class MediaPickerDialog extends AlertDialog {
 
     final ViewFlipper albumsFlipper = (ViewFlipper) body_view.findViewById(R.id.media_picker_albums);
     final MediaAlbumsView albumsList = new MediaAlbumsView(context);
+    albumsList.setCursorManager(context);
     albumsList.addToFlipper(albumsFlipper);
     albumsList.query(Albums.EXTERNAL_CONTENT_URI);
     albumsList.setMediaPlayer(mediaPlayer);

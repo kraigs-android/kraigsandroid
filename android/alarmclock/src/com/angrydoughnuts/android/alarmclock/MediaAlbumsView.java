@@ -1,7 +1,7 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import android.app.Activity;
 import android.content.Context;
-import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.provider.MediaStore.Audio.AlbumColumns;
@@ -39,6 +39,12 @@ public class MediaAlbumsView extends MediaListView {
   }
 
   @Override
+  public void setCursorManager(Activity activity) {
+    super.setCursorManager(activity);
+    songsView.setCursorManager(activity);
+  }
+
+  @Override
   public void addToFlipper(ViewFlipper flipper) {
     super.addToFlipper(flipper);
     songsView.addToFlipper(flipper);
@@ -48,12 +54,12 @@ public class MediaAlbumsView extends MediaListView {
     songsView.setMediaPlayer(mPlayer);
   }
 
-  public Cursor query(Uri contentUri) {
-    return query(contentUri, null);
+  public void query(Uri contentUri) {
+    query(contentUri, null);
   }
 
-  public Cursor query(Uri contentUri, String selection) {
-    return super.query(contentUri, AlbumColumns.ALBUM_KEY, selection, R.layout.media_picker_row, albumsColumns, albumsResIDs);
+  public void query(Uri contentUri, String selection) {
+    super.query(contentUri, AlbumColumns.ALBUM_KEY, selection, R.layout.media_picker_row, albumsColumns, albumsResIDs);
   }
 
   @Override
