@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.provider.BaseColumns;
 import android.provider.MediaStore.MediaColumns;
 import android.provider.MediaStore.Audio.AlbumColumns;
@@ -120,7 +121,11 @@ public class MediaPickerDialog extends AlertDialog {
       public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         songs_cursor.moveToPosition(position);
         String titleStr = songs_cursor.getString(songs_cursor.getColumnIndex(MediaColumns.TITLE));
-        Toast.makeText(getContext(), "TITLE: " + titleStr, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(),
+            "TITLE: " + titleStr +
+            "\nURI: " + Uri.withAppendedPath(Media.EXTERNAL_CONTENT_URI, songs_cursor.getString(songs_cursor.getColumnIndex(BaseColumns._ID))).toString(),
+            Toast.LENGTH_SHORT).show();
+        
       }
     });
   }
