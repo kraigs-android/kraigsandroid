@@ -78,6 +78,7 @@ public final class TimePickerDialog extends AlertDialog {
     if (showSeconds) {
       secondPicker.pickerRefresh();
     }
+    dialogRefresh();
   }
 
   /**
@@ -170,8 +171,8 @@ public final class TimePickerDialog extends AlertDialog {
   }
 
   private void dialogRefresh() {
-    AlarmTime time = new AlarmTime(calendar.get(
-        Calendar.HOUR_OF_DAY),
+    AlarmTime time = new AlarmTime(
+        calendar.get(Calendar.HOUR_OF_DAY),
         calendar.get(Calendar.MINUTE),
         calendar.get(Calendar.SECOND));
     timeText.setText(time.timeUntilString(getContext()));
@@ -337,7 +338,17 @@ public final class TimePickerDialog extends AlertDialog {
       private void handleChange() {
         try {
           int newValue = Integer.parseInt(text.getText().toString());
-          calendar.set(calendarField, newValue);
+          if (calendarField == Calendar.HOUR &&
+              newValue == 12 &&
+              calendar.get(Calendar.AM_PM) == Calendar.AM) {
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+          } else if (calendarField == Calendar.HOUR &&
+              newValue == 12 &&
+              calendar.get(Calendar.AM_PM) == Calendar.PM) {
+            calendar.set(Calendar.HOUR_OF_DAY, 12);
+          } else {
+            calendar.set(calendarField, newValue);
+          }
         } catch (NumberFormatException e) {}
         pickerRefresh();
       }
