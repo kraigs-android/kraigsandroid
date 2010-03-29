@@ -14,9 +14,15 @@ import android.provider.MediaStore.Audio.AudioColumns;
 import android.provider.MediaStore.Audio.Media;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TabHost;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
 
 // TODO(cgallek): maybe make this an activity instead of a dialog?
 public class MediaPickerDialog extends AlertDialog {
@@ -86,10 +92,36 @@ public class MediaPickerDialog extends AlertDialog {
     ListView albums_view = (ListView) body_view.findViewById(R.id.media_picker_albums);
     albums_view.setAdapter(albums_adapter);
 
+    final Cursor songs_cursor = context.managedQuery(Media.EXTERNAL_CONTENT_URI, null, null, null, null);
+    CursorAdapter songs_adapter = new CursorAdapter(context, songs_cursor, true) {
+      @Override
+      public void bindView(View view, Context context, Cursor cursor) {
+        TextView id = (TextView) view.findViewById(R.id.media_id);
+        TextView title = (TextView) view.findViewById(R.id.media_title);
+        TextView artist = (TextView) view.findViewById(R.id.media_artist);
+        TextView album = (TextView) view.findViewById(R.id.media_album);
 
-    Cursor songs_cursor = context.managedQuery(Media.EXTERNAL_CONTENT_URI, null, null, null, null);
-    SimpleCursorAdapter songs_adapter = new SimpleCursorAdapter(context, R.layout.media_picker_row, songs_cursor, columns, layoutIds);
+        id.setText(cursor.getString(cursor.getColumnIndex(BaseColumns._ID)));
+        title.setText(cursor.getString(cursor.getColumnIndex(MediaColumns.TITLE)));
+        artist.setText(cursor.getString(cursor.getColumnIndex(AudioColumns.ARTIST)));
+        album.setText(cursor.getString(cursor.getColumnIndex(AudioColumns.ALBUM)));
+      }
+      @Override
+      public View newView(Context context, Cursor cursor, ViewGroup parent) {
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        return inflater.inflate(R.layout.media_picker_row, parent, false);
+      }
+    };
+
     ListView songs_view = (ListView) body_view.findViewById(R.id.media_picker_songs);
     songs_view.setAdapter(songs_adapter);
+    songs_view.setOnItemClickListener(new OnItemClickListener() {
+      @Override
+      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        songs_cursor.moveToPosition(position);
+        String titleStr = songs_cursor.getString(songs_cursor.getColumnIndex(MediaColumns.TITLE));
+        Toast.makeText(getContext(), "TITLE: " + titleStr, Toast.LENGTH_SHORT).show();
+      }
+    });
   }
 }
