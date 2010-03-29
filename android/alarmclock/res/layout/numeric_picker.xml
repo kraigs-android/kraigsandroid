@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:orientation="vertical"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content">
+  <Button android:id="@+id/time_plus"
+    android:text="+"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" />
+  <EditText android:id="@+id/time_value"
+    android:text="00"
+    android:gravity="center"
+    android:numeric="integer"
+    android:inputType="phone"
+    android:digits="0123456789"
+    android:width="50sp"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" />
+  <Button android:id="@+id/time_minus"
+    android:text="-"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" />
+  <Button android:id="@+id/time_increment"
+    android:text="+/- 1"
+    android:visibility="gone"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" />
+</LinearLayout>
