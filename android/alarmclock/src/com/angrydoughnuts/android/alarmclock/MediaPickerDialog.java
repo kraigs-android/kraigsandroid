@@ -1,9 +1,12 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import java.io.IOException;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.database.Cursor;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.provider.MediaStore.MediaColumns;
@@ -27,9 +30,12 @@ import android.widget.AdapterView.OnItemClickListener;
 
 // TODO(cgallek): maybe make this an activity instead of a dialog?
 public class MediaPickerDialog extends AlertDialog {
+  private MediaPlayer mediaPlayer;
 
   public MediaPickerDialog(Activity context) {
     super(context);
+    mediaPlayer = new MediaPlayer();
+
     final LayoutInflater inflater =
       (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     final View body_view = inflater.inflate(R.layout.media_picker_dialog, null);
@@ -121,12 +127,40 @@ public class MediaPickerDialog extends AlertDialog {
       public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         songs_cursor.moveToPosition(position);
         String titleStr = songs_cursor.getString(songs_cursor.getColumnIndex(MediaColumns.TITLE));
+        Uri mediaUri = Uri.withAppendedPath(Media.EXTERNAL_CONTENT_URI, songs_cursor.getString(songs_cursor.getColumnIndex(BaseColumns._ID)));
         Toast.makeText(getContext(),
             "TITLE: " + titleStr +
-            "\nURI: " + Uri.withAppendedPath(Media.EXTERNAL_CONTENT_URI, songs_cursor.getString(songs_cursor.getColumnIndex(BaseColumns._ID))).toString(),
+            "\nURI: " + mediaUri.toString(),
             Toast.LENGTH_SHORT).show();
-        
+
+        //mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+        mediaPlayer.reset();
+        try {
+          mediaPlayer.setDataSource(getContext(), mediaUri);
+          mediaPlayer.prepare();
+          mediaPlayer.start();
+        } catch (IllegalArgumentException e) {
+          e.printStackTrace();
+        } catch (SecurityException e) {
+          e.printStackTrace();
+        } catch (IllegalStateException e) {
+          e.printStackTrace();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
       }
     });
+  }
+
+  @Override
+  protected void onStart() {
+    super.onStart();
+  }
+
+  @Override
+  protected void onStop() {
+    super.onStop();
+    mediaPlayer.stop();
+    mediaPlayer.release();
   }
 }
