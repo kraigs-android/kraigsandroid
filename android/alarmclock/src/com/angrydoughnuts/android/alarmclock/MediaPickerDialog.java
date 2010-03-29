@@ -132,9 +132,6 @@ public class MediaPickerDialog extends AlertDialog {
         @Override
         public void onItemClick(String name, Uri media) {
           artistsAlbumList.query(Albums.EXTERNAL_CONTENT_URI, ArtistColumns.ARTIST_KEY + " = '" + name + "'", R.layout.media_picker_row, albumsColumns, albumsResIDs);
-          // TODO(cgallek): I don't think these animations work correctly yet...
-          artistsFlipper.setInAnimation(getContext(), android.R.anim.slide_in_left);
-          artistsFlipper.setOutAnimation(getContext(), android.R.anim.slide_in_left);
           artistsFlipper.showNext();
         }
     });
@@ -153,8 +150,6 @@ public class MediaPickerDialog extends AlertDialog {
       public boolean onKey(View v, int keyCode, KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
           if (event.getAction() == KeyEvent.ACTION_UP) {
-            artistsFlipper.setInAnimation(getContext(), android.R.anim.slide_out_right);
-            artistsFlipper.setOutAnimation(getContext(), android.R.anim.slide_out_right);
             artistsFlipper.showPrevious();
           }
           return true;
