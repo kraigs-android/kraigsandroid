@@ -19,11 +19,9 @@ import java.util.Calendar;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,7 +30,6 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.AdapterView.OnItemClickListener;
 
 /**
@@ -211,28 +208,19 @@ public final class ActivityAlarmClock extends Activity {
   protected Dialog onCreateDialog(int id) {
     switch (Dialogs.values()[id]) {
       case TIME_PICKER:
-        Calendar now = Calendar.getInstance();
-        int hour = now.get(Calendar.HOUR_OF_DAY);
-        int minute = now.get(Calendar.MINUTE);
-        boolean is24Hour = DateFormat.is24HourFormat(getApplicationContext());
-        // TODO(cgallek): replace this time picker with a custom dialog that
-        // shows how far in the future the displayed time is.
-        // The current version also seems to remain 'persistent' for too long.
-        // The time always displays the last selected time rather than the
-        // current time.
-        return new TimePickerDialog(this,
-            new TimePickerDialog.OnTimeSetListener() {
+        return new TimePicker(
+            this, getString(R.string.add_alarm), AppSettings.isDebugMode(this),
+            new TimePicker.OnTimeSetListener() {
               @Override
-              public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+              public void onTimeSet(int hourOfDay, int minute, int second) {
                 // When a time is selected, create it via the service and
                 // force the list view to re-query the alarm list. 
-                service.createAlarm(new AlarmTime(hourOfDay, minute, 0));
+                service.createAlarm(new AlarmTime(hourOfDay, minute, second));
                 adapter.requery();
                 // Destroy this dialog so that it does not save its state.
                 removeDialog(Dialogs.TIME_PICKER.ordinal());
               }
-            },
-            hour, minute, is24Hour);
+            });
       default:
         return super.onCreateDialog(id);
     }

@@ -22,7 +22,6 @@ import java.util.List;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -31,7 +30,6 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,7 +40,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.AdapterView.OnItemClickListener;
 
 /**
@@ -303,18 +300,18 @@ public final class ActivityAlarmSettings extends Activity {
         final AlarmTime time = info.getTime();
         int hour = time.calendar().get(Calendar.HOUR_OF_DAY);
         int minute = time.calendar().get(Calendar.MINUTE);
-        boolean is24Hour = DateFormat.is24HourFormat(getApplicationContext());
-        return new TimePickerDialog(this,
-            new TimePickerDialog.OnTimeSetListener() {
+        int second = time.calendar().get(Calendar.SECOND);
+        return new TimePicker(this, getString(R.string.time),
+            hour, minute, second, AppSettings.isDebugMode(this),
+            new TimePicker.OnTimeSetListener() {
               @Override
-              public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                info.setTime(new AlarmTime(hourOfDay, minute, 0));
+              public void onTimeSet(int hourOfDay, int minute, int second) {
+                info.setTime(new AlarmTime(hourOfDay, minute, second));
                 settingsAdapter.notifyDataSetChanged();
                 // Destroy this dialog so that it does not save its state.
                 removeDialog(Dialogs.TIME_PICKER.ordinal());
               }
-            },
-            hour, minute, is24Hour);
+            });
 
       case NAME_PICKER:
         final View nameView = getLayoutInflater().inflate(R.layout.name_settings_dialog, null);
