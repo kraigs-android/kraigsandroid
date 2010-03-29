@@ -4,6 +4,8 @@
   android:layout_width="fill_parent"
   android:layout_height="wrap_content">
   <TextView android:id="@+id/media_value"
+    android:textSize="18sp"
+    android:singleLine="true"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
   <TextView android:id="@+id/media_key"

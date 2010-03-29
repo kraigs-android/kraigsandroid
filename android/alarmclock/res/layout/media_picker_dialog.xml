@@ -7,10 +7,6 @@
   android:layout_width="fill_parent"
   android:layout_height="fill_parent">
 
-<TabWidget android:id="@android:id/tabs"
-  android:layout_width="fill_parent"
-  android:layout_height="wrap_content" />
-
 <LinearLayout android:orientation="horizontal"
   android:layout_width="fill_parent"
   android:layout_height="wrap_content">
@@ -22,25 +18,33 @@
     android:layout_height="wrap_content" />
 </LinearLayout>
 
+<TabWidget android:id="@android:id/tabs"
+  android:layout_width="fill_parent"
+  android:layout_height="wrap_content" />
+
 <FrameLayout android:id="@android:id/tabcontent"
   android:layout_width="fill_parent"
   android:layout_height="wrap_content">
 
   <com.angrydoughnuts.android.alarmclock.MediaSongsView
     android:id="@+id/media_picker_internal"
+    android:dividerHeight="2px"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
 
   <ViewFlipper android:id="@+id/media_picker_artists"
+    android:dividerHeight="2px"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
 
   <ViewFlipper android:id="@+id/media_picker_albums"
+    android:dividerHeight="2px"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
 
   <com.angrydoughnuts.android.alarmclock.MediaSongsView
     android:id="@+id/media_picker_songs"
+    android:dividerHeight="2px"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"/>
 </FrameLayout>
