@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.Preference.OnPreferenceChangeListener;
+import android.provider.Settings;
 
 /**
  * Simple preferences activity to display/manage the shared preferences
@@ -35,6 +36,11 @@ public class ActivityAppSettings extends PreferenceActivity {
     OnPreferenceChangeListener refreshListener = new OnPreferenceChangeListener() {
       @Override
       public boolean onPreferenceChange(Preference preference, Object newValue) {
+        // Clear the lock screen text if the user disables the feature.
+        if (preference.getKey().equals(getString(R.string.lock_screen_setting))) {
+          Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED, "");
+        }
+
         final Intent causeRefresh = new Intent(getApplicationContext(), AlarmClockService.class);
         causeRefresh.putExtra(AlarmClockService.COMMAND_EXTRA, AlarmClockService.COMMAND_NOTIFICATION_REFRESH);
         startService(causeRefresh);
