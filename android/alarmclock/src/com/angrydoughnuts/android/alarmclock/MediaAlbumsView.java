@@ -38,6 +38,7 @@ public class MediaAlbumsView extends MediaListView {
     songsView.overrideSortOrder(null);
   }
 
+  @Override
   public void addToFlipper(ViewFlipper flipper) {
     super.addToFlipper(flipper);
     songsView.addToFlipper(flipper);
@@ -53,6 +54,11 @@ public class MediaAlbumsView extends MediaListView {
 
   public Cursor query(Uri contentUri, String selection) {
     return super.query(contentUri, AlbumColumns.ALBUM_KEY, selection, R.layout.media_picker_row, albumsColumns, albumsResIDs);
+  }
+
+  @Override
+  public void setMediaPickListener(MediaPickListener listener) {
+    songsView.setMediaPickListener(listener);
   }
 
   @Override

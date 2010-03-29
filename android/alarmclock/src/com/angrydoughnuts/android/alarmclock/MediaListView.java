@@ -18,12 +18,17 @@ import android.widget.ViewFlipper;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class MediaListView extends ListView implements OnItemClickListener {
+  public interface MediaPickListener {
+    public void onMediaPick(Uri uri, String name);
+  }
+
   private Cursor cursor = null;
   private MediaPlayer mPlayer = null;
   private ViewFlipper flipper = null;
   private Uri contentUri = null;
   private String nameColumn = null;
   private String sortOrder = null;
+  private MediaPickListener listener = null;
 
   private String selectedName;
   private Uri selectedUri;
@@ -120,10 +125,17 @@ public class MediaListView extends ListView implements OnItemClickListener {
     return selectedUri;
   }
 
+  public void setMediaPickListener(MediaPickListener listener) {
+    this.listener = listener;
+  }
+
   @Override
   public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
     cursor.moveToPosition(position);
     selectedName = cursor.getString(cursor.getColumnIndex(nameColumn));
     selectedUri = Uri.withAppendedPath(contentUri, cursor.getString(cursor.getColumnIndex(BaseColumns._ID)));
+    if (listener != null) {
+      listener.onMediaPick(selectedUri, selectedName);
+    }
   }
 }

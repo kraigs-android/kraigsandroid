@@ -37,6 +37,7 @@ public class MediaArtistsView extends MediaListView {
     albumsView = new MediaAlbumsView(context);
   }
 
+  @Override
   public void addToFlipper(ViewFlipper flipper) {
     super.addToFlipper(flipper);
     albumsView.addToFlipper(flipper);
@@ -52,6 +53,11 @@ public class MediaArtistsView extends MediaListView {
 
   public Cursor query(Uri contentUri, String selection) {
     return super.query(contentUri, ArtistColumns.ARTIST_KEY, selection, R.layout.media_picker_row, artistsColumns, artistsResIDs);
+  }
+
+  @Override
+  public void setMediaPickListener(MediaPickListener listener) {
+    albumsView.setMediaPickListener(listener);
   }
 
   @Override

@@ -1,5 +1,7 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import com.angrydoughnuts.android.alarmclock.MediaListView.MediaPickListener;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -47,26 +49,41 @@ public class MediaPickerDialog extends AlertDialog {
     tabs.addTab(tabs.newTabSpec(ALBUMS_TAB).setContent(R.id.media_picker_albums).setIndicator(context.getString(R.string.albums)));
     tabs.addTab(tabs.newTabSpec(ALL_SONGS_TAB).setContent(R.id.media_picker_songs).setIndicator(context.getString(R.string.songs)));
 
+    // TODO(cgallek) cleanup this name.  it kind of collides with the
+    // interface defined in this class.  also, are the 'last selected' variables
+    // still needed in the list view??
+    final MediaPickListener listener = new MediaPickListener() {
+      @Override
+      public void onMediaPick(Uri uri, String name) {
+        selectedUri = uri;
+        selectedName = name;
+      }
+    };
+
     final MediaSongsView internalList = (MediaSongsView) body_view.findViewById(R.id.media_picker_internal);
     internalList.query(Media.INTERNAL_CONTENT_URI);
     internalList.setMediaPlayer(mediaPlayer);
+    internalList.setMediaPickListener(listener);
 
     final MediaSongsView songsList = (MediaSongsView) body_view.findViewById(R.id.media_picker_songs);
     // TODO(cgallek): this returns a cursor.  Who manages it?
     songsList.query(Media.EXTERNAL_CONTENT_URI);
     songsList.setMediaPlayer(mediaPlayer);
+    songsList.setMediaPickListener(listener);
 
     final ViewFlipper artistsFlipper = (ViewFlipper) body_view.findViewById(R.id.media_picker_artists);
-    MediaArtistsView artistsList = new MediaArtistsView(context);
+    final MediaArtistsView artistsList = new MediaArtistsView(context);
     artistsList.addToFlipper(artistsFlipper);
     artistsList.query(Artists.EXTERNAL_CONTENT_URI);
     artistsList.setMediaPlayer(mediaPlayer);
+    artistsList.setMediaPickListener(listener);
 
     final ViewFlipper albumsFlipper = (ViewFlipper) body_view.findViewById(R.id.media_picker_albums);
     final MediaAlbumsView albumsList = new MediaAlbumsView(context);
     albumsList.addToFlipper(albumsFlipper);
     albumsList.query(Albums.EXTERNAL_CONTENT_URI);
     albumsList.setMediaPlayer(mediaPlayer);
+    albumsList.setMediaPickListener(listener);
 
     tabs.setOnTabChangedListener(new OnTabChangeListener() {
       @Override
