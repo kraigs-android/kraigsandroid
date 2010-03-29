@@ -37,6 +37,7 @@
 
   <TextView android:id="@+id/picker_text"
     android:gravity="center"
+    android:textStyle="italic"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />  
 </LinearLayout>

@@ -22,6 +22,7 @@
     android:layout_height="wrap_content" />
   <Button android:id="@+id/time_increment"
     android:text="+/- 1"
+    android:layout_marginTop="10px"
     android:visibility="gone"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
