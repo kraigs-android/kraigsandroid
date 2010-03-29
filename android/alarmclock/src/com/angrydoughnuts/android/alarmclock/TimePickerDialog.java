@@ -22,9 +22,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.os.Handler;
 import android.text.format.DateFormat;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewStub;
 import android.view.View.OnFocusChangeListener;
@@ -256,9 +258,15 @@ public final class TimePickerDialog extends AlertDialog {
       }
 
       plus = (Button) view.findViewById(R.id.time_plus);
-      plus.setOnClickListener(new TimeIncrementListener());
+      TimeIncrementListener incrementListener = new TimeIncrementListener();
+      plus.setOnClickListener(incrementListener);
+      plus.setOnTouchListener(incrementListener);
+      plus.setOnLongClickListener(incrementListener);
       minus = (Button) view.findViewById(R.id.time_minus);
-      minus.setOnClickListener(new TimeDecrementListener());
+      TimeDecrementListener decrementListener= new TimeDecrementListener();
+      minus.setOnClickListener(decrementListener);
+      minus.setOnTouchListener(decrementListener);
+      minus.setOnLongClickListener(decrementListener);
 
       pickerRefresh();
     }
@@ -298,10 +306,11 @@ public final class TimePickerDialog extends AlertDialog {
      * interval increment then increment by the increment amount on subsequent
      * clicks.
      */
-    private abstract class TimeAdjustListener implements View.OnClickListener {
+    private abstract class TimeAdjustListener implements
+      View.OnClickListener, View.OnTouchListener, View.OnLongClickListener {
       protected abstract int sign();
-      @Override
-      public void onClick(View v) {
+
+      private void adjust() {
         int currentValue = calendar.get(calendarField);
         int remainder = currentValue % increment.value();
         if (remainder == 0) {
@@ -317,7 +326,36 @@ public final class TimePickerDialog extends AlertDialog {
         }
         pickerRefresh();
       }
+
+      private Handler handler = new Handler();
+      private Runnable delayedAdjust = new Runnable() {
+        @Override
+        public void run() {
+          adjust();
+          handler.postDelayed(delayedAdjust, 150);
+        }
+      };
+
+      @Override
+      public void onClick(View v) {
+        adjust();
+      }
+
+      @Override
+      public boolean onLongClick(View v) {
+        delayedAdjust.run();
+        return false;
+      }
+
+      @Override
+      public boolean onTouch(View v, MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+          handler.removeCallbacks(delayedAdjust);
+        }
+        return false;
+      }
     }
+
     private final class TimeIncrementListener extends TimeAdjustListener {
       @Override
       protected int sign() {
