@@ -19,15 +19,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import com.angrydoughnuts.android.alarmclock.MediaPickerDialog.OnMediaPickListener;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.DialogInterface.OnMultiChoiceClickListener;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -268,32 +267,6 @@ public final class ActivityAlarmSettings extends Activity {
   }
 
   @Override
-  protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    if (resultCode != RESULT_OK) {
-      return;
-    }
-
-    switch (Dialogs.values()[requestCode]) {
-      case TONE_PICKER:
-        // This can be null if 'Silent' was selected, but it was disabled
-        // above so that should never happen.
-        Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
-        if (uri == null) {
-          // This should never happen, but fall back to the phone ringer just
-          // in case.
-          uri = AlarmUtil.getDefaultAlarmUri();
-        }
-        Context c = getApplicationContext();
-        Ringtone tone = RingtoneManager.getRingtone(c, uri);
-        String name = tone != null ? tone.getTitle(c) : getString(R.string.unknown_name);
-        settings.setTone(uri, name);
-        settingsAdapter.notifyDataSetChanged();
-      default:
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-  }
-
-  @Override
   protected Dialog onCreateDialog(int id) {
     switch (Dialogs.values()[id]) {
       case TIME_PICKER:
@@ -360,6 +333,20 @@ public final class ActivityAlarmSettings extends Activity {
           }
         });
         return dowBuilder.create();
+
+      case TONE_PICKER:
+        MediaPickerDialog mediaPicker = new MediaPickerDialog(this);
+        mediaPicker.setPickListener(new OnMediaPickListener() {
+          @Override
+          public void onMediaPick(String name, Uri media) {
+            if (name.length() == 0) {
+              name = getString(R.string.unknown_name);
+            }
+            settings.setTone(media, name);
+            settingsAdapter.notifyDataSetChanged();
+          }
+        });
+        return mediaPicker;
 
       case SNOOZE_PICKER:
         // This currently imposes snooze times between 1 and 60 minutes,
@@ -461,18 +448,9 @@ public final class ActivityAlarmSettings extends Activity {
           break;
 
         case TONE:
-          // NOTE: there doesn't seem to be a way to set the output stream
-          // for this activity.
-          Uri current_tone = settings.getTone();
-          Intent i = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
-          i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALL);
-          i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
-          i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
-          i.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, AlarmUtil.getDefaultAlarmUri());
-          i.putExtra(RingtoneManager.EXTRA_RINGTONE_INCLUDE_DRM, true);
-          i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, getString(R.string.alarm_tone));
-          i.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, current_tone);
-          startActivityForResult(i, Dialogs.TONE_PICKER.ordinal());
+          // TODO(cgallek): set the current tone.
+          // Uri current_tone = settings.getTone();
+          showDialog(Dialogs.TONE_PICKER.ordinal());
           break;
 
         case SNOOZE:

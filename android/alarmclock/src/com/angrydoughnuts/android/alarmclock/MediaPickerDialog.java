@@ -5,6 +5,7 @@ import com.angrydoughnuts.android.alarmclock.MediaListView.OnItemClickListener;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.provider.MediaStore.MediaColumns;
@@ -21,6 +22,13 @@ import android.widget.Toast;
 
 // TODO(cgallek): maybe make this an activity instead of a dialog?
 public class MediaPickerDialog extends AlertDialog {
+  public interface OnMediaPickListener {
+    public void onMediaPick(String name, Uri media);
+  }
+
+  private String selectedName;
+  private Uri selectedUri;
+  private OnMediaPickListener pickListener;
   private MediaPlayer mediaPlayer;
 
   public MediaPickerDialog(Activity context) {
@@ -44,6 +52,8 @@ public class MediaPickerDialog extends AlertDialog {
     final OnItemClickListener songPickListener = new OnItemClickListener() {
       @Override
       public void onItemClick(String name, Uri media) {
+        selectedName = name;
+        selectedUri = media;
         Toast.makeText(getContext(),
             "TITLE: " + name +
             "\nURI: " + media.toString(),
@@ -133,6 +143,34 @@ public class MediaPickerDialog extends AlertDialog {
               Toast.LENGTH_SHORT).show();
         }
     });
+
+    // TODO(cgallek) make these methods final or something so
+    // callers can't accidentally set them.
+    setButton(BUTTON_POSITIVE, getContext().getString(R.string.ok),
+      new OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+          if (selectedUri == null || pickListener == null) {
+            cancel();
+            return;
+          }
+          pickListener.onMediaPick(selectedName, selectedUri);
+        }
+    });
+
+    setButton(BUTTON_NEGATIVE, getContext().getString(R.string.cancel),
+        new OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            selectedName = null;
+            selectedUri = null;
+            cancel();
+          }
+      });
+  }
+
+  public void setPickListener(OnMediaPickListener listener) {
+    this.pickListener = listener;
   }
 
   @Override
