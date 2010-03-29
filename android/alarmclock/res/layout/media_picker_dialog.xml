@@ -15,7 +15,7 @@
   android:layout_width="fill_parent"
   android:layout_height="wrap_content">
 
-  <com.angrydoughnuts.android.alarmclock.MediaListView
+  <com.angrydoughnuts.android.alarmclock.MediaSongsView
     android:id="@+id/media_picker_internal"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
@@ -25,12 +25,11 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
 
-  <com.angrydoughnuts.android.alarmclock.MediaListView
-    android:id="@+id/media_picker_albums"
+  <ViewFlipper android:id="@+id/media_picker_albums"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
 
-  <com.angrydoughnuts.android.alarmclock.MediaListView
+  <com.angrydoughnuts.android.alarmclock.MediaSongsView
     android:id="@+id/media_picker_songs"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"/>
