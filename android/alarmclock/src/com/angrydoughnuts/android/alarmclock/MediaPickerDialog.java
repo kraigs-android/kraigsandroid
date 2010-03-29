@@ -29,6 +29,11 @@ public class MediaPickerDialog extends AlertDialog {
     public void onMediaPick(String name, Uri media);
   }
 
+  private final String INTERNAL_TAB = "internal";
+  private final String ARTISTS_TAB = "artists";
+  private final String ALBUMS_TAB = "albums";
+  private final String ALL_SONGS_TAB = "songs";
+
   private String selectedName;
   private Uri selectedUri;
   private OnMediaPickListener pickListener;
@@ -47,10 +52,10 @@ public class MediaPickerDialog extends AlertDialog {
     tabs.setup();
 
     // TODO(cgallek): move this to strings.xml
-    tabs.addTab(tabs.newTabSpec("internal").setContent(R.id.media_picker_internal).setIndicator("Internal"));
-    tabs.addTab(tabs.newTabSpec("artist").setContent(R.id.media_picker_artists).setIndicator("Artist"));
-    tabs.addTab(tabs.newTabSpec("albums").setContent(R.id.media_picker_albums).setIndicator("Album"));
-    tabs.addTab(tabs.newTabSpec("songs").setContent(R.id.media_picker_songs).setIndicator("Songs"));
+    tabs.addTab(tabs.newTabSpec(INTERNAL_TAB).setContent(R.id.media_picker_internal).setIndicator("Internal"));
+    tabs.addTab(tabs.newTabSpec(ARTISTS_TAB).setContent(R.id.media_picker_artists).setIndicator("Artist"));
+    tabs.addTab(tabs.newTabSpec(ALBUMS_TAB).setContent(R.id.media_picker_albums).setIndicator("Album"));
+    tabs.addTab(tabs.newTabSpec(ALL_SONGS_TAB).setContent(R.id.media_picker_songs).setIndicator("Songs"));
 
     final OnItemClickListener songPickListener = new OnItemClickListener() {
       @Override
@@ -198,8 +203,7 @@ public class MediaPickerDialog extends AlertDialog {
     tabs.setOnTabChangedListener(new OnTabChangeListener() {
       @Override
       public void onTabChanged(String tabId) {
-        // TODO(cgallek): make these constants.
-        if (tabId.equals("artist")) {
+        if (tabId.equals(ARTISTS_TAB)) {
           artistsFlipper.setDisplayedChild(0);
         }
       }
