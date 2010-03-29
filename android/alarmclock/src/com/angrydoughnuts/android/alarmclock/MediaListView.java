@@ -5,7 +5,6 @@ import java.util.Arrays;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.util.AttributeSet;
@@ -22,7 +21,6 @@ public final class MediaListView extends ListView implements OnItemClickListener
 
   private Cursor cursor = null;
   private Uri contentUri = null;
-  private MediaPlayer mediaPlayer = null;
   private OnItemClickListener listener = null;
   private String nameColumn = null;
 
@@ -61,10 +59,6 @@ public final class MediaListView extends ListView implements OnItemClickListener
     return cursor;
   }
 
-  public void setMediaPlayer(MediaPlayer mediaPlayer) {
-    this.mediaPlayer = mediaPlayer;
-  }
-
   public void setOnItemClickListener(String nameColumn, OnItemClickListener listener) {
     this.listener = listener;
     this.nameColumn = nameColumn;
@@ -79,16 +73,6 @@ public final class MediaListView extends ListView implements OnItemClickListener
     final String name = cursor.getString(cursor.getColumnIndex(nameColumn));
     final Uri selection = Uri.withAppendedPath(contentUri, cursor.getString(cursor.getColumnIndex(BaseColumns._ID)));
 
-    if (mediaPlayer != null) {
-      mediaPlayer.reset();
-      try {
-        mediaPlayer.setDataSource(getContext(), selection);
-        mediaPlayer.prepare();
-        mediaPlayer.start();
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
     listener.onItemClick(name, selection);
   }
 }

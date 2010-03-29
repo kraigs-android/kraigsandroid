@@ -44,6 +44,14 @@ public class MediaPickerDialog extends AlertDialog {
             "TITLE: " + name +
             "\nURI: " + media.toString(),
             Toast.LENGTH_SHORT).show();
+        mediaPlayer.reset();
+        try {
+          mediaPlayer.setDataSource(getContext(), media);
+          mediaPlayer.prepare();
+          mediaPlayer.start();
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
       }
     };
 
@@ -57,7 +65,6 @@ public class MediaPickerDialog extends AlertDialog {
     context.startManagingCursor(
       internalList.query(Media.INTERNAL_CONTENT_URI, R.layout.media_picker_internal_sound_row,
       internalSoundColumns, internalSoundResIDs));
-    internalList.setMediaPlayer(mediaPlayer);
     internalList.setOnItemClickListener(MediaColumns.TITLE, songPickListener);
 
     final String[] songsColumns = new String[] {
@@ -74,7 +81,6 @@ public class MediaPickerDialog extends AlertDialog {
     context.startManagingCursor(
       songList.query(Media.EXTERNAL_CONTENT_URI, R.layout.media_picker_external_sound_row,
       songsColumns, songsResIDs));
-    songList.setMediaPlayer(mediaPlayer);
     songList.setOnItemClickListener(MediaColumns.TITLE, songPickListener);
 
     /*
