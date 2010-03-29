@@ -19,8 +19,8 @@ import android.widget.ViewFlipper;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class MediaListView extends ListView implements OnItemClickListener {
-  public interface MediaPickListener {
-    public void onMediaPick(Uri uri, String name);
+  public interface OnItemPickListener {
+    public void onItemPick(Uri uri, String name);
   }
 
   private Cursor cursor;
@@ -30,7 +30,7 @@ public class MediaListView extends ListView implements OnItemClickListener {
   private Uri contentUri;
   private String nameColumn;
   private String sortOrder;
-  private MediaPickListener listener;
+  private OnItemPickListener listener;
 
   private String selectedName;
   private Uri selectedUri;
@@ -134,7 +134,7 @@ public class MediaListView extends ListView implements OnItemClickListener {
     return selectedUri;
   }
 
-  public void setMediaPickListener(MediaPickListener listener) {
+  public void setMediaPickListener(OnItemPickListener listener) {
     this.listener = listener;
   }
 
@@ -144,7 +144,7 @@ public class MediaListView extends ListView implements OnItemClickListener {
     selectedName = cursor.getString(cursor.getColumnIndex(nameColumn));
     selectedUri = Uri.withAppendedPath(contentUri, cursor.getString(cursor.getColumnIndex(BaseColumns._ID)));
     if (listener != null) {
-      listener.onMediaPick(selectedUri, selectedName);
+      listener.onItemPick(selectedUri, selectedName);
     }
   }
 }

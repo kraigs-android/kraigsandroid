@@ -16,7 +16,7 @@ public class MediaArtistsView extends MediaListView {
     ArtistColumns.ARTIST,
     ArtistColumns.ARTIST_KEY
   };
-  
+
   private final int[] artistsResIDs = new int[] {
     R.id.media_value,
     R.id.media_key
@@ -62,7 +62,7 @@ public class MediaArtistsView extends MediaListView {
   }
 
   @Override
-  public void setMediaPickListener(MediaPickListener listener) {
+  public void setMediaPickListener(OnItemPickListener listener) {
     albumsView.setMediaPickListener(listener);
   }
 

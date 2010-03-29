@@ -1,6 +1,6 @@
 package com.angrydoughnuts.android.alarmclock;
 
-import com.angrydoughnuts.android.alarmclock.MediaListView.MediaPickListener;
+import com.angrydoughnuts.android.alarmclock.MediaListView.OnItemPickListener;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Message;
 import android.provider.MediaStore.Audio.Albums;
 import android.provider.MediaStore.Audio.Artists;
 import android.provider.MediaStore.Audio.Media;
@@ -50,19 +51,19 @@ public class MediaPickerDialog extends AlertDialog {
     tabs.addTab(tabs.newTabSpec(ALBUMS_TAB).setContent(R.id.media_picker_albums).setIndicator(context.getString(R.string.albums)));
     tabs.addTab(tabs.newTabSpec(ALL_SONGS_TAB).setContent(R.id.media_picker_songs).setIndicator(context.getString(R.string.songs)));
 
-    // TODO(cgallek) cleanup this name.  it kind of collides with the
-    // interface defined in this class.  also, are the 'last selected' variables
-    // still needed in the list view??
     final TextView lastSelected = (TextView) body_view.findViewById(R.id.media_picker_status);
-    final MediaPickListener listener = new MediaPickListener() {
+    final OnItemPickListener listener = new OnItemPickListener() {
       @Override
-      public void onMediaPick(Uri uri, String name) {
+      public void onItemPick(Uri uri, String name) {
         selectedUri = uri;
         selectedName = name;
         lastSelected.setText(name);
       }
     };
 
+    // TODO(cgallek): There's no 'default' item in this list.  There
+    // should be one that sets the value to AlarmUtil.getDefaultAlarmUri()
+    // but I don't know how to do this using a cursor adapter.
     final MediaSongsView internalList = (MediaSongsView) body_view.findViewById(R.id.media_picker_internal);
     internalList.setCursorManager(context);
     internalList.query(Media.INTERNAL_CONTENT_URI);
@@ -102,9 +103,7 @@ public class MediaPickerDialog extends AlertDialog {
       }
     });
 
-    // TODO(cgallek) make these methods final or something so
-    // callers can't accidentally set them.
-    setButton(BUTTON_POSITIVE, getContext().getString(R.string.ok),
+    super.setButton(BUTTON_POSITIVE, getContext().getString(R.string.ok),
       new OnClickListener() {
         @Override
         public void onClick(DialogInterface dialog, int which) {
@@ -116,7 +115,7 @@ public class MediaPickerDialog extends AlertDialog {
         }
     });
 
-    setButton(BUTTON_NEGATIVE, getContext().getString(R.string.cancel),
+    super.setButton(BUTTON_NEGATIVE, getContext().getString(R.string.cancel),
         new OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
@@ -136,7 +135,30 @@ public class MediaPickerDialog extends AlertDialog {
   protected void onStop() {
     super.onStop();
     mediaPlayer.stop();
-    // TODO(cgallek): not sure where to put this...
-    //mediaPlayer.release();
   }
+
+  @Override
+  protected void finalize() throws Throwable {
+    mediaPlayer.release();
+    super.finalize();
+  }
+
+  // Make these no-ops and final so the buttons can't be overridden buy the
+  // user nor a child.
+  @Override
+  public void setButton(CharSequence text, Message msg) {  }
+  @Override
+  public final void setButton(CharSequence text, OnClickListener listener) {}
+  @Override
+  public final void setButton(int whichButton, CharSequence text, Message msg) {}
+  @Override
+  public final void setButton(int whichButton, CharSequence text, OnClickListener listener) {}
+  @Override
+  public final void setButton2(CharSequence text, Message msg) {}
+  @Override
+  public final void setButton2(CharSequence text, OnClickListener listener) {}
+  @Override
+  public final void setButton3(CharSequence text, Message msg) {}
+  @Override
+  public final void setButton3(CharSequence text, OnClickListener listener) {}
 }

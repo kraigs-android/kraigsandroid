@@ -10,7 +10,7 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License. 
+ * limitations under the License.
  ****************************************************************************/
 
 package com.angrydoughnuts.android.alarmclock;
@@ -201,7 +201,7 @@ public final class TimePickerDialog extends AlertDialog {
 
   /**
    * Helper class that wraps up the view elements of each number picker
-   * (plus/minus button, text field, increment picker). 
+   * (plus/minus button, text field, increment picker).
    */
   private final class PickerView {
     private int calendarField;

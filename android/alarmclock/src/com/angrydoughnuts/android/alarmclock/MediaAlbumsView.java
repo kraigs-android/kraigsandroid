@@ -64,14 +64,13 @@ public class MediaAlbumsView extends MediaListView {
   }
 
   @Override
-  public void setMediaPickListener(MediaPickListener listener) {
+  public void setMediaPickListener(OnItemPickListener listener) {
     songsView.setMediaPickListener(listener);
   }
 
   @Override
   public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
     super.onItemClick(parent, view, position, id);
-    // TODO(cgallek) manage this cursor.
     songsView.query(Media.EXTERNAL_CONTENT_URI, AlbumColumns.ALBUM_KEY + " = '" + getLastSelectedName() + "'");
     getFlipper().setInAnimation(getContext(), R.anim.slide_in_left);
     getFlipper().setOutAnimation(getContext(), R.anim.slide_out_left);

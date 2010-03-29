@@ -448,8 +448,6 @@ public final class ActivityAlarmSettings extends Activity {
           break;
 
         case TONE:
-          // TODO(cgallek): set the current tone.
-          // Uri current_tone = settings.getTone();
           showDialog(Dialogs.TONE_PICKER.ordinal());
           break;
 
