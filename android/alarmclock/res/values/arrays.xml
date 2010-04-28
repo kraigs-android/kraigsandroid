@@ -16,11 +16,13 @@
     <item>@string/lock_screen_time</item>
     <item>@string/lock_screen_both</item>
     <item>@string/lock_screen_nothing</item>
+    <item>@string/lock_screen_custom</item>
   </string-array>
   <string-array name="lock_screen_values">
     <item>lock_screen_countdown</item>
     <item>lock_screen_time</item>
     <item>lock_screen_both</item>
     <item>lock_screen_nothing</item>
+    <item>lock_screen_custom</item>
   </string-array>
 </resources>

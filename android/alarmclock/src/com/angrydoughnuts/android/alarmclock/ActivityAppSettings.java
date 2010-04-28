@@ -15,18 +15,28 @@
 
 package com.angrydoughnuts.android.alarmclock;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceManager;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.provider.Settings;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.EditText;
 
 /**
  * Simple preferences activity to display/manage the shared preferences
  * that make up the global application settings.
  */
 public class ActivityAppSettings extends PreferenceActivity {
+  private enum Dialogs { CUSTOM_LOCK_SCREEN }
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +49,11 @@ public class ActivityAppSettings extends PreferenceActivity {
         // Clear the lock screen text if the user disables the feature.
         if (preference.getKey().equals(getString(R.string.lock_screen_setting))) {
           Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED, "");
+
+          final String custom_lock_screen = getResources().getStringArray(R.array.lock_screen_values)[4];
+          if (newValue.equals(custom_lock_screen)) {
+            showDialog(Dialogs.CUSTOM_LOCK_SCREEN.ordinal());
+          }
         }
 
         final Intent causeRefresh = new Intent(getApplicationContext(), AlarmClockService.class);
@@ -53,5 +68,43 @@ public class ActivityAppSettings extends PreferenceActivity {
     notification_icon.setOnPreferenceChangeListener(refreshListener);
     final Preference lock_screen = findPreference(getString(R.string.lock_screen_setting));
     lock_screen.setOnPreferenceChangeListener(refreshListener);
+  }
+
+  @Override
+  protected Dialog onCreateDialog(int id) {
+    switch (Dialogs.values()[id]) {
+      case CUSTOM_LOCK_SCREEN:
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        final View lockTextView = getLayoutInflater().inflate(R.layout.custom_lock_screen_dialog, null);
+        final EditText editText = (EditText) lockTextView.findViewById(R.id.custom_lock_screen_text);
+        editText.setText(prefs.getString(AppSettings.CUSTOM_LOCK_SCREEN_TEXT, ""));
+        final CheckBox persistentCheck = (CheckBox) lockTextView.findViewById(R.id.custom_lock_screen_persistent);
+        persistentCheck.setChecked(prefs.getBoolean(AppSettings.CUSTOM_LOCK_SCREEN_PERSISTENT, false));
+        final AlertDialog.Builder lockTextBuilder = new AlertDialog.Builder(this);
+        lockTextBuilder.setTitle(R.string.custom_lock_screen_text);
+        lockTextBuilder.setView(lockTextView);
+        lockTextBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            Editor editor = prefs.edit();
+            editor.putString(AppSettings.CUSTOM_LOCK_SCREEN_TEXT, editText.getText().toString());
+            editor.putBoolean(AppSettings.CUSTOM_LOCK_SCREEN_PERSISTENT, persistentCheck.isChecked());
+            editor.commit();
+            final Intent causeRefresh = new Intent(getApplicationContext(), AlarmClockService.class);
+            causeRefresh.putExtra(AlarmClockService.COMMAND_EXTRA, AlarmClockService.COMMAND_NOTIFICATION_REFRESH);
+            startService(causeRefresh);
+            dismissDialog(Dialogs.CUSTOM_LOCK_SCREEN.ordinal());
+          }
+        });
+        lockTextBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            dismissDialog(Dialogs.CUSTOM_LOCK_SCREEN.ordinal());
+          }
+        });
+        return lockTextBuilder.create();
+      default:
+        return super.onCreateDialog(id);
+    }
   }
 }

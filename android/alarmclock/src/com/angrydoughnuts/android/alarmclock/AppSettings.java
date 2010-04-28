@@ -24,6 +24,9 @@ import android.preference.PreferenceManager;
  * Utility class for accessing each of the global application settings.
  */
 public final class AppSettings {
+  public static final String CUSTOM_LOCK_SCREEN_TEXT = "CUSTOM_LOCK_SCREEN";
+  public static final String CUSTOM_LOCK_SCREEN_PERSISTENT = "CUSTOM_LOCK_PERSISTENT";
+
   public static final boolean displayNotificationIcon(Context c) {
     final String NOTIFICATION_SETTING = c.getString(R.string.notification_icon_setting);
 
@@ -31,6 +34,9 @@ public final class AppSettings {
     return prefs.getBoolean(NOTIFICATION_SETTING, true);
   }
 
+  private static final String FORMAT_COUNTDOWN = "%c";
+  private static final String FORMAT_TIME = "%t";
+  private static final String FORMAT_BOTH = "%c (%t)";
   public static final String lockScreenString(Context c, AlarmTime nextTime) {
     final String LOCK_SCREEN_SETTING = c.getString(R.string.lock_screen_setting);
     final String[] values = c.getResources().getStringArray(R.array.lock_screen_values);
@@ -38,30 +44,48 @@ public final class AppSettings {
     final String LOCK_SCREEN_TIME = values[1];
     final String LOCK_SCREEN_BOTH = values[2];
     final String LOCK_SCREEN_NOTHING = values[3];
+    final String LOCK_SCREEN_CUSTOM = values[4];
 
     final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
     final String value = prefs.getString(LOCK_SCREEN_SETTING, LOCK_SCREEN_COUNTDOWN);
+    final String customFormat = prefs.getString(CUSTOM_LOCK_SCREEN_TEXT, FORMAT_COUNTDOWN);
+    // The lock screen message should be persistent iff the persistent setting
+    // is set AND a custom lock screen message is set.
+    final boolean persistent = prefs.getBoolean(CUSTOM_LOCK_SCREEN_PERSISTENT, false) && value.equals(LOCK_SCREEN_CUSTOM);
 
     if (value.equals(LOCK_SCREEN_NOTHING)) {
       return null;
     }
 
-    if (nextTime == null) {
+    // If no alarm is set and our lock message is not persistent, return
+    // a clearing string.
+    if (nextTime == null && !persistent) {
       return "";
     }
 
-    final String time = nextTime.localizedString(c);
-    final String countdown = nextTime.timeUntilString(c);
+    String time = "";
+    String countdown = "";
+    if (nextTime != null) {
+      time = nextTime.localizedString(c);
+      countdown = nextTime.timeUntilString(c);
+    }
 
+    String text;
     if (value.equals(LOCK_SCREEN_COUNTDOWN)) {
-      return countdown;
+      text = FORMAT_COUNTDOWN;
     } else if (value.equals(LOCK_SCREEN_TIME)) {
-      return time;
+      text = FORMAT_TIME;
     } else if (value.equals(LOCK_SCREEN_BOTH)) {
-      return time + " (" + countdown + ")";
+      text = FORMAT_BOTH;
+    } else if (value.equals(LOCK_SCREEN_CUSTOM)) {
+      text = customFormat;
     } else {
       throw new IllegalStateException("Unknown lockscreen preference: " + value);
     }
+
+    text = text.replace("%t", time);
+    text = text.replace("%c", countdown);
+    return text;
   }
 
   public static final boolean isDebugMode(Context c) {

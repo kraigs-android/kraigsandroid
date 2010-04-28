@@ -176,7 +176,7 @@ public final class AlarmClockService extends Service {
     String lockScreenText = AppSettings.lockScreenString(getApplicationContext(), null);
     // Only clear the lock screen if the preference is set.
     if (lockScreenText != null) {
-      Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED, "");
+      Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED, lockScreenText);
     }
   }
 
