@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
   <CheckBoxPreference android:persistent="true"
-    android:key="@string/notification_icon_setting"
+    android:key="NOTIFICATION_ICON"
     android:title="@string/notification_icon_title"
     android:summaryOn="@string/notification_icon_on"
     android:summaryOff="@string/notification_icon_off"
     android:defaultValue="true" />
 
   <ListPreference android:persistent="true"
-    android:key="@string/lock_screen_setting"
+    android:key="LOCK_SCREEN"
     android:title="@string/lock_screen_title"
     android:dialogTitle="@string/lock_screen_title"
     android:summary="@string/lock_screen_summary"
@@ -17,7 +17,7 @@
     android:defaultValue="lock_screen_countdown" />
 
   <ListPreference android:persistent="true"
-    android:key="@string/debug_mode_setting"
+    android:key="DEBUG_MODE"
     android:title="@string/debug_mode_title"
     android:dialogTitle="@string/debug_mode_title"
     android:summary="@string/debug_mode_summary"

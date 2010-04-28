@@ -47,7 +47,7 @@ public class ActivityAppSettings extends PreferenceActivity {
       @Override
       public boolean onPreferenceChange(Preference preference, Object newValue) {
         // Clear the lock screen text if the user disables the feature.
-        if (preference.getKey().equals(getString(R.string.lock_screen_setting))) {
+        if (preference.getKey().equals(AppSettings.LOCK_SCREEN)) {
           Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED, "");
 
           final String custom_lock_screen = getResources().getStringArray(R.array.lock_screen_values)[4];
@@ -64,9 +64,9 @@ public class ActivityAppSettings extends PreferenceActivity {
     };
 
     // Refresh the notification icon when the user changes these preferences.
-    final Preference notification_icon = findPreference(getString(R.string.notification_icon_setting));
+    final Preference notification_icon = findPreference(AppSettings.NOTIFICATION_ICON);
     notification_icon.setOnPreferenceChangeListener(refreshListener);
-    final Preference lock_screen = findPreference(getString(R.string.lock_screen_setting));
+    final Preference lock_screen = findPreference(AppSettings.LOCK_SCREEN);
     lock_screen.setOnPreferenceChangeListener(refreshListener);
   }
 

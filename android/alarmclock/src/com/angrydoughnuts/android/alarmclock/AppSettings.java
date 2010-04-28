@@ -24,21 +24,23 @@ import android.preference.PreferenceManager;
  * Utility class for accessing each of the global application settings.
  */
 public final class AppSettings {
+  // Some of these have an extra " in them because of an old copy/paste bug.
+  // They are forever ingrained in the settings :-(
+  public static final String DEBUG_MODE = "DEBUG_MODE";
+  public static final String NOTIFICATION_ICON = "NOTIFICATION_ICON";
+  public static final String LOCK_SCREEN = "LOCK_SCREEN";
   public static final String CUSTOM_LOCK_SCREEN_TEXT = "CUSTOM_LOCK_SCREEN";
   public static final String CUSTOM_LOCK_SCREEN_PERSISTENT = "CUSTOM_LOCK_PERSISTENT";
 
   public static final boolean displayNotificationIcon(Context c) {
-    final String NOTIFICATION_SETTING = c.getString(R.string.notification_icon_setting);
-
     final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
-    return prefs.getBoolean(NOTIFICATION_SETTING, true);
+    return prefs.getBoolean(NOTIFICATION_ICON, true);
   }
 
   private static final String FORMAT_COUNTDOWN = "%c";
   private static final String FORMAT_TIME = "%t";
   private static final String FORMAT_BOTH = "%c (%t)";
   public static final String lockScreenString(Context c, AlarmTime nextTime) {
-    final String LOCK_SCREEN_SETTING = c.getString(R.string.lock_screen_setting);
     final String[] values = c.getResources().getStringArray(R.array.lock_screen_values);
     final String LOCK_SCREEN_COUNTDOWN = values[0];
     final String LOCK_SCREEN_TIME = values[1];
@@ -47,7 +49,7 @@ public final class AppSettings {
     final String LOCK_SCREEN_CUSTOM = values[4];
 
     final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
-    final String value = prefs.getString(LOCK_SCREEN_SETTING, LOCK_SCREEN_COUNTDOWN);
+    final String value = prefs.getString(LOCK_SCREEN, LOCK_SCREEN_COUNTDOWN);
     final String customFormat = prefs.getString(CUSTOM_LOCK_SCREEN_TEXT, FORMAT_COUNTDOWN);
     // The lock screen message should be persistent iff the persistent setting
     // is set AND a custom lock screen message is set.
@@ -89,14 +91,13 @@ public final class AppSettings {
   }
 
   public static final boolean isDebugMode(Context c) {
-    final String DEBUG_MODE_SETTING = c.getString(R.string.debug_mode_setting);
     final String[] values = c.getResources().getStringArray(R.array.debug_values);
     final String DEBUG_DEFAULT = values[0];
     final String DEBUG_ON = values[1];
     final String DEBUG_OFF = values[2];
 
     final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
-    final String value = prefs.getString(DEBUG_MODE_SETTING, DEBUG_DEFAULT);
+    final String value = prefs.getString(DEBUG_MODE, DEBUG_DEFAULT);
     if (value.equals(DEBUG_ON)) {
       return true;
     } else if (value.equals(DEBUG_OFF)) {

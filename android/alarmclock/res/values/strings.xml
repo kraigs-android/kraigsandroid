@@ -61,17 +61,14 @@
   <string name="everyday">Every day</string>
   <string name="weekdays">Weekdays</string>
   <string name="weekends">Weekends</string>
-  <string name="debug_mode_setting">DEBUG_MODE"</string>
   <string name="debug_mode_title">Debug Mode</string>
   <string name="debug_mode_summary">Turn on various debugging features</string>
   <string name="debug_default">Default</string>
   <string name="debug_on">On</string>
   <string name="debug_off">Off</string>
-  <string name="notification_icon_setting">NOTFICATION_ICON</string>
   <string name="notification_icon_title">Display notification icon</string>
   <string name="notification_icon_on">Display an icon when there are pending alarms</string>
   <string name="notification_icon_off">Do not display an icon when there are pending alarms</string>
-  <string name="lock_screen_setting">LOCK_SCREEN"</string>
   <string name="lock_screen_title">Lock screen text</string>
   <string name="lock_screen_summary">Configure alarm information displayed on the lock screen</string>
   <string name="lock_screen_countdown">Countdown</string>

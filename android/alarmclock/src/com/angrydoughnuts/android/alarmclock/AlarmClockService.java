@@ -15,16 +15,21 @@
 
 package com.angrydoughnuts.android.alarmclock;
 
+import java.util.Map;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.widget.Toast;
 
@@ -108,6 +113,7 @@ public final class AlarmClockService extends Service {
           handler.post(maybeShutdown);
           break;
         case COMMAND_DEVICE_BOOT:
+          fixPersistentSettings();
           handler.post(maybeShutdown);
           break;
         case COMMAND_TIMEZONE_CHANGE:
@@ -160,6 +166,36 @@ public final class AlarmClockService extends Service {
     if (lockScreenText != null) {
       Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED, lockScreenText);
     }
+  }
+
+  // This hack is necessary b/c I released a version of the code with a bunch
+  // of errors in the settings strings.  This should correct them.
+  public void fixPersistentSettings() {
+    final String badDebugName = "DEBUG_MODE\"";
+    final String badNotificationName = "NOTFICATION_ICON";
+    final String badLockScreenName = "LOCK_SCREEN\"";
+    final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+    Map<String, ?> prefNames = prefs.getAll();
+    // Don't do anything if the bad preferences have already been fixed.
+    if (!prefNames.containsKey(badDebugName) &&
+        !prefNames.containsKey(badNotificationName) &&
+        !prefNames.containsKey(badLockScreenName)) {
+      return;
+    }
+    Editor editor = prefs.edit();
+    if (prefNames.containsKey(badDebugName)) {
+      editor.putString(AppSettings.DEBUG_MODE, prefs.getString(badDebugName, null));
+      editor.remove(badDebugName);
+    }
+    if (prefNames.containsKey(badNotificationName)){
+      editor.putBoolean(AppSettings.NOTIFICATION_ICON, prefs.getBoolean(badNotificationName, true));
+      editor.remove(badNotificationName);
+    }
+    if (prefNames.containsKey(badLockScreenName)) {
+      editor.putString(AppSettings.LOCK_SCREEN, prefs.getString(badLockScreenName, null));
+      editor.remove(badLockScreenName);
+    }
+    editor.commit();
   }
 
   @Override
