@@ -279,7 +279,7 @@ public final class ActivityAlarmSettings extends Activity {
             new TimePickerDialog.OnTimeSetListener() {
               @Override
               public void onTimeSet(int hourOfDay, int minute, int second) {
-                info.setTime(new AlarmTime(hourOfDay, minute, second));
+                info.setTime(new AlarmTime(hourOfDay, minute, second, time.getDaysOfWeek()));
                 settingsAdapter.notifyDataSetChanged();
                 // Destroy this dialog so that it does not save its state.
                 removeDialog(Dialogs.TIME_PICKER.ordinal());
