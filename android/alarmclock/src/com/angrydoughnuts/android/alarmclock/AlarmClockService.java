@@ -68,7 +68,7 @@ public final class AlarmClockService extends Service {
       pendingAlarms.put(alarmId, db.readAlarmInfo(alarmId).getTime());
     }
 
-    notification = new Notification(R.drawable.alarmclock, null, 0);
+    notification = new Notification(R.drawable.alarmclock_notification, null, 0);
     notification.flags |= Notification.FLAG_ONGOING_EVENT;
 
     ReceiverNotificationRefresh.startRefreshing(getApplicationContext());
