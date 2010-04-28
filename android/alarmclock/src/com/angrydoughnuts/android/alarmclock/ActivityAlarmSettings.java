@@ -122,9 +122,11 @@ public final class ActivityAlarmSettings extends Activity {
         // Write AlarmInfo if it changed.
         if (originalInfo != null && !originalInfo.equals(info)) {
           db.writeAlarmInfo(alarmId, info);
-          // If this alarm is enabled, reschedule it since the user may have
-          // changed the desired alarm time.
-          if (info.enabled()) {
+          // Explicitly enable the alarm if the user changed the time.
+          // This will reschedule the alarm if it was already enabled.
+          // It's also probably the right thing to do if the alarm wasn't
+          // enabled.
+          if (!originalInfo.getTime().equals(info.getTime())) {
             service.scheduleAlarm(alarmId);
           }
         }
