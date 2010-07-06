@@ -43,7 +43,7 @@ public class Slider extends ViewGroup {
   private static final int FADE_MILLIS = 200;
   private static final int SLIDE_MILLIS = 200;
   private static final float SLIDE_ACCEL = (float) 1.0;
-  private static final double PERCENT_REQUIRED = 0.75;
+  private static final double PERCENT_REQUIRED = 0.70;
 
   private ImageView dot;
   private TextView tray;
@@ -64,7 +64,7 @@ public class Slider extends ViewGroup {
     tray = new TextView(getContext());
     tray.setBackgroundResource(R.drawable.slider_background);
     tray.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-    tray.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
+    tray.setGravity(Gravity.CENTER);
     tray.setTextAppearance(getContext(), R.style.SliderText);
     tray.setText(R.string.dismiss);
     addView(tray);
@@ -111,9 +111,8 @@ public class Slider extends ViewGroup {
   @Override
   protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
     tray.measure(widthMeasureSpec, heightMeasureSpec);
-    dot.measure(
-        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+    dot.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+        heightMeasureSpec);
     setMeasuredDimension(
         Math.max(tray.getMeasuredWidth(), dot.getMeasuredWidth()),
         Math.max(tray.getMeasuredHeight(), dot.getMeasuredHeight()));
