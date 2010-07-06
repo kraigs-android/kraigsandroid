@@ -15,9 +15,15 @@
 
 package com.angrydoughnuts.android.alarmclock;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import android.content.Context;
+import android.database.MatrixCursor;
+import android.database.MatrixCursor.RowBuilder;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.provider.BaseColumns;
 import android.provider.MediaStore.MediaColumns;
 import android.util.AttributeSet;
 import android.view.View;
@@ -70,5 +76,17 @@ public class MediaSongsView extends MediaListView implements OnItemClickListener
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  public void includeDefault() {
+    final ArrayList<String> defaultColumns =
+      new ArrayList<String>(songsColumns.length + 1);
+    defaultColumns.addAll(Arrays.asList(songsColumns));
+    defaultColumns.add(BaseColumns._ID);
+    final MatrixCursor defaultsCursor = new MatrixCursor(defaultColumns.toArray(new String[] {}));
+    RowBuilder row = defaultsCursor.newRow();
+    row.add("Default");
+    row.add(DEFAULT_TONE_INDEX);
+    includeStaticCursor(defaultsCursor);
   }
 }

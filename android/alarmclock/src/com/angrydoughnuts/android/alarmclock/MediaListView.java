@@ -21,6 +21,7 @@ import java.util.Arrays;
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.MergeCursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.provider.BaseColumns;
@@ -43,7 +44,10 @@ public class MediaListView extends ListView implements OnItemClickListener {
     public void onItemPick(Uri uri, String name);
   }
 
+  protected static int DEFAULT_TONE_INDEX = -69;
+
   private Cursor cursor;
+  private Cursor staticCursor;
   private MediaPlayer mPlayer;
   private ViewFlipper flipper;
   private Activity cursorManager;
@@ -130,10 +134,17 @@ public class MediaListView extends ListView implements OnItemClickListener {
       queryColumns.add(BaseColumns._ID);
     }
 
-    cursor = getContext().getContentResolver().query(
+    Cursor dbCursor = getContext().getContentResolver().query(
         contentUri, queryColumns.toArray(new String[] {}),
         selection, null, sortOrder);
+    if (staticCursor != null) {
+      Cursor[] cursors = new Cursor[] { staticCursor, dbCursor };
+      cursor = new MergeCursor(cursors);
+    } else {
+      cursor = dbCursor;
+    }
     manageCursor(cursor);
+
     this.contentUri = contentUri;
 
     final SimpleCursorAdapter adapter = new SimpleCursorAdapter(
@@ -144,6 +155,10 @@ public class MediaListView extends ListView implements OnItemClickListener {
 
   public void overrideSortOrder(String sortOrder) {
     this.sortOrder = sortOrder;
+  }
+
+  protected void includeStaticCursor(Cursor cursor) {
+    staticCursor = cursor;
   }
 
   // TODO(cgallek): get rid of these two accessor methods in favor of
@@ -164,7 +179,12 @@ public class MediaListView extends ListView implements OnItemClickListener {
   public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
     cursor.moveToPosition(position);
     selectedName = cursor.getString(cursor.getColumnIndex(nameColumn));
-    selectedUri = Uri.withAppendedPath(contentUri, cursor.getString(cursor.getColumnIndex(BaseColumns._ID)));
+    final int toneIndex = cursor.getInt(cursor.getColumnIndex(BaseColumns._ID));
+    if (toneIndex == DEFAULT_TONE_INDEX) {
+      selectedUri = AlarmUtil.getDefaultAlarmUri();
+    } else {
+      selectedUri = Uri.withAppendedPath(contentUri, "" + toneIndex);
+    }
     if (listener != null) {
       listener.onItemPick(selectedUri, selectedName);
     }

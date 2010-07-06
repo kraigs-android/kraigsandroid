@@ -83,11 +83,9 @@ public class MediaPickerDialog extends AlertDialog {
       }
     };
 
-    // TODO(cgallek): There's no 'default' item in this list.  There
-    // should be one that sets the value to AlarmUtil.getDefaultAlarmUri()
-    // but I don't know how to do this using a cursor adapter.
     final MediaSongsView internalList = (MediaSongsView) body_view.findViewById(R.id.media_picker_internal);
     internalList.setCursorManager(context);
+    internalList.includeDefault();
     internalList.query(Media.INTERNAL_CONTENT_URI);
     internalList.setMediaPlayer(mediaPlayer);
     internalList.setMediaPickListener(listener);
