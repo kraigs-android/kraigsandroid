@@ -17,6 +17,15 @@
     android:defaultValue="lock_screen_countdown" />
 
   <ListPreference android:persistent="true"
+    android:key="ALARM_TIMEOUT"
+    android:title="@string/time_out_title"
+    android:dialogTitle="@string/time_out_title"
+    android:summary="@string/time_out_summary"
+    android:entries="@array/time_out_types"
+    android:entryValues="@array/time_out_values"
+    android:defaultValue="10" />
+
+  <ListPreference android:persistent="true"
     android:key="DEBUG_MODE"
     android:title="@string/debug_mode_title"
     android:dialogTitle="@string/debug_mode_title"

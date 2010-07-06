@@ -87,4 +87,5 @@
   <string name="custom_lock_screen_persistent">Persistent</string>
   <string name="time_out_title">Alarm time out</string>
   <string name="time_out_error">WARNING: This alarm has timed out waiting for an acknowledgment.</string>
+  <string name="time_out_summary">A firing alarm will be automatically dismissed after this many minutes.</string>
 </resources>

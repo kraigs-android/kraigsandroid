@@ -293,8 +293,8 @@ public class NotificationService extends Service {
     handler.post(soundCheck);
     handler.post(notificationBlinker);
     // Set up a canceler if this notification isn't acknowledged by the timeout.
-    // TODO Make this configurable?
-    handler.postDelayed(autoCancel, 10 * 60 * 1000);
+    int timeoutMillis = 60 * 1000 * AppSettings.alarmTimeOutMins(getApplicationContext());
+    handler.postDelayed(autoCancel, timeoutMillis);
   }
 
   private void stopNotifying() {

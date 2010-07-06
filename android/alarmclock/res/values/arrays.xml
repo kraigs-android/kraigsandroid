@@ -25,4 +25,19 @@
     <item>lock_screen_nothing</item>
     <item>lock_screen_custom</item>
   </string-array>
+
+  <string-array name="time_out_types">
+    <item>1</item>
+    <item>5</item>
+    <item>10</item>
+    <item>30</item>
+    <item>60</item>
+  </string-array>
+  <string-array name="time_out_values">
+    <item>1</item>
+    <item>5</item>
+    <item>10</item>
+    <item>30</item>
+    <item>60</item>
+  </string-array>
 </resources>
