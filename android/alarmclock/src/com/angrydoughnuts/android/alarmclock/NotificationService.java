@@ -180,8 +180,9 @@ public class NotificationService extends Service {
   }
 
   private void startNotification(long alarmId) {
-    // TODO make all these wake lock assertions debug-only.
-    WakeLock.assertHeld(alarmId);
+    if (AppSettings.isDebugMode(getApplicationContext())) {
+      WakeLock.assertHeld(alarmId);
+    }
     Intent notifyActivity = new Intent(getApplicationContext(), ActivityAlarmNotification.class);
     notifyActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     startActivity(notifyActivity);
@@ -235,8 +236,6 @@ public class NotificationService extends Service {
   }
 
   private void stopAlarm() {
-    // TODO figure out a way to call this when the alarm is uncheckde or
-    // deleted from the main screen.
     handler.removeCallbacks(volumeIncreaseCallback);
     handler.removeCallbacks(soundCheck);
 
