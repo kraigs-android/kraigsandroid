@@ -39,9 +39,11 @@ public class NotificationService extends Service {
 
   private final int ALERT_ID = 42;
 
+  // Data
   private LinkedList<Long> firingAlarms;
   private AlarmClockServiceBinder service;
   private DbAccessor db;
+  // Notification tools
   private MediaPlayer mediaPlayer;
   private Ringtone fallbackSound;
   private Vibrator vibrator;
@@ -138,9 +140,24 @@ public class NotificationService extends Service {
   }
 
   private void handleStart(Intent intent, int startId) {
+    // startService called from alarm receiver with an alarm id url.
     if (intent != null && intent.getData() != null) {
       long alarmId = AlarmUtil.alarmUriToId(intent.getData());
-      startNotification(alarmId);
+      if (AppSettings.isDebugMode(getApplicationContext())) {
+        WakeLock.assertHeld(alarmId);
+      }
+      Intent notifyActivity = new Intent(getApplicationContext(), ActivityAlarmNotification.class);
+      notifyActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      startActivity(notifyActivity);
+
+      boolean firstAlarm = firingAlarms.size() == 0;
+      if (!firingAlarms.contains(alarmId)) {
+        firingAlarms.add(alarmId);
+      }
+
+      if (firstAlarm) {
+        soundAlarm(alarmId);
+      }
     }
   }
 
@@ -163,14 +180,16 @@ public class NotificationService extends Service {
     long alarmId = currentAlarmId();
     if (firingAlarms.contains(alarmId)) {
       firingAlarms.remove(alarmId);
-      stopAlarm();
       if (snoozeMinutes <= 0) {
         service.acknowledgeAlarm(alarmId);
       } else {
         service.snoozeAlarmFor(alarmId, snoozeMinutes);
       }
     }
+    stopNotifying();
 
+    // If this was the only alarm firing, stop the service.  Otherwise,
+    // start the next alarm in the stack.
     if (firingAlarms.size() == 0) {
       stopSelf();
     } else {
@@ -179,28 +198,9 @@ public class NotificationService extends Service {
     WakeLock.release(alarmId);
   }
 
-  private void startNotification(long alarmId) {
-    if (AppSettings.isDebugMode(getApplicationContext())) {
-      WakeLock.assertHeld(alarmId);
-    }
-    Intent notifyActivity = new Intent(getApplicationContext(), ActivityAlarmNotification.class);
-    notifyActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    startActivity(notifyActivity);
-
-    boolean firstAlarm = firingAlarms.size() == 0;
-    if (!firingAlarms.contains(alarmId)) {
-      firingAlarms.add(alarmId);
-    }
-
-    if (firstAlarm) {
-      soundAlarm(alarmId);
-    }
-  }
-
   private void soundAlarm(long alarmId) {
-    Intent notificationActivity = new Intent(getApplicationContext(), ActivityAlarmNotification.class);
-    // notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    // notifyIntent.setData(alarmUri);
+    // Update the notification bar.
+    Intent notificationActivity = new Intent(getApplicationContext(), ActivityAlarmClock.class);
     PendingIntent launch = PendingIntent.getActivity(getApplicationContext(), 0, notificationActivity, 0);
 
     // TODO cleanup this notification.  maybe make it blink?
@@ -215,6 +215,7 @@ public class NotificationService extends Service {
     notification.setLatestEventInfo(getApplicationContext(), text, null, launch);
     manager.notify(ALERT_ID, notification);    
 
+    // Begin notifying based on settings for this alaram.
     AlarmSettings settings = db.readAlarmSettings(alarmId);
     if (settings.getVibrate()) {
       vibrator.vibrate(new long[] {500, 500}, 0);
@@ -231,14 +232,17 @@ public class NotificationService extends Service {
       e.printStackTrace();
     }
 
+    // Start periodic events for handling this notification.
     handler.post(volumeIncreaseCallback);
     handler.post(soundCheck);
   }
 
-  private void stopAlarm() {
+  private void stopNotifying() {
+    // Stop periodic events.
     handler.removeCallbacks(volumeIncreaseCallback);
     handler.removeCallbacks(soundCheck);
 
+    // Stop notifying.
     vibrator.cancel();
     mediaPlayer.stop();
     if (fallbackSound != null) {
