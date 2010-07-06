@@ -11,6 +11,8 @@ import android.net.Uri;
 public class ReceiverAlarm extends BroadcastReceiver {
   @Override
   public void onReceive(Context context, Intent recvIntent) {
+    // TODO consider launching the notification service rather than the
+    // activity.
     Uri alarmUri = recvIntent.getData();
     long alarmId = AlarmUtil.alarmUriToId(alarmUri);
 

@@ -16,6 +16,7 @@
     <activity android:name="ActivityAppSettings"></activity>
     <activity android:name="ActivityPendingAlarms"></activity>
     <service android:name="AlarmClockService"></service>
+    <service android:name="NotificationService"></service>
     <receiver android:name="ReceiverAlarm"></receiver>
     <receiver android:name="ReceiverNotificationRefresh"></receiver>
     <receiver android:name="ReceiverDeviceBoot">

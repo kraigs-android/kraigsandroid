@@ -31,6 +31,23 @@ public class WakeLock {
     }
   }
 
+  public static final void assertAtLeastOneHeld() {
+    for (PowerManager.WakeLock wakeLock : wakeLocks.values()) {
+      if (wakeLock.isHeld()) {
+        return;
+      }
+    }
+    throw new IllegalStateException("No wake locks are held.");
+  }
+
+  public static final void assertNoneHeld() {
+    for (PowerManager.WakeLock wakeLock : wakeLocks.values()) {
+      if (wakeLock.isHeld()) {
+        throw new IllegalStateException("No wake locks are held.");
+      }
+    }
+  }
+
   public static final void release(long alarmId) {
     assertHeld(alarmId);
     PowerManager.WakeLock wakeLock = wakeLocks.remove(alarmId);

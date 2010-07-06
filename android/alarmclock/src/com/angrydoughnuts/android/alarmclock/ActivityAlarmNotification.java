@@ -20,15 +20,9 @@ import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardLock;
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Vibrator;
-import android.view.KeyEvent;
+import android.os.RemoteException;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -50,81 +44,53 @@ import android.widget.TextView;
  *    alarm triggers while this Activity is running, it will silently snooze
  *    the first alarm and start the second.
  */
+  // TODO change the launch mode of this application so that it's always
+  // in front of all other activities.
 public final class ActivityAlarmNotification extends Activity {
-  enum AckStates { UNACKED, ACKED, SNOOZED }
-
-  // Per-intent members (changed if onNewIntent is called).
-  private long alarmId;
-  private AlarmSettings settings;
-  private AckStates ackState;
-
-  // Per-instance members.
-  private AlarmClockServiceBinder service;
+  private NotificationServiceBinder notifyService;
   private DbAccessor db;
   private KeyguardLock screenLock;
-  private MediaPlayer mediaPlayer;
-  private Ringtone fallbackSound;
-  private Vibrator vibrator;
   private Handler handler;
-  private VolumeIncreaser volumeIncreaseCallback; 
   private Runnable timeTick;
+
+  // Dialog state
+  int snoozeMinutes;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.notification);
 
-    // Access to in-memory and persistent data structures.
-    service = new AlarmClockServiceBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
 
-    // Information associated with the alarm triggered in the first intent.
-    alarmId = AlarmUtil.alarmUriToId(getIntent().getData());
-    settings = db.readAlarmSettings(alarmId);
-    ackState = AckStates.UNACKED;
-
-    // Setup audio.
-    final AudioManager audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-    // Force the alarm stream to be maximum volume.  This will allow the user
-    // to select a volume between 0 and 100 percent via the settings activity.
-    audio.setStreamVolume(AudioManager.STREAM_ALARM,
-        audio.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
-    // Setup the media play.
-    mediaPlayer = new MediaPlayer();
-    // Make it use the previously configured alarm stream.
-    mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
-    // The media player can fail for lots of reasons.  Try to setup a backup
-    // sound for use when the media player fails.
-    fallbackSound = RingtoneManager.getRingtone(getApplicationContext(),
-        AlarmUtil.getDefaultAlarmUri());
-    if (fallbackSound == null) {
-      Uri superFallback = RingtoneManager.getValidRingtoneUri(getApplicationContext());
-      fallbackSound = RingtoneManager.getRingtone(getApplicationContext(), superFallback);
-    }
-    // Make the fallback sound use the alarm stream as well.
-    if (fallbackSound != null) {
-      fallbackSound.setStreamType(AudioManager.STREAM_ALARM);
+    // Start the notification service and bind to it.
+    notifyService = new NotificationServiceBinder(getApplicationContext());
+    notifyService.bind();
+    // If the activity was launched from the broadcast receiver (ie, it was
+    // given an alarm id to fire), trigger the alarm in the service.
+    // TODO consider launching the service directly from the receiver and opening.
+    // the activity from there.
+    if (getIntent().getData() != null) {
+      notifyService.startNotification(AlarmUtil.alarmUriToId(getIntent().getData()));
     }
 
-    // Instantiate a vibrator.  That's fun to say.
-    vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-
-    // Setup a self-scheduling timing loop.  This loop will begin in onResume()
-    // and will be terminated in onPause();
+    // Setup a self-scheduling event loops.
     handler = new Handler();
-    volumeIncreaseCallback = new VolumeIncreaser();
 
     timeTick = new Runnable() {
       @Override
       public void run() {
-        // Some sound should always be playing.
-        if (!mediaPlayer.isPlaying() &&
-            fallbackSound != null && !fallbackSound.isPlaying()) { 
-          fallbackSound.play();
-        }
+        notifyService.call(new NotificationServiceBinder.ServiceCallback() {
+          @Override
+          public void run(NotificationServiceInterface service)
+              throws RemoteException {
+            TextView volume = (TextView) findViewById(R.id.volume);
+            volume.setText("Volume: " + service.volume());
 
-        long next = AlarmUtil.millisTillNextInterval(AlarmUtil.Interval.SECOND);
-        handler.postDelayed(timeTick, next);
+            long next = AlarmUtil.millisTillNextInterval(AlarmUtil.Interval.SECOND);
+            handler.postDelayed(timeTick, next);
+          }
+        });
       }
     };
 
@@ -140,7 +106,7 @@ public final class ActivityAlarmNotification extends Activity {
     snoozeButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        ack(AckStates.SNOOZED);
+        notifyService.acknowledgeCurrentNotification(snoozeMinutes);
         finish();
       }
     });
@@ -149,11 +115,11 @@ public final class ActivityAlarmNotification extends Activity {
     decreaseSnoozeButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
-        int snooze = settings.getSnoozeMinutes() - 5;
+        int snooze = snoozeMinutes - 5;
         if (snooze < 5) {
           snooze = 5;
         }
-        settings.setSnoozeMinutes(snooze);
+        snoozeMinutes = snooze;
         redraw();
       }
     });
@@ -162,11 +128,11 @@ public final class ActivityAlarmNotification extends Activity {
     increaseSnoozeButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
-        int snooze = settings.getSnoozeMinutes() + 5;
+        int snooze = snoozeMinutes + 5;
         if (snooze > 60) {
           snooze = 60;
         }
-        settings.setSnoozeMinutes(snooze);
+        snoozeMinutes = snooze;
         redraw();
       }
     });
@@ -176,50 +142,30 @@ public final class ActivityAlarmNotification extends Activity {
     dismiss.setOnTriggerListener(new Slider.OnTriggerListener() {
       @Override
       public void onTrigger(View v) {
-        ack(AckStates.ACKED);
+        notifyService.acknowledgeCurrentNotification(0);
         finish();
       }
     });
   }
 
-  // If a second alarm fires while this activity is active, a cycle through
-  // onPause(), onNewIntent(), to onResume() will be triggered.
-  // This call to onNewIntent() swaps out the per-intent member variables
-  // for those associated with the new alarm.
-  // Each of these cycles should represent a single call to lock on the
-  // wake lock in the alarm receiver, and one unlock call via the ack method.
+  // Handle the case of a second alarm being triggered while another is firing.
+  // TODO: this could also be fixed by launching the service from the receiver
+  // rather than the activity.
   @Override
   protected void onNewIntent(Intent intent) {
-    alarmId = AlarmUtil.alarmUriToId(intent.getData());
-    settings = db.readAlarmSettings(alarmId);
-    ackState = AckStates.UNACKED;
-    volumeIncreaseCallback.reset();
-    redraw();
+    if (intent.getData() != null) {
+      notifyService.startNotification(AlarmUtil.alarmUriToId(intent.getData()));
+    }
     super.onNewIntent(intent);
   }
 
   @Override
   protected void onResume() {
     super.onResume();
-    WakeLock.assertHeld(alarmId);
-    service.bind();
+    WakeLock.assertAtLeastOneHeld();
 
     screenLock.disableKeyguard();
-    if (settings.getVibrate()) {
-      vibrator.vibrate(new long[] {500, 500}, 0);
-    }
 
-    mediaPlayer.reset();
-    mediaPlayer.setLooping(true);
-    try {
-      mediaPlayer.setDataSource(getApplicationContext(), settings.getTone());
-      mediaPlayer.prepare();
-      mediaPlayer.start();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    handler.post(volumeIncreaseCallback);
     handler.post(timeTick);
 
     redraw();
@@ -231,119 +177,40 @@ public final class ActivityAlarmNotification extends Activity {
   @Override
   protected void onPause() {
     super.onPause();
-    handler.removeCallbacks(volumeIncreaseCallback);
     handler.removeCallbacks(timeTick);
-    vibrator.cancel();
-    mediaPlayer.stop();
-    if (fallbackSound != null) {
-      fallbackSound.stop();
-    }
     screenLock.reenableKeyguard();
-
-    service.unbind();
   }
 
   @Override
   protected void onDestroy() {
     super.onDestroy();
     db.closeConnections();
-    mediaPlayer.release();
-    if (ackState == AckStates.UNACKED) {
-      throw new IllegalStateException(
-          "Alarm notification was destroyed without ever being acknowledged.");
-    }
-  }
-
-  @Override
-  public boolean onKeyDown(int keyCode, KeyEvent event) {
-    // If the user dismisses the notification screen by a method other than
-    // hitting the 'dismiss' or 'snooze' button, we want to implicitly
-    // snooze the alarm.  This could be done in the onPause() handler, but
-    // there seem to be cases when the device is waking up that the
-    // onResume()/onPause() cycle happens more than once (especially on the
-    // G1).  Instead, we do this implicit snooze behavior when a 'navigate
-    // away' event occurs.  There are probably more ways for this to happen
-    // than those listed here, but this is kind of a corner case anyway...
-    switch (keyCode) {
-      case KeyEvent.KEYCODE_BACK:
-      case KeyEvent.KEYCODE_HOME:
-      case KeyEvent.KEYCODE_SEARCH:
-        ack(AckStates.SNOOZED);
-      break;
-    }
-    return super.onKeyDown(keyCode, event);
+    notifyService.unbind();
   }
 
   private final void redraw() {
-    AlarmInfo alarmInfo = db.readAlarmInfo(alarmId);
-    String info = alarmInfo.getTime().toString() + "\n" + alarmInfo.getName();
-    if (AppSettings.isDebugMode(getApplicationContext())) {
-      info += " [" + alarmId + "]";
-      findViewById(R.id.volume).setVisibility(View.VISIBLE);
-    } else {
-      findViewById(R.id.volume).setVisibility(View.GONE);
-    }
-    TextView infoText = (TextView) findViewById(R.id.alarm_info);
-    infoText.setText(info);
-    TextView snoozeInfo = (TextView) findViewById(R.id.notify_snooze_time);
-    snoozeInfo.setText(getString(R.string.snooze) + "\n"
-        + getString(R.string.minutes, settings.getSnoozeMinutes()));
-  }
-
-  private final void ack(AckStates ack) {
-    if (ackState != AckStates.UNACKED) {
-      return;
-    } else {
-      ackState = ack;
-    }
-
-    switch (ack) {
-      case SNOOZED:
-        service.snoozeAlarmFor(alarmId, settings.getSnoozeMinutes());
-        WakeLock.release(alarmId);
-        break;
-      case ACKED:
-        service.acknowledgeAlarm(alarmId);
-        WakeLock.release(alarmId);
-        break;
-      default:
-        throw new IllegalStateException("Unknow alarm notification state.");
-    }
-  }
-
-  /**
-   * Helper class for gradually increasing the volume of the alarm audio
-   * stream.
-   */
-  private final class VolumeIncreaser implements Runnable {
-    float start;
-    float end;
-    float increment;
-
-    public VolumeIncreaser() {
-      reset();
-    }
-
-    public void reset() {
-      start = (float) (settings.getVolumeStartPercent() / 100.0);
-      end = (float) (settings.getVolumeEndPercent() / 100.0);
-      increment = (end - start) / (float) settings.getVolumeChangeTimeSec();
-      mediaPlayer.setVolume(start, start);
-    }
-
-    @Override
-    public void run() {
-      start += increment;
-      if (start > end) {
-        start = end;
+    notifyService.call(new NotificationServiceBinder.ServiceCallback() {
+      @Override
+      public void run(NotificationServiceInterface service)
+          throws RemoteException {
+        long alarmId = service.currentAlarmId();
+        AlarmInfo alarmInfo = db.readAlarmInfo(alarmId);
+        if (snoozeMinutes == 0) {
+          snoozeMinutes = db.readAlarmSettings(alarmId).getSnoozeMinutes();
+        }
+        String info = alarmInfo.getTime().toString() + "\n" + alarmInfo.getName();
+        if (AppSettings.isDebugMode(getApplicationContext())) {
+          info += " [" + alarmId + "]";
+          findViewById(R.id.volume).setVisibility(View.VISIBLE);
+        } else {
+          findViewById(R.id.volume).setVisibility(View.GONE);
+        }
+        TextView infoText = (TextView) findViewById(R.id.alarm_info);
+        infoText.setText(info);
+        TextView snoozeInfo = (TextView) findViewById(R.id.notify_snooze_time);
+        snoozeInfo.setText(getString(R.string.snooze) + "\n"
+            + getString(R.string.minutes, snoozeMinutes));
       }
-      mediaPlayer.setVolume(start, start);
-      TextView volume = (TextView) findViewById(R.id.volume);
-      volume.setText("Volume: " + start);
-
-      if (Math.abs(start - end) > (float) 0.0001) {
-        handler.postDelayed(volumeIncreaseCallback, 1000);
-      }
-    }
+    });
   }
 }
