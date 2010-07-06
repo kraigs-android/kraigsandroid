@@ -22,6 +22,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.MergeCursor;
+import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.provider.BaseColumns;
@@ -31,8 +32,10 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 import android.widget.ViewFlipper;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.SimpleCursorAdapter.ViewBinder;
 
 /**
  * An extension to the ListView widget specialized for selecting audio media.
@@ -69,7 +72,8 @@ public class MediaListView extends ListView implements OnItemClickListener {
 
   public MediaListView(Context context, AttributeSet attrs, int defStyle) {
     super(context, attrs, defStyle);
-    this.setOnKeyListener(new OnKeyListener() {
+    setChoiceMode(CHOICE_MODE_SINGLE);
+    setOnKeyListener(new OnKeyListener() {
       @Override
       public boolean onKey(View v, int keyCode, KeyEvent event) {
         if (flipper == null || flipper.getDisplayedChild() == 0) {
@@ -149,6 +153,21 @@ public class MediaListView extends ListView implements OnItemClickListener {
 
     final SimpleCursorAdapter adapter = new SimpleCursorAdapter(
         getContext(), rowResId, cursor, displayColumns, resIDs);
+    // Use a custom binder to highlight the selected element.
+    adapter.setViewBinder(new ViewBinder() {
+      @Override
+      public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+        if (view.getVisibility() == View.VISIBLE && view instanceof TextView) {
+          TextView text = (TextView) view;
+          if (isItemChecked(cursor.getPosition())) {
+            text.setTypeface(Typeface.DEFAULT_BOLD);
+          } else {
+            text.setTypeface(Typeface.DEFAULT);
+          }
+        }
+        // Let the default binder do the real work.
+        return false;
+      }});
     setAdapter(adapter);
     setOnItemClickListener(this);
   }
@@ -177,6 +196,7 @@ public class MediaListView extends ListView implements OnItemClickListener {
 
   @Override
   public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    setItemChecked(position, true);
     cursor.moveToPosition(position);
     selectedName = cursor.getString(cursor.getColumnIndex(nameColumn));
     final int toneIndex = cursor.getInt(cursor.getColumnIndex(BaseColumns._ID));
