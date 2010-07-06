@@ -1,5 +1,7 @@
 package com.angrydoughnuts.android.alarmclock;
 
+import com.angrydoughnuts.android.alarmclock.WakeLock.WakeLockException;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,7 +14,13 @@ public class ReceiverAlarm extends BroadcastReceiver {
     Uri alarmUri = recvIntent.getData();
     long alarmId = AlarmUtil.alarmUriToId(alarmUri);
 
-    WakeLock.acquire(context, alarmId);
+    try {
+      WakeLock.acquire(context, alarmId);
+    } catch (WakeLockException e) {
+      if (AppSettings.isDebugMode(context)) {
+        throw new IllegalStateException(e.getMessage());
+      }
+    }
 
     Intent notifyService = new Intent(context, NotificationService.class);
     notifyService.setData(alarmUri);

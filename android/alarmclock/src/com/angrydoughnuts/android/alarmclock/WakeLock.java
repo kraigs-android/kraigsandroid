@@ -6,12 +6,19 @@ import android.content.Context;
 import android.os.PowerManager;
 
 public class WakeLock {
+  public static class WakeLockException extends Exception {
+    private static final long serialVersionUID = 1L;
+    public WakeLockException(String e) {
+      super(e);
+    }
+  }
+
   private static final TreeMap<Long, PowerManager.WakeLock> wakeLocks =
     new TreeMap<Long, PowerManager.WakeLock>();
 
-  public static final void acquire(Context context, long alarmId) {
+  public static final void acquire(Context context, long alarmId) throws WakeLockException {
     if (wakeLocks.containsKey(alarmId)) {
-      throw new IllegalStateException("Multiple acquisitions of wake lock for id: " + alarmId);
+      throw new WakeLockException("Multiple acquisitions of wake lock for id: " + alarmId);
     }
 
     PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
@@ -24,31 +31,31 @@ public class WakeLock {
     wakeLocks.put(alarmId, wakeLock);
   }
 
-  public static final void assertHeld(long alarmId) {
+  public static final void assertHeld(long alarmId) throws WakeLockException {
     PowerManager.WakeLock wakeLock = wakeLocks.get(alarmId);
     if (wakeLock == null || !wakeLock.isHeld()) {
-      throw new IllegalStateException("Wake lock not held for alarm id: " + alarmId);
+      throw new WakeLockException("Wake lock not held for alarm id: " + alarmId);
     }
   }
 
-  public static final void assertAtLeastOneHeld() {
+  public static final void assertAtLeastOneHeld() throws WakeLockException {
     for (PowerManager.WakeLock wakeLock : wakeLocks.values()) {
       if (wakeLock.isHeld()) {
         return;
       }
     }
-    throw new IllegalStateException("No wake locks are held.");
+    throw new WakeLockException("No wake locks are held.");
   }
 
-  public static final void assertNoneHeld() {
+  public static final void assertNoneHeld() throws WakeLockException {
     for (PowerManager.WakeLock wakeLock : wakeLocks.values()) {
       if (wakeLock.isHeld()) {
-        throw new IllegalStateException("No wake locks are held.");
+        throw new WakeLockException("No wake locks are held.");
       }
     }
   }
 
-  public static final void release(long alarmId) {
+  public static final void release(long alarmId) throws WakeLockException {
     assertHeld(alarmId);
     PowerManager.WakeLock wakeLock = wakeLocks.remove(alarmId);
     wakeLock.release();

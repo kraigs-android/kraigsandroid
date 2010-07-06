@@ -15,6 +15,8 @@
 
 package com.angrydoughnuts.android.alarmclock;
 
+import com.angrydoughnuts.android.alarmclock.WakeLock.WakeLockException;
+
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardLock;
@@ -144,7 +146,13 @@ public final class ActivityAlarmNotification extends Activity {
   @Override
   protected void onResume() {
     super.onResume();
-    WakeLock.assertAtLeastOneHeld();
+    try {
+      WakeLock.assertAtLeastOneHeld();
+    } catch (WakeLockException e) {
+      if (AppSettings.isDebugMode(getApplicationContext())) {
+        throw new IllegalStateException(e.getMessage());
+      }
+    }
 
     screenLock.disableKeyguard();
 

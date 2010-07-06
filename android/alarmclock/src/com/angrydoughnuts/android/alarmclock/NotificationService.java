@@ -17,6 +17,8 @@ package com.angrydoughnuts.android.alarmclock;
 
 import java.util.LinkedList;
 
+import com.angrydoughnuts.android.alarmclock.WakeLock.WakeLockException;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -118,11 +120,14 @@ public class NotificationService extends Service {
     db.closeConnections();
     service.unbind();
     mediaPlayer.release();
-    if (AppSettings.isDebugMode(getApplicationContext())) {
-      if (firingAlarms.size() != 0) {
-        throw new IllegalStateException("Notification service terminated with pending notifications.");
-      }
+    boolean debug = AppSettings.isDebugMode(getApplicationContext());
+    if (debug && firingAlarms.size() != 0) {
+      throw new IllegalStateException("Notification service terminated with pending notifications.");
+    }
+    try {
       WakeLock.assertNoneHeld();
+    } catch (WakeLockException e) {
+      if (debug) { throw new IllegalStateException(e.getMessage()); }
     }
   }
 
@@ -143,8 +148,12 @@ public class NotificationService extends Service {
     // startService called from alarm receiver with an alarm id url.
     if (intent != null && intent.getData() != null) {
       long alarmId = AlarmUtil.alarmUriToId(intent.getData());
-      if (AppSettings.isDebugMode(getApplicationContext())) {
+      try {
         WakeLock.assertHeld(alarmId);
+      } catch (WakeLockException e) {
+        if (AppSettings.isDebugMode(getApplicationContext())) {
+          throw new IllegalStateException(e.getMessage());
+        }
       }
       Intent notifyActivity = new Intent(getApplicationContext(), ActivityAlarmNotification.class);
       notifyActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -195,7 +204,13 @@ public class NotificationService extends Service {
     } else {
       soundAlarm(alarmId);
     }
-    WakeLock.release(alarmId);
+    try {
+      WakeLock.release(alarmId);
+    } catch (WakeLockException e) {
+      if (AppSettings.isDebugMode(getApplicationContext())) {
+        throw new IllegalStateException(e.getMessage());
+      }
+    }
   }
 
   private void soundAlarm(long alarmId) {
