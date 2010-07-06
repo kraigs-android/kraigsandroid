@@ -24,7 +24,6 @@ public class Slider2 extends ViewGroup {
   private static final double PERCENT_REQUIRED = 0.75;
 
   private ImageView dot;
-  private ImageView target;
   private boolean tracking;
   private OnCompleteListener completeListener;
 
@@ -40,16 +39,11 @@ public class Slider2 extends ViewGroup {
     super(context, attrs, defStyle);
     setBackgroundResource(android.R.color.white);
     dot = new ImageView(getContext());
-    dot.setImageResource(android.R.drawable.ic_menu_add);
+    dot.setImageResource(R.drawable.slider_icon);
+    dot.setBackgroundResource(R.drawable.slider_btn);
     dot.setScaleType(ScaleType.CENTER);
     dot.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
     addView(dot);
-
-    target = new ImageView(getContext());
-    target.setImageResource(android.R.drawable.ic_menu_delete);
-    target.setScaleType(ScaleType.CENTER);
-    target.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-    addView(target);
 
     reset();
   }
@@ -76,10 +70,7 @@ public class Slider2 extends ViewGroup {
       return;
     }
     // Start the dot left-aligned.
-    int dotWidth = dot.getMeasuredWidth();
-    int targetWidth = target.getMeasuredWidth();
-    dot.layout(0, 0, dotWidth, dot.getMeasuredHeight());
-    target.layout(r-targetWidth, 0, r, target.getMeasuredHeight());
+    dot.layout(0, 0, dot.getMeasuredWidth(), dot.getMeasuredHeight());
   }
 
   @Override
@@ -87,13 +78,9 @@ public class Slider2 extends ViewGroup {
     dot.measure(
       View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
       View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-    target.measure(
-        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
     setMeasuredDimension(
-        Math.max(MeasureSpec.getSize(widthMeasureSpec),
-            dot.getMeasuredWidth() + target.getMeasuredWidth()),
-        Math.max(dot.getMeasuredHeight(), target.getMeasuredHeight()));
+        Math.max(MeasureSpec.getSize(widthMeasureSpec), dot.getMeasuredWidth()),
+        dot.getMeasuredHeight());
   }
 
   // TODO(cgallek): Add some wiggle room to these.
