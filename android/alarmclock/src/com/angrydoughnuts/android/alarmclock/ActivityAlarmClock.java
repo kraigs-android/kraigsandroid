@@ -266,7 +266,6 @@ public final class ActivityAlarmClock extends Activity {
         deleteConfirmBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
-            // TODO delete stuff.
             service.deleteAllAlarms();
             adapter.requery();
             dismissDialog(Dialogs.DELETE_CONFIRM.ordinal());
