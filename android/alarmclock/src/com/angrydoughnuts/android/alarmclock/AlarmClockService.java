@@ -40,7 +40,8 @@ public final class AlarmClockService extends Service {
   public final static int COMMAND_DEVICE_BOOT = 3;
   public final static int COMMAND_TIMEZONE_CHANGE = 4;
 
-  private final int NOTIFICATION_ID = 1;
+  public final static int NOTIFICATION_BAR_ID = 69;
+
   private DbAccessor db;
   private PendingAlarmList pendingAlarms;
   private Notification notification;
@@ -156,9 +157,9 @@ public final class AlarmClockService extends Service {
     final NotificationManager manager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     if (pendingAlarms.size() > 0 && AppSettings.displayNotificationIcon(c)) {
-      manager.notify(NOTIFICATION_ID, notification);
+      manager.notify(NOTIFICATION_BAR_ID, notification);
     } else {
-      manager.cancel(NOTIFICATION_ID);
+      manager.cancel(NOTIFICATION_BAR_ID);
     }
 
     // Set the system alarm string for display on the lock screen.
@@ -207,7 +208,7 @@ public final class AlarmClockService extends Service {
 
     final NotificationManager manager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    manager.cancel(NOTIFICATION_ID);
+    manager.cancel(NOTIFICATION_BAR_ID);
 
     String lockScreenText = AppSettings.lockScreenString(getApplicationContext(), null);
     // Only clear the lock screen if the preference is set.

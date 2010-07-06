@@ -50,8 +50,6 @@ public class NotificationService extends Service {
     private static final long serialVersionUID = 1L;
   }
 
-  private final int ALERT_ID = 42;
-
   // Data
   private LinkedList<Long> firingAlarms;
   private AlarmClockServiceBinder service;
@@ -60,9 +58,13 @@ public class NotificationService extends Service {
   private MediaPlayer mediaPlayer;
   private Ringtone fallbackSound;
   private Vibrator vibrator;
+  NotificationManager manager;
+  Notification notification;
+  PendingIntent notificationActivity;
   private Handler handler;
   private VolumeIncreaser volumeIncreaseCallback; 
   private Runnable soundCheck;
+  private Runnable notificationBlinker;
 
   @Override
   public IBinder onBind(Intent intent) {
@@ -104,6 +106,13 @@ public class NotificationService extends Service {
     // Instantiate a vibrator.  That's fun to say.
     vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
+    // Setup notification bar.
+    manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    Intent intent = new Intent(getApplicationContext(), ActivityAlarmClock.class);
+    notificationActivity = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
+    notification = new Notification(R.drawable.alarmclock_notification, null, 0);
+    notification.flags |= Notification.FLAG_ONGOING_EVENT;
+
     // Setup a self-scheduling event loops.
     handler = new Handler();
     volumeIncreaseCallback = new VolumeIncreaser();
@@ -120,14 +129,36 @@ public class NotificationService extends Service {
         handler.postDelayed(soundCheck, next);
       }
     };
+    notificationBlinker = new Runnable() {
+      @Override
+      public void run() {
+        String notifyText;
+        try {
+          AlarmInfo info = db.readAlarmInfo(currentAlarmId());
+          notifyText = info.getName();
+          if (notifyText.equals("")) {
+            notifyText = info.getTime().localizedString(getApplicationContext());
+          }
+        } catch (NoAlarmsException e) {
+          return;
+        }
+        notification.setLatestEventInfo(getApplicationContext(), notifyText, "", notificationActivity);
+        if (notification.icon == R.drawable.alarmclock_notification) {
+          notification.icon = R.drawable.alarmclock_notification2;
+        } else {
+          notification.icon = R.drawable.alarmclock_notification;
+        }
+        manager.notify(AlarmClockService.NOTIFICATION_BAR_ID, notification);
+
+        long next = AlarmUtil.millisTillNextInterval(AlarmUtil.Interval.SECOND);
+        handler.postDelayed(notificationBlinker, next);
+      }
+    };
   }
 
   @Override
   public void onDestroy() {
     super.onDestroy();
-    final NotificationManager manager =
-      (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    manager.cancel(ALERT_ID);
     db.closeConnections();
     service.unbind();
     mediaPlayer.release();
@@ -225,22 +256,6 @@ public class NotificationService extends Service {
   }
 
   private void soundAlarm(long alarmId) {
-    // Update the notification bar.
-    Intent notificationActivity = new Intent(getApplicationContext(), ActivityAlarmClock.class);
-    PendingIntent launch = PendingIntent.getActivity(getApplicationContext(), 0, notificationActivity, 0);
-
-    // TODO cleanup this notification.  maybe make it blink?
-    String text = "FIRING ALARMS:";
-    for (Long id : firingAlarms) {
-      text += " " + id;
-    }
-    final NotificationManager manager =
-      (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    Notification notification = new Notification(R.drawable.alarmclock_notification, null, 0);
-    notification.flags |= Notification.FLAG_ONGOING_EVENT;
-    notification.setLatestEventInfo(getApplicationContext(), text, null, launch);
-    manager.notify(ALERT_ID, notification);    
-
     // Begin notifying based on settings for this alaram.
     AlarmSettings settings = db.readAlarmSettings(alarmId);
     if (settings.getVibrate()) {
@@ -261,12 +276,14 @@ public class NotificationService extends Service {
     // Start periodic events for handling this notification.
     handler.post(volumeIncreaseCallback);
     handler.post(soundCheck);
+    handler.post(notificationBlinker);
   }
 
   private void stopNotifying() {
     // Stop periodic events.
     handler.removeCallbacks(volumeIncreaseCallback);
     handler.removeCallbacks(soundCheck);
+    handler.removeCallbacks(notificationBlinker);
 
     // Stop notifying.
     vibrator.cancel();
