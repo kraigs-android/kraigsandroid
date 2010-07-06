@@ -109,7 +109,9 @@ public class NotificationService extends Service {
 
     // Setup notification bar.
     manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    Intent intent = new Intent(getApplicationContext(), ActivityAlarmClock.class);
+    // Use the notification activity explicitly in this intent just in case the
+    // activity can't be viewed via the root activity.
+    Intent intent = new Intent(getApplicationContext(), ActivityAlarmNotification.class);
     notificationActivity = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
     notification = new Notification(R.drawable.alarmclock_notification, null, 0);
     notification.flags |= Notification.FLAG_ONGOING_EVENT;
