@@ -127,8 +127,8 @@ public final class ActivityAlarmNotification extends Activity {
       }
     });
 
-    final Slider2 dismiss = (Slider2) findViewById(R.id.dismiss_slider);
-    dismiss.setOnCompleteListener(new Slider2.OnCompleteListener() {
+    final Slider dismiss = (Slider) findViewById(R.id.dismiss_slider);
+    dismiss.setOnCompleteListener(new Slider.OnCompleteListener() {
       @Override
       public void complete() {
         notifyService.acknowledgeCurrentNotification(0);

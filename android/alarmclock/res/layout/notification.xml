@@ -58,7 +58,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
 
-  <com.angrydoughnuts.android.alarmclock.Slider2
+  <com.angrydoughnuts.android.alarmclock.Slider
     android:id="@+id/dismiss_slider"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />

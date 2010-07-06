@@ -17,7 +17,7 @@ import android.widget.ImageView.ScaleType;
 
 // TODO comment/cleanup this file.
 // TODO remove 'slide to dismiss' text from notification.
-public class Slider2 extends ViewGroup {
+public class Slider extends ViewGroup {
   public interface OnCompleteListener {
     void complete();
   }
@@ -32,15 +32,15 @@ public class Slider2 extends ViewGroup {
   private boolean tracking;
   private OnCompleteListener completeListener;
 
-  public Slider2(Context context) {
+  public Slider(Context context) {
     this(context, null, 0);
   }
 
-  public Slider2(Context context, AttributeSet attrs) {
+  public Slider(Context context, AttributeSet attrs) {
     this(context, attrs, 0);
   }
 
-  public Slider2(Context context, AttributeSet attrs, int defStyle) {
+  public Slider(Context context, AttributeSet attrs, int defStyle) {
     super(context, attrs, defStyle);
     tray = new TextView(getContext());
     tray.setBackgroundResource(R.drawable.slider_background);
