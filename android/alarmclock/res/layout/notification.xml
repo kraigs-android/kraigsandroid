@@ -58,7 +58,8 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
 
-  <SeekBar android:id="@+id/dismiss_slider"
+  <com.angrydoughnuts.android.alarmclock.Slider
+    android:id="@+id/dismiss_slider"
     android:layout_weight="1"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />

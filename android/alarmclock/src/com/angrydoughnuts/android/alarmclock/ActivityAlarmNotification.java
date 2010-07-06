@@ -32,9 +32,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 
 /**
  * This is the activity responsible for alerting the user when an alarm goes
@@ -173,24 +171,13 @@ public final class ActivityAlarmNotification extends Activity {
       }
     });
 
-    // TODO(cgallek) replace this with a different object that implements
-    // the AbsSeekBar interface?  The current version works even if you simply
-    // tap the right side.
-    final SeekBar dismiss = (SeekBar) findViewById(R.id.dismiss_slider);
-    dismiss.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+    final Slider dismiss = (Slider) findViewById(R.id.dismiss_slider);
+    dismiss.setHintText(R.string.wake_up);
+    dismiss.setOnTriggerListener(new Slider.OnTriggerListener() {
       @Override
-      public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-      }
-      @Override
-      public void onStartTrackingTouch(SeekBar seekBar) {
-      }
-      @Override
-      public void onStopTrackingTouch(SeekBar seekBar) {
-        if (seekBar.getProgress() > 75) {
-          ack(AckStates.ACKED);
-          finish();
-        }
-        seekBar.setProgress(0);
+      public void onTrigger(View v) {
+        ack(AckStates.ACKED);
+        finish();
       }
     });
   }
