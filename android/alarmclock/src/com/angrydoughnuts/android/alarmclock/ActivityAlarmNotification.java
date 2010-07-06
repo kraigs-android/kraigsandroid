@@ -127,11 +127,10 @@ public final class ActivityAlarmNotification extends Activity {
       }
     });
 
-    final Slider dismiss = (Slider) findViewById(R.id.dismiss_slider);
-    dismiss.setHintText(R.string.wake_up);
-    dismiss.setOnTriggerListener(new Slider.OnTriggerListener() {
+    final Slider2 dismiss = (Slider2) findViewById(R.id.dismiss_slider);
+    dismiss.setOnCompleteListener(new Slider2.OnCompleteListener() {
       @Override
-      public void onTrigger(View v) {
+      public void complete() {
         notifyService.acknowledgeCurrentNotification(0);
         finish();
       }

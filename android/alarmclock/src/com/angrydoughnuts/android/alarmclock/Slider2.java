@@ -15,6 +15,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ImageView.ScaleType;
 
+// TODO comment/cleanup this file.
+// TODO remove 'slide to dismiss' text from notification.
 public class Slider2 extends ViewGroup {
   public interface OnCompleteListener {
     void complete();
