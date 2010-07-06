@@ -148,14 +148,20 @@ public final class ActivityAlarmClock extends Activity {
     notifyService.bind();
     notifyService.call(new NotificationServiceBinder.ServiceCallback() {
       @Override
-      public void run(NotificationServiceInterface service)
-          throws RemoteException {
-        if (service.firingAlarmCount() > 0) {
+      public void run(NotificationServiceInterface service) {
+        int count;
+        try {
+          count = service.firingAlarmCount();
+        } catch (RemoteException e) {
+          return;
+        } finally {
+          notifyService.unbind();
+        }
+        if (count > 0) {
           Intent notifyActivity = new Intent(getApplicationContext(), ActivityAlarmNotification.class);
           notifyActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
           startActivity(notifyActivity);
         }
-        notifyService.unbind();
       }
     });
   }

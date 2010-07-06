@@ -82,10 +82,11 @@ public final class ActivityAlarmNotification extends Activity {
       public void run() {
         notifyService.call(new NotificationServiceBinder.ServiceCallback() {
           @Override
-          public void run(NotificationServiceInterface service)
-              throws RemoteException {
-            TextView volume = (TextView) findViewById(R.id.volume);
-            volume.setText("Volume: " + service.volume());
+          public void run(NotificationServiceInterface service) {
+            try {
+              TextView volume = (TextView) findViewById(R.id.volume);
+              volume.setText("Volume: " + service.volume());
+            } catch (RemoteException e) {}
 
             long next = AlarmUtil.millisTillNextInterval(AlarmUtil.Interval.SECOND);
             handler.postDelayed(timeTick, next);
@@ -191,9 +192,13 @@ public final class ActivityAlarmNotification extends Activity {
   private final void redraw() {
     notifyService.call(new NotificationServiceBinder.ServiceCallback() {
       @Override
-      public void run(NotificationServiceInterface service)
-          throws RemoteException {
-        long alarmId = service.currentAlarmId();
+      public void run(NotificationServiceInterface service) {
+        long alarmId;
+        try {
+          alarmId = service.currentAlarmId();
+        } catch (RemoteException e) {
+          return;
+        }
         AlarmInfo alarmInfo = db.readAlarmInfo(alarmId);
         if (snoozeMinutes == 0) {
           snoozeMinutes = db.readAlarmSettings(alarmId).getSnoozeMinutes();

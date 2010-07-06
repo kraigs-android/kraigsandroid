@@ -15,6 +15,8 @@
 
 package com.angrydoughnuts.android.alarmclock;
 
+import com.angrydoughnuts.android.alarmclock.NotificationService.NoAlarmsException;
+
 import android.content.Context;
 import android.os.RemoteException;
 import android.widget.Toast;
@@ -28,7 +30,11 @@ public class NotificationServiceInterfaceStub extends NotificationServiceInterfa
 
   @Override
   public long currentAlarmId() throws RemoteException {
-    return service.currentAlarmId();
+    try {
+      return service.currentAlarmId();
+    } catch (NoAlarmsException e) {
+      throw new RemoteException();
+    }
   }
 
   public int firingAlarmCount() throws RemoteException {
@@ -49,7 +55,11 @@ public class NotificationServiceInterfaceStub extends NotificationServiceInterfa
   @Override
   public void acknowledgeCurrentNotification(int snoozeMinutes) throws RemoteException {
     debugToast("STOP NOTIFICATION");
-    service.acknowledgeCurrentNotification(snoozeMinutes);
+    try {
+      service.acknowledgeCurrentNotification(snoozeMinutes);
+    } catch (NoAlarmsException e) {
+      throw new RemoteException();
+    }
   }
 
   private void debugToast(String message) {

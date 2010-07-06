@@ -47,7 +47,7 @@ public class NotificationServiceBinder {
   }
 
   public interface ServiceCallback {
-    void run(NotificationServiceInterface service) throws RemoteException;
+    void run(NotificationServiceInterface service);
   }
 
   final private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -56,13 +56,10 @@ public class NotificationServiceBinder {
       notify = NotificationServiceInterface.Stub.asInterface(service);
       while (callbacks.size() > 0) {
         ServiceCallback callback = callbacks.remove();
-        try {
-          callback.run(notify);
-        } catch (RemoteException e) {
-          e.printStackTrace();
-        }
+        callback.run(notify);
       }
     }
+
     @Override
     public void onServiceDisconnected(ComponentName name) {
       notify = null;
@@ -71,11 +68,7 @@ public class NotificationServiceBinder {
 
   public void call(ServiceCallback callback) {
     if (notify != null) {
-      try {
-        callback.run(notify);
-      } catch (RemoteException e) {
-        e.printStackTrace();
-      }
+      callback.run(notify);
     } else {
       callbacks.offer(callback);
     }
@@ -84,8 +77,12 @@ public class NotificationServiceBinder {
   public void startNotification(final long alarmId) {
     call(new ServiceCallback() {
       @Override
-      public void run(NotificationServiceInterface service) throws RemoteException {
-        service.startNotification(alarmId);
+      public void run(NotificationServiceInterface service) {
+        try {
+          service.startNotification(alarmId);
+        } catch (RemoteException e) {
+          e.printStackTrace();
+        }
       }
     });
   }
@@ -93,8 +90,12 @@ public class NotificationServiceBinder {
   public void acknowledgeCurrentNotification(final int snoozeMinutes) {
     call(new ServiceCallback() {
       @Override
-      public void run(NotificationServiceInterface service) throws RemoteException {
-        service.acknowledgeCurrentNotification(snoozeMinutes);
+      public void run(NotificationServiceInterface service) {
+        try {
+          service.acknowledgeCurrentNotification(snoozeMinutes);
+        } catch (RemoteException e) {
+          e.printStackTrace();
+        }
       }
     });
   }

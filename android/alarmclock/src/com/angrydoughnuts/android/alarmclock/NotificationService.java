@@ -33,6 +33,10 @@ import android.os.IBinder;
 import android.os.Vibrator;
 
 public class NotificationService extends Service {
+  public class NoAlarmsException extends Exception {
+    private static final long serialVersionUID = 1L;
+  }
+
   private final int ALERT_ID = 42;
 
   private LinkedList<Long> firingAlarms;
@@ -141,7 +145,10 @@ public class NotificationService extends Service {
     }
   }
 
-  public long currentAlarmId() {
+  public long currentAlarmId() throws NoAlarmsException {
+    if (firingAlarms.size() == 0) {
+      throw new NoAlarmsException();
+    }
     return firingAlarms.getFirst();
   }
 
@@ -171,7 +178,7 @@ public class NotificationService extends Service {
     }
   }
 
-  public void acknowledgeCurrentNotification(int snoozeMinutes) {
+  public void acknowledgeCurrentNotification(int snoozeMinutes) throws NoAlarmsException {
     long alarmId = currentAlarmId();
     if (firingAlarms.contains(alarmId)) {
       firingAlarms.remove(alarmId);
@@ -186,7 +193,7 @@ public class NotificationService extends Service {
     if (firingAlarms.size() == 0) {
       stopSelf();
     } else {
-      soundAlarm(currentAlarmId());
+      soundAlarm(alarmId);
     }
     WakeLock.release(alarmId);
   }
