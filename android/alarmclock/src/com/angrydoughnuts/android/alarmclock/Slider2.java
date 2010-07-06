@@ -1,10 +1,14 @@
 package com.angrydoughnuts.android.alarmclock;
 
 import android.content.Context;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
 import android.widget.ImageView;
 import android.widget.Toast;
 import android.widget.ImageView.ScaleType;
@@ -102,9 +106,30 @@ public class Slider2 extends ViewGroup {
           float progress = dot_x_center - getLeft();
           float progress_percent = progress / (getRight() - getLeft());
           if (progress_percent > 0.85) {
-            Toast.makeText(getContext(), "COMPLETE", Toast.LENGTH_SHORT).show();
             tracking = false;
-            dot.offsetLeftAndRight(getLeft() - dot.getLeft());
+            Animation fadeOut = new AlphaAnimation(1, 0);
+            fadeOut.setDuration(200);
+            fadeOut.setAnimationListener(new AnimationListener() {
+              @Override
+              public void onAnimationEnd(Animation animation) {
+                setVisibility(View.INVISIBLE);
+                Toast.makeText(getContext(), "COMPLETE", Toast.LENGTH_SHORT).show();
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                  @Override
+                  public void run() {
+                    dot.offsetLeftAndRight(getLeft() - dot.getLeft());
+                    setVisibility(View.VISIBLE);
+                  }}, 2000);
+              }
+              @Override
+              public void onAnimationRepeat(Animation animation) {
+              }
+              @Override
+              public void onAnimationStart(Animation animation) {
+              }
+            });
+            startAnimation(fadeOut);
           }
         } else {
           tracking = false;
