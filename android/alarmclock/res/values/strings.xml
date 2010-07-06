@@ -32,7 +32,6 @@
   <string name="dismiss">DISMISS</string>
   <string name="plus_five">+5</string>
   <string name="minus_five">-5</string>
-  <string name="slide_to_dismiss">Slide to dismiss ----></string>
   <string name="next_alarm">Next alarm:</string>
   <string name="no_pending_alarms">No pending alarms</string>
   <string name="alarm_has_occurred">Alarm has occurred</string>
