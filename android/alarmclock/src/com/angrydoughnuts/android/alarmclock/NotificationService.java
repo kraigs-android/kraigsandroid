@@ -34,6 +34,17 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Vibrator;
 
+/**
+ * This service is responsible for notifying the user when an alarm is
+ * triggered.  The pending intent delivered by the alarm manager service
+ * will trigger the alarm receiver.  This receiver will in turn start
+ * this service, passing the appropriate alarm url as data in the intent.
+ * This service is capable of receiving multiple alarm notifications
+ * without acknowledgments and will queue them until they are sequentially
+ * acknowledged.  The service is capable of playing a sound, triggering
+ * the vibrator and displaying the notification activity (used to acknowledge
+ * alarms).
+ */
 public class NotificationService extends Service {
   public class NoAlarmsException extends Exception {
     private static final long serialVersionUID = 1L;

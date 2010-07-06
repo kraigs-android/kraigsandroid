@@ -31,22 +31,12 @@ import android.widget.TextView;
 
 /**
  * This is the activity responsible for alerting the user when an alarm goes
- * off.  It is capable of playing a tone and vibrating when started.  It should
- * normally be started from the broadcast receiver that receives messages
- * from the AlarmManager service and assumes that this receiver will have
- * aquired a wake lock before starting this activity.  This activity assumes
- * that the data supplied in the triggering intent will contain the alarm uri
- * associated with the fireing alarm.
+ * off.  It is the activity triggered by the NotificationService.  It assumes
+ * that the intent sender has acquired a screen wake lock.
  * NOTE: This class assumes that it will never be instantiated nor active
  * more than once at the same time. (ie, it assumes
  * android:launchMode="singleInstance" is set in the manifest file).
- * Current reasons for this assumption:
- *  - It does not support more than one active alarm at a time.  If a second
- *    alarm triggers while this Activity is running, it will silently snooze
- *    the first alarm and start the second.
  */
-  // TODO change the launch mode of this application so that it's always
-  // in front of all other activities.
 public final class ActivityAlarmNotification extends Activity {
   private NotificationServiceBinder notifyService;
   private DbAccessor db;
