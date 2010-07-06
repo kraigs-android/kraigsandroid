@@ -255,6 +255,12 @@ public final class AlarmClockService extends Service {
     db.deleteAlarm(alarmId);
   }
 
+  public void deleteAllAlarms() {
+    for (Long alarmId : db.getAllAlarms()) {
+      deleteAlarm(alarmId);
+    }
+  }
+
   public void scheduleAlarm(long alarmId) {
     AlarmInfo info = db.readAlarmInfo(alarmId);
     if (info == null) {

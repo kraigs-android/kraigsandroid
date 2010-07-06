@@ -18,6 +18,7 @@ package com.angrydoughnuts.android.alarmclock;
 import java.util.Calendar;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -43,8 +44,8 @@ import android.widget.AdapterView.OnItemClickListener;
  * mode.'
  */
 public final class ActivityAlarmClock extends Activity {
-  private enum Dialogs { TIME_PICKER };
-  private enum Menus { DEFAULT_ALARM_SETTINGS, APP_SETTINGS };
+  private enum Dialogs { TIME_PICKER, DELETE_CONFIRM };
+  private enum Menus { DELETE_ALL, DEFAULT_ALARM_SETTINGS, APP_SETTINGS };
 
   private AlarmClockServiceBinder service;
   private NotificationServiceBinder notifyService;
@@ -174,6 +175,9 @@ public final class ActivityAlarmClock extends Activity {
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
+    MenuItem delete_all =
+      menu.add(0, Menus.DELETE_ALL.ordinal(), 0, R.string.delete_all);
+    delete_all.setIcon(android.R.drawable.ic_menu_close_clear_cancel);
     MenuItem alarm_settings =
       menu.add(0, Menus.DEFAULT_ALARM_SETTINGS.ordinal(), 0, R.string.default_settings);
     alarm_settings.setIcon(android.R.drawable.ic_lock_idle_alarm);
@@ -186,6 +190,9 @@ public final class ActivityAlarmClock extends Activity {
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (Menus.values()[item.getItemId()]) {
+      case DELETE_ALL:
+        showDialog(Dialogs.DELETE_CONFIRM.ordinal());
+        break;
       case DEFAULT_ALARM_SETTINGS:
         Intent alarm_settings = new Intent(getApplicationContext(), ActivityAlarmSettings.class);
         alarm_settings.putExtra(
@@ -246,6 +253,26 @@ public final class ActivityAlarmClock extends Activity {
           }
         });
         return picker;
+      case DELETE_CONFIRM:
+        final AlertDialog.Builder deleteConfirmBuilder = new AlertDialog.Builder(this);
+        deleteConfirmBuilder.setTitle(R.string.delete_all);
+        deleteConfirmBuilder.setMessage(R.string.confirm_delete);
+        deleteConfirmBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            // TODO delete stuff.
+            service.deleteAllAlarms();
+            adapter.requery();
+            dismissDialog(Dialogs.DELETE_CONFIRM.ordinal());
+          }
+        });
+        deleteConfirmBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            dismissDialog(Dialogs.DELETE_CONFIRM.ordinal());
+          }
+        });
+        return deleteConfirmBuilder.create();
       default:
         return super.onCreateDialog(id);
     }

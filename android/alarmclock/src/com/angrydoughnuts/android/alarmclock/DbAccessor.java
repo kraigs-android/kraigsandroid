@@ -79,6 +79,19 @@ public final class DbAccessor {
     return enabled;
   }
 
+  public List<Long> getAllAlarms() {
+    LinkedList<Long> alarms = new LinkedList<Long>();
+    Cursor cursor = rDb.query(DbHelper.DB_TABLE_ALARMS,
+        new String[] { DbHelper.ALARMS_COL__ID },
+        null, null, null, null, null);
+    while (cursor.moveToNext()) {
+      long alarmId = cursor.getLong(cursor.getColumnIndex(DbHelper.ALARMS_COL__ID));
+      alarms.add(alarmId);
+    }
+    cursor.close();
+    return alarms;
+  }
+
   public boolean writeAlarmInfo(long alarmId, AlarmInfo info) {
     return rwDb.update(DbHelper.DB_TABLE_ALARMS, info.contentValues(),
           DbHelper.ALARMS_COL__ID + " = " + alarmId, null) == 1;

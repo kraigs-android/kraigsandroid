@@ -4,6 +4,7 @@
   <string name="add_alarm">Add alarm...</string>
   <string name="default_settings">Default Alarm Settings...</string>
   <string name="app_settings">Application Settings...</string>
+  <string name="delete_all">Delete All...</string>
   <string name="settings">Settings</string>
   <string name="time">Time</string>
   <string name="label">Label</string>

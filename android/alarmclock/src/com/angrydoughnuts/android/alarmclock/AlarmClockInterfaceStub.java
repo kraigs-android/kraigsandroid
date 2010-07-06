@@ -51,6 +51,12 @@ public final class AlarmClockInterfaceStub extends AlarmClockInterface.Stub {
   }
 
   @Override
+  public void deleteAllAlarms() throws RemoteException {
+    debugToast("DELETE ALL ALARMS");
+    service.deleteAllAlarms();
+  }
+
+  @Override
   public void scheduleAlarm(long alarmId) throws RemoteException {
     debugToast("SCHEDULE ALARM " + alarmId);
     service.scheduleAlarm(alarmId);
