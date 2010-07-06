@@ -159,24 +159,6 @@ public class NotificationService extends Service {
     return volumeIncreaseCallback.volume();
   }
 
-  // TODO does this still have external callers?
-  public void startNotification(long alarmId) {
-    // TODO make all these wake lock assertions debug-only.
-    WakeLock.assertHeld(alarmId);
-    Intent notifyActivity = new Intent(getApplicationContext(), ActivityAlarmNotification.class);
-    notifyActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-    startActivity(notifyActivity);
-
-    boolean firstAlarm = firingAlarms.size() == 0;
-    if (!firingAlarms.contains(alarmId)) {
-      firingAlarms.add(alarmId);
-    }
-
-    if (firstAlarm) {
-      soundAlarm(alarmId);
-    }
-  }
-
   public void acknowledgeCurrentNotification(int snoozeMinutes) throws NoAlarmsException {
     long alarmId = currentAlarmId();
     if (firingAlarms.contains(alarmId)) {
@@ -195,6 +177,23 @@ public class NotificationService extends Service {
       soundAlarm(alarmId);
     }
     WakeLock.release(alarmId);
+  }
+
+  private void startNotification(long alarmId) {
+    // TODO make all these wake lock assertions debug-only.
+    WakeLock.assertHeld(alarmId);
+    Intent notifyActivity = new Intent(getApplicationContext(), ActivityAlarmNotification.class);
+    notifyActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    startActivity(notifyActivity);
+
+    boolean firstAlarm = firingAlarms.size() == 0;
+    if (!firingAlarms.contains(alarmId)) {
+      firingAlarms.add(alarmId);
+    }
+
+    if (firstAlarm) {
+      soundAlarm(alarmId);
+    }
   }
 
   private void soundAlarm(long alarmId) {

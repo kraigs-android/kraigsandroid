@@ -74,19 +74,6 @@ public class NotificationServiceBinder {
     }
   }
 
-  public void startNotification(final long alarmId) {
-    call(new ServiceCallback() {
-      @Override
-      public void run(NotificationServiceInterface service) {
-        try {
-          service.startNotification(alarmId);
-        } catch (RemoteException e) {
-          e.printStackTrace();
-        }
-      }
-    });
-  }
-
   public void acknowledgeCurrentNotification(final int snoozeMinutes) {
     call(new ServiceCallback() {
       @Override

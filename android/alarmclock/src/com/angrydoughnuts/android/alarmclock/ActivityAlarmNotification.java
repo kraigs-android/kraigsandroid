@@ -19,7 +19,6 @@ import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardLock;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.RemoteException;
@@ -66,13 +65,6 @@ public final class ActivityAlarmNotification extends Activity {
     // Start the notification service and bind to it.
     notifyService = new NotificationServiceBinder(getApplicationContext());
     notifyService.bind();
-    // If the activity was launched from the broadcast receiver (ie, it was
-    // given an alarm id to fire), trigger the alarm in the service.
-    // TODO consider launching the service directly from the receiver and opening.
-    // the activity from there.
-    if (getIntent().getData() != null) {
-      notifyService.startNotification(AlarmUtil.alarmUriToId(getIntent().getData()));
-    }
 
     // Setup a self-scheduling event loops.
     handler = new Handler();
@@ -147,17 +139,6 @@ public final class ActivityAlarmNotification extends Activity {
         finish();
       }
     });
-  }
-
-  // Handle the case of a second alarm being triggered while another is firing.
-  // TODO: this could also be fixed by launching the service from the receiver
-  // rather than the activity.
-  @Override
-  protected void onNewIntent(Intent intent) {
-    if (intent.getData() != null) {
-      notifyService.startNotification(AlarmUtil.alarmUriToId(intent.getData()));
-    }
-    super.onNewIntent(intent);
   }
 
   @Override

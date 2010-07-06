@@ -47,12 +47,6 @@ public class NotificationServiceInterfaceStub extends NotificationServiceInterfa
   }
 
   @Override
-  public void startNotification(long alarmId) throws RemoteException {
-    debugToast("START NOTIFICATION " + alarmId);
-    service.startNotification(alarmId);
-  }
-
-  @Override
   public void acknowledgeCurrentNotification(int snoozeMinutes) throws RemoteException {
     debugToast("STOP NOTIFICATION");
     try {
