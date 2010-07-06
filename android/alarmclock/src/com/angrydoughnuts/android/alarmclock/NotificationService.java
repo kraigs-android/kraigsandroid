@@ -116,9 +116,12 @@ public class NotificationService extends Service {
     db.closeConnections();
     service.unbind();
     mediaPlayer.release();
-    // TODO assert firing alarms = 0.  This actually isn't safe.  Should serialize
-    // state when forcably closed??
-    WakeLock.assertNoneHeld();
+    if (AppSettings.isDebugMode(getApplicationContext())) {
+      if (firingAlarms.size() != 0) {
+        throw new IllegalStateException("Notification service terminated with pending notifications.");
+      }
+      WakeLock.assertNoneHeld();
+    }
   }
 
   // OnStart was depreciated in SDK 5.  It is here for backwards compatibility.
@@ -131,11 +134,7 @@ public class NotificationService extends Service {
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
     handleStart(intent, startId);
-    // TODO consider START_NON_STICKY.  requires serializing state (firing alarms).
-    // Redeliver intent sounds useful too, since startService only comes
-    // from the alarm receiver and we would want to start playing the alarm
-    // again.
-    return START_STICKY;
+    return START_NOT_STICKY;
   }
 
   private void handleStart(Intent intent, int startId) {
