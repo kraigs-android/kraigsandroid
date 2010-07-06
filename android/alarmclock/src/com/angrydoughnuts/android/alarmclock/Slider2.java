@@ -6,6 +6,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 import android.widget.ImageView.ScaleType;
 
 public class Slider2 extends ViewGroup {
@@ -97,6 +98,14 @@ public class Slider2 extends ViewGroup {
         }
         if (withinY(dot, y)) {
           dot.offsetLeftAndRight((int) (x - dot.getLeft() - dot.getWidth()/2 ));
+          float dot_x_center = dot.getLeft() + dot.getWidth()/2;
+          float progress = dot_x_center - getLeft();
+          float progress_percent = progress / (getRight() - getLeft());
+          if (progress_percent > 0.85) {
+            Toast.makeText(getContext(), "COMPLETE", Toast.LENGTH_SHORT).show();
+            tracking = false;
+            dot.offsetLeftAndRight(getLeft() - dot.getLeft());
+          }
         } else {
           tracking = false;
           dot.offsetLeftAndRight(getLeft() - dot.getLeft());
