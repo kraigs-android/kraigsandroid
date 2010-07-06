@@ -386,9 +386,9 @@ public final class ActivityAlarmSettings extends Activity {
         fadeBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
-            settings.setVolumeStartPercent(Integer.parseInt(volumeStart.getText().toString()));
-            settings.setVolumeEndPercent(Integer.parseInt(volumeEnd.getText().toString()));
-            settings.setVolumeChangeTimeSec(Integer.parseInt(volumeDuration.getText().toString()));
+            settings.setVolumeStartPercent(tryParseInt(volumeStart.getText().toString(), 0));
+            settings.setVolumeEndPercent(tryParseInt(volumeEnd.getText().toString(), 100));
+            settings.setVolumeChangeTimeSec(tryParseInt(volumeDuration.getText().toString(), 20));
             settingsAdapter.notifyDataSetChanged();
             dismissDialog(Dialogs.VOLUME_FADE_PICKER.ordinal());
           }
@@ -466,6 +466,14 @@ public final class ActivityAlarmSettings extends Activity {
           showDialog(Dialogs.VOLUME_FADE_PICKER.ordinal());
           break;
       }
+    }
+  }
+
+  private int tryParseInt(String input, int fallback) {
+    try {
+      return Integer.parseInt(input);
+    } catch (Exception e) {
+      return fallback;
     }
   }
 
