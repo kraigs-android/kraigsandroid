@@ -2,6 +2,7 @@ package com.angrydoughnuts.android.alarmclock;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.view.animation.Animation.AnimationListener;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.ImageView.ScaleType;
 
 public class Slider2 extends ViewGroup {
@@ -24,6 +26,7 @@ public class Slider2 extends ViewGroup {
   private static final double PERCENT_REQUIRED = 0.75;
 
   private ImageView dot;
+  private TextView tray;
   private boolean tracking;
   private OnCompleteListener completeListener;
 
@@ -37,12 +40,20 @@ public class Slider2 extends ViewGroup {
 
   public Slider2(Context context, AttributeSet attrs, int defStyle) {
     super(context, attrs, defStyle);
-    setBackgroundResource(android.R.color.white);
+    tray = new TextView(getContext());
+    tray.setBackgroundResource(R.drawable.slider_background);
+    tray.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+    tray.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
+    tray.setTextAppearance(getContext(), R.style.SliderText);
+    tray.setText(R.string.dismiss);
+    addView(tray);
+
     dot = new ImageView(getContext());
     dot.setImageResource(R.drawable.slider_icon);
     dot.setBackgroundResource(R.drawable.slider_btn);
     dot.setScaleType(ScaleType.CENTER);
     dot.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+    dot.setPadding(30, 10, 25, 15);
     addView(dot);
 
     reset();
@@ -71,16 +82,19 @@ public class Slider2 extends ViewGroup {
     }
     // Start the dot left-aligned.
     dot.layout(0, 0, dot.getMeasuredWidth(), dot.getMeasuredHeight());
+    // Make the tray fill the background.
+    tray.layout(0, 0, getMeasuredWidth(), getMeasuredHeight());
   }
 
   @Override
   protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    tray.measure(widthMeasureSpec, heightMeasureSpec);
     dot.measure(
-      View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-      View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
     setMeasuredDimension(
-        Math.max(MeasureSpec.getSize(widthMeasureSpec), dot.getMeasuredWidth()),
-        dot.getMeasuredHeight());
+        Math.max(tray.getMeasuredWidth(), dot.getMeasuredWidth()),
+        Math.max(tray.getMeasuredHeight(), dot.getMeasuredHeight()));
   }
 
   // TODO(cgallek): Add some wiggle room to these.
