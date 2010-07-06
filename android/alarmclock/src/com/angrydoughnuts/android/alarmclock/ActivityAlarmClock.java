@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.content.DialogInterface.OnCancelListener;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.RemoteException;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -46,6 +47,7 @@ public final class ActivityAlarmClock extends Activity {
   private enum Menus { DEFAULT_ALARM_SETTINGS, APP_SETTINGS };
 
   private AlarmClockServiceBinder service;
+  private NotificationServiceBinder notifyService;
   private DbAccessor db;
   private AlarmViewAdapter adapter;
   private TextView clock;
@@ -63,6 +65,7 @@ public final class ActivityAlarmClock extends Activity {
     service = new AlarmClockServiceBinder(getApplicationContext());
     db = new DbAccessor(getApplicationContext());
     handler = new Handler();
+    notifyService = new NotificationServiceBinder(getApplicationContext());
 
     // Setup individual UI elements.
     // A simple clock.
@@ -141,6 +144,19 @@ public final class ActivityAlarmClock extends Activity {
     service.bind();
     handler.post(tickCallback);
     adapter.requery();
+    notifyService.bind();
+    notifyService.call(new NotificationServiceBinder.ServiceCallback() {
+      @Override
+      public void run(NotificationServiceInterface service)
+          throws RemoteException {
+        if (service.firingAlarmCount() > 0) {
+          Intent notifyActivity = new Intent(getApplicationContext(), ActivityAlarmNotification.class);
+          notifyActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+          startActivity(notifyActivity);
+        }
+        notifyService.unbind();
+      }
+    });
   }
 
   @Override

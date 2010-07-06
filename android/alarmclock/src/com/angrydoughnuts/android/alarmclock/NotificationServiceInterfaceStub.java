@@ -31,6 +31,10 @@ public class NotificationServiceInterfaceStub extends NotificationServiceInterfa
     return service.currentAlarmId();
   }
 
+  public int firingAlarmCount() throws RemoteException {
+    return service.firingAlarmCount();
+  }
+
   @Override
   public float volume() throws RemoteException {
     return service.volume();

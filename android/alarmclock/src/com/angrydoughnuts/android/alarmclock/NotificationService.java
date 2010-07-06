@@ -112,23 +112,54 @@ public class NotificationService extends Service {
     db.closeConnections();
     service.unbind();
     mediaPlayer.release();
-    // assert firing alarms = 0
+    // TODO assert firing alarms = 0.  This actually isn't safe.  Should serialize
+    // state when forcably closed??
     WakeLock.assertNoneHeld();
+  }
+
+  // OnStart was depreciated in SDK 5.  It is here for backwards compatibility.
+  // http://android-developers.blogspot.com/2010/02/service-api-changes-starting-with.html
+  @Override
+  public void onStart(Intent intent, int startId) {
+    handleStart(intent, startId);
+  }
+
+  @Override
+  public int onStartCommand(Intent intent, int flags, int startId) {
+    handleStart(intent, startId);
+    // TODO consider START_NON_STICKY.  requires serializing state (firing alarms).
+    // Redeliver intent sounds useful too, since startService only comes
+    // from the alarm receiver and we would want to start playing the alarm
+    // again.
+    return START_STICKY;
+  }
+
+  private void handleStart(Intent intent, int startId) {
+    if (intent != null && intent.getData() != null) {
+      long alarmId = AlarmUtil.alarmUriToId(intent.getData());
+      startNotification(alarmId);
+    }
   }
 
   public long currentAlarmId() {
     return firingAlarms.getFirst();
   }
 
+  public int firingAlarmCount() {
+    return firingAlarms.size();
+  }
+
   public float volume() {
     return volumeIncreaseCallback.volume();
   }
 
+  // TODO does this still have external callers?
   public void startNotification(long alarmId) {
     // TODO make all these wake lock assertions debug-only.
     WakeLock.assertHeld(alarmId);
-    Intent self = new Intent(getApplicationContext(), NotificationService.class);
-    startService(self);
+    Intent notifyActivity = new Intent(getApplicationContext(), ActivityAlarmNotification.class);
+    notifyActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    startActivity(notifyActivity);
 
     boolean firstAlarm = firingAlarms.size() == 0;
     if (!firingAlarms.contains(alarmId)) {
