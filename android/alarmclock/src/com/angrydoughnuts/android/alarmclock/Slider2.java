@@ -158,7 +158,8 @@ public class Slider2 extends ViewGroup {
           return true;
         }
         // If we haven't hit the threshold yet, simply move the dot.
-        float progressPercent = (float)(dot.getLeft() - getLeft()) / (float)(getRight() - getLeft());
+        double dotCenterY = dot.getLeft() + dot.getMeasuredWidth()/2.0;
+        float progressPercent = (float)(dotCenterY - getLeft()) / (float)(getRight() - getLeft());
         if (progressPercent < PERCENT_REQUIRED) {
           dot.offsetLeftAndRight((int) (x - dot.getLeft() - dot.getWidth()/2 ));
           invalidate();
