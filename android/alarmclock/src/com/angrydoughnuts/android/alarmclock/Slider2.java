@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.TranslateAnimation;
 import android.view.animation.Animation.AnimationListener;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -102,6 +104,7 @@ public class Slider2 extends ViewGroup {
         }
         if (withinY(dot, y)) {
           dot.offsetLeftAndRight((int) (x - dot.getLeft() - dot.getWidth()/2 ));
+          invalidate();
           float dot_x_center = dot.getLeft() + dot.getWidth()/2;
           float progress = dot_x_center - getLeft();
           float progress_percent = progress / (getRight() - getLeft());
@@ -133,9 +136,13 @@ public class Slider2 extends ViewGroup {
           }
         } else {
           tracking = false;
-          dot.offsetLeftAndRight(getLeft() - dot.getLeft());
+          int distance_from_start = dot.getLeft() - getLeft();
+          dot.offsetLeftAndRight(-distance_from_start);
+          Animation slideBack = new TranslateAnimation(distance_from_start, 0, 0, 0);
+          slideBack.setDuration(200);
+          slideBack.setInterpolator(new DecelerateInterpolator((float) 1.0));
+          dot.startAnimation(slideBack);
         }
-        invalidate();
         return true;
       case MotionEvent.ACTION_CANCEL:
       case MotionEvent.ACTION_UP:
@@ -143,8 +150,13 @@ public class Slider2 extends ViewGroup {
           return super.onTouchEvent(event);
         }
         tracking = false;
-        dot.offsetLeftAndRight(getLeft() - dot.getLeft());
-        invalidate();
+        int distance_from_start = dot.getLeft() - getLeft();
+        dot.offsetLeftAndRight(-distance_from_start);
+        Animation slideBack = new TranslateAnimation(distance_from_start, 0, 0, 0);
+        slideBack.setDuration(200);
+        slideBack.setInterpolator(new DecelerateInterpolator((float) 1.0));
+        dot.startAnimation(slideBack);
+
         return true;
       default:
         return super.onTouchEvent(event);
