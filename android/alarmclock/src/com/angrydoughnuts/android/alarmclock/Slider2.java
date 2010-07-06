@@ -1,7 +1,6 @@
 package com.angrydoughnuts.android.alarmclock;
 
 import android.content.Context;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -12,13 +11,22 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.view.animation.Animation.AnimationListener;
 import android.widget.ImageView;
-import android.widget.Toast;
 import android.widget.ImageView.ScaleType;
 
 public class Slider2 extends ViewGroup {
+  public interface OnCompleteListener {
+    void complete();
+  }
+
+  private static final int FADE_MILLIS = 200;
+  private static final int SLIDE_MILLIS = 200;
+  private static final float SLIDE_ACCEL = (float) 1.0;
+  private static final double PERCENT_REQUIRED = 0.75;
+
   private ImageView dot;
   private ImageView target;
   private boolean tracking;
+  private OnCompleteListener completeListener;
 
   public Slider2(Context context) {
     this(context, null, 0);
@@ -43,7 +51,23 @@ public class Slider2 extends ViewGroup {
     target.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
     addView(target);
 
+    reset();
+  }
+
+  public void setOnCompleteListener(OnCompleteListener listener) {
+    completeListener = listener;
+  }
+
+  public void reset() {
     tracking = false;
+    // Move the dot home and fade in.
+    if (getVisibility() != View.VISIBLE) {
+      dot.offsetLeftAndRight(getLeft() - dot.getLeft());
+      setVisibility(View.VISIBLE);
+      Animation fadeIn = new AlphaAnimation(0, 1);
+      fadeIn.setDuration(FADE_MILLIS);
+      startAnimation(fadeIn);
+    }
   }
 
   @Override
@@ -51,10 +75,11 @@ public class Slider2 extends ViewGroup {
     if (!changed) {
       return;
     }
-    int dot_width = dot.getMeasuredWidth();
-    int target_width = target.getMeasuredWidth();
-    dot.layout(0, 0, dot_width, dot.getMeasuredHeight());
-    target.layout(r-target_width, 0, r, target.getMeasuredHeight());
+    // Start the dot left-aligned.
+    int dotWidth = dot.getMeasuredWidth();
+    int targetWidth = target.getMeasuredWidth();
+    dot.layout(0, 0, dotWidth, dot.getMeasuredHeight());
+    target.layout(r-targetWidth, 0, r, target.getMeasuredHeight());
   }
 
   @Override
@@ -88,6 +113,14 @@ public class Slider2 extends ViewGroup {
     }
   }
 
+  private void slideDotHome() {
+    int distanceFromStart = dot.getLeft() - getLeft();
+    dot.offsetLeftAndRight(-distanceFromStart);
+    Animation slideBack = new TranslateAnimation(distanceFromStart, 0, 0, 0);
+    slideBack.setDuration(SLIDE_MILLIS);
+    slideBack.setInterpolator(new DecelerateInterpolator(SLIDE_ACCEL));
+    dot.startAnimation(slideBack);
+  }
 
   @Override
   public boolean onTouchEvent(MotionEvent event) {
@@ -96,67 +129,57 @@ public class Slider2 extends ViewGroup {
     final float y = event.getY();
     switch (action) {
       case MotionEvent.ACTION_DOWN:
+        // Start tracking if the down event is in the dot.
         tracking = withinX(dot, x) && withinY(dot, y);
         return tracking || super.onTouchEvent(event);
-      case MotionEvent.ACTION_MOVE:
-        if (!tracking) {
-          return super.onTouchEvent(event);
-        }
-        if (withinY(dot, y)) {
-          dot.offsetLeftAndRight((int) (x - dot.getLeft() - dot.getWidth()/2 ));
-          invalidate();
-          float dot_x_center = dot.getLeft() + dot.getWidth()/2;
-          float progress = dot_x_center - getLeft();
-          float progress_percent = progress / (getRight() - getLeft());
-          if (progress_percent > 0.85) {
-            tracking = false;
-            Animation fadeOut = new AlphaAnimation(1, 0);
-            fadeOut.setDuration(200);
-            fadeOut.setAnimationListener(new AnimationListener() {
-              @Override
-              public void onAnimationEnd(Animation animation) {
-                setVisibility(View.INVISIBLE);
-                Toast.makeText(getContext(), "COMPLETE", Toast.LENGTH_SHORT).show();
-                Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                  @Override
-                  public void run() {
-                    dot.offsetLeftAndRight(getLeft() - dot.getLeft());
-                    setVisibility(View.VISIBLE);
-                  }}, 2000);
-              }
-              @Override
-              public void onAnimationRepeat(Animation animation) {
-              }
-              @Override
-              public void onAnimationStart(Animation animation) {
-              }
-            });
-            startAnimation(fadeOut);
-          }
-        } else {
-          tracking = false;
-          int distance_from_start = dot.getLeft() - getLeft();
-          dot.offsetLeftAndRight(-distance_from_start);
-          Animation slideBack = new TranslateAnimation(distance_from_start, 0, 0, 0);
-          slideBack.setDuration(200);
-          slideBack.setInterpolator(new DecelerateInterpolator((float) 1.0));
-          dot.startAnimation(slideBack);
-        }
-        return true;
+
       case MotionEvent.ACTION_CANCEL:
       case MotionEvent.ACTION_UP:
         if (!tracking) {
           return super.onTouchEvent(event);
         }
+        // The dot has been released, slide it back to the beginning.
         tracking = false;
-        int distance_from_start = dot.getLeft() - getLeft();
-        dot.offsetLeftAndRight(-distance_from_start);
-        Animation slideBack = new TranslateAnimation(distance_from_start, 0, 0, 0);
-        slideBack.setDuration(200);
-        slideBack.setInterpolator(new DecelerateInterpolator((float) 1.0));
-        dot.startAnimation(slideBack);
+        slideDotHome();
+        return true;
 
+      case MotionEvent.ACTION_MOVE:
+        // Ignore move events which did not originate in the dot.
+        if (!tracking) {
+          return super.onTouchEvent(event);
+        }
+        // Slid out of the slider, reset to the beginning.
+        if (!withinY(dot, y)) {
+          tracking = false;
+          slideDotHome();
+          return true;
+        }
+        // If we haven't hit the threshold yet, simply move the dot.
+        float progressPercent = (float)(dot.getLeft() - getLeft()) / (float)(getRight() - getLeft());
+        if (progressPercent < PERCENT_REQUIRED) {
+          dot.offsetLeftAndRight((int) (x - dot.getLeft() - dot.getWidth()/2 ));
+          invalidate();
+          return true;
+        }
+        // At this point, the dot has made it to the threshold.
+        // Make the entire widgit fade away and then call the listener.
+        tracking = false;
+        setVisibility(View.INVISIBLE);
+        Animation fadeOut = new AlphaAnimation(1, 0);
+        fadeOut.setDuration(FADE_MILLIS);
+        fadeOut.setAnimationListener(new AnimationListener() {
+          @Override
+          public void onAnimationEnd(Animation animation) {
+            if (completeListener != null) {
+              completeListener.complete();
+            }
+          }
+          @Override
+          public void onAnimationRepeat(Animation animation) {}
+          @Override
+          public void onAnimationStart(Animation animation) {}
+        });
+        startAnimation(fadeOut);
         return true;
       default:
         return super.onTouchEvent(event);
