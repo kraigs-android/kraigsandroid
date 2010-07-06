@@ -15,12 +15,14 @@
 
 package com.angrydoughnuts.android.alarmclock;
 
-import com.angrydoughnuts.android.alarmclock.WakeLock.WakeLockException;
-
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardLock;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.RemoteException;
@@ -38,6 +40,9 @@ import android.widget.TextView;
  * android:launchMode="singleInstance" is set in the manifest file).
  */
 public final class ActivityAlarmNotification extends Activity {
+  public final static String TIMEOUT_COMMAND = "timeout";
+  private enum Dialogs { TIMEOUT }
+
   private NotificationServiceBinder notifyService;
   private DbAccessor db;
   private KeyguardLock screenLock;
@@ -136,22 +141,9 @@ public final class ActivityAlarmNotification extends Activity {
   @Override
   protected void onResume() {
     super.onResume();
-    try {
-      WakeLock.assertAtLeastOneHeld();
-    } catch (WakeLockException e) {
-      if (AppSettings.isDebugMode(getApplicationContext())) {
-        throw new IllegalStateException(e.getMessage());
-      }
-    }
-
     screenLock.disableKeyguard();
-
     handler.post(timeTick);
-
     redraw();
-    // TODO(cgallek): This notification will continue forever unless the user
-    // dismisses it.  Consider adding a timeout that dismisses it automatically
-    // after some large amount of time.
   }
 
   @Override
@@ -166,6 +158,43 @@ public final class ActivityAlarmNotification extends Activity {
     super.onDestroy();
     db.closeConnections();
     notifyService.unbind();
+  }
+
+  @Override
+  protected void onNewIntent(Intent intent) {
+    super.onNewIntent(intent);
+    Bundle extras = intent.getExtras();
+    if (extras == null || extras.getBoolean(TIMEOUT_COMMAND, false) == false) {
+      return;
+    }
+    // The notification service has signaled this activity for a second time.
+    // This represents a acknowledgment timeout.  Display the appropriate error.
+    // (which also finish()es this activity.
+    showDialog(Dialogs.TIMEOUT.ordinal());
+  }
+
+  @Override
+  protected Dialog onCreateDialog(int id) {
+    switch (Dialogs.values()[id]) {
+      case TIMEOUT:
+        final AlertDialog.Builder timeoutBuilder = new AlertDialog.Builder(this);
+        timeoutBuilder.setIcon(android.R.drawable.ic_dialog_alert);
+        timeoutBuilder.setTitle(R.string.time_out_title);
+        timeoutBuilder.setMessage(R.string.time_out_error);
+        timeoutBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener(){
+          @Override
+          public void onClick(DialogInterface dialog, int which) {}
+        });
+        AlertDialog dialog = timeoutBuilder.create();
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+          @Override
+          public void onDismiss(DialogInterface dialog) {
+            finish();
+          }});
+        return dialog;
+      default:
+        return super.onCreateDialog(id);
+    }
   }
 
   private final void redraw() {

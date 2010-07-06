@@ -86,4 +86,6 @@
   <string name="custom_lock_screen_description">This is the text that will display on the lock screen.  In your text, you may use the string %c to display the count down time and/or the string %t to display the alarm time.\nExample: Hello %t\nWould appear as: Hello 8:00 am\nIf the \'Persistent\' box is checked.  The string will remain on the lock screen even when no alarm is scheduled.</string>
   <string name="custom_lock_screen_persistent">Persistent</string>
   <string name="wake_up">WAKE UP!!</string>
+  <string name="time_out_title">Alarm time out</string>
+  <string name="time_out_error">WARNING: This alarm has timed out waiting for an acknowledgment.</string>
 </resources>

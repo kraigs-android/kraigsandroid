@@ -65,6 +65,7 @@ public class NotificationService extends Service {
   private VolumeIncreaser volumeIncreaseCallback; 
   private Runnable soundCheck;
   private Runnable notificationBlinker;
+  private Runnable autoCancel;
 
   @Override
   public IBinder onBind(Intent intent) {
@@ -152,6 +153,20 @@ public class NotificationService extends Service {
 
         long next = AlarmUtil.millisTillNextInterval(AlarmUtil.Interval.SECOND);
         handler.postDelayed(notificationBlinker, next);
+      }
+    };
+    autoCancel = new Runnable() {
+      @Override
+      public void run() {
+        try {
+          acknowledgeCurrentNotification(0);
+        } catch (NoAlarmsException e) {
+          return;
+        }
+        Intent notifyActivity = new Intent(getApplicationContext(), ActivityAlarmNotification.class);
+        notifyActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        notifyActivity.putExtra(ActivityAlarmNotification.TIMEOUT_COMMAND, true);
+        startActivity(notifyActivity);
       }
     };
   }
@@ -277,6 +292,9 @@ public class NotificationService extends Service {
     handler.post(volumeIncreaseCallback);
     handler.post(soundCheck);
     handler.post(notificationBlinker);
+    // Set up a canceler if this notification isn't acknowledged by the timeout.
+    // TODO Make this configurable?
+    handler.postDelayed(autoCancel, 10 * 60 * 1000);
   }
 
   private void stopNotifying() {
@@ -284,6 +302,7 @@ public class NotificationService extends Service {
     handler.removeCallbacks(volumeIncreaseCallback);
     handler.removeCallbacks(soundCheck);
     handler.removeCallbacks(notificationBlinker);
+    handler.removeCallbacks(autoCancel);
 
     // Stop notifying.
     vibrator.cancel();
