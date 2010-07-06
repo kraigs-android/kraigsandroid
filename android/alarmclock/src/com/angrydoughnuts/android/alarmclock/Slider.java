@@ -43,7 +43,7 @@ public class Slider extends ViewGroup {
   private static final int FADE_MILLIS = 200;
   private static final int SLIDE_MILLIS = 200;
   private static final float SLIDE_ACCEL = (float) 1.0;
-  private static final double PERCENT_REQUIRED = 0.70;
+  private static final double PERCENT_REQUIRED = 0.72;
 
   private ImageView dot;
   private TextView tray;
@@ -143,6 +143,35 @@ public class Slider extends ViewGroup {
     dot.startAnimation(slideBack);
   }
 
+  private boolean isComplete() {
+    double dotCenterY = dot.getLeft() + dot.getMeasuredWidth()/2.0;
+    float progressPercent = (float)(dotCenterY - getLeft()) / (float)(getRight() - getLeft());
+    if (progressPercent > PERCENT_REQUIRED) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private void finishSlider() {
+    setVisibility(View.INVISIBLE);
+    Animation fadeOut = new AlphaAnimation(1, 0);
+    fadeOut.setDuration(FADE_MILLIS);
+    fadeOut.setAnimationListener(new AnimationListener() {
+      @Override
+      public void onAnimationEnd(Animation animation) {
+        if (completeListener != null) {
+          completeListener.complete();
+        }
+      }
+      @Override
+      public void onAnimationRepeat(Animation animation) {}
+      @Override
+      public void onAnimationStart(Animation animation) {}
+    });
+    startAnimation(fadeOut);
+  }
+
   @Override
   public boolean onTouchEvent(MotionEvent event) {
     final int action = event.getAction();
@@ -156,12 +185,18 @@ public class Slider extends ViewGroup {
 
       case MotionEvent.ACTION_CANCEL:
       case MotionEvent.ACTION_UP:
+        // Ignore move events which did not originate in the dot.
         if (!tracking) {
           return super.onTouchEvent(event);
         }
-        // The dot has been released, slide it back to the beginning.
+        // The dot has been released, check to see if we've hit the threshold,
+        // otherwise, send the dot home.
         tracking = false;
-        slideDotHome();
+        if (isComplete()) {
+          finishSlider();
+        } else {
+          slideDotHome();
+        }
         return true;
 
       case MotionEvent.ACTION_MOVE:
@@ -169,40 +204,27 @@ public class Slider extends ViewGroup {
         if (!tracking) {
           return super.onTouchEvent(event);
         }
-        // Slid out of the slider, reset to the beginning.
+        // Update the current location.
+        dot.offsetLeftAndRight((int) (x - dot.getLeft() - dot.getWidth()/2.0 ));
+
+        // See if we have reached the threshold.
+        if (isComplete()) {
+          tracking = false;
+          finishSlider();
+          return true;
+        }
+
+        // Otherwise, we have not yet hit the completion threshold. Make sure
+        // the move is still within bounds of the dot and redraw.
         if (!withinY(dot, y)) {
+          // Slid out of the slider, reset to the beginning.
           tracking = false;
           slideDotHome();
-          return true;
-        }
-        // If we haven't hit the threshold yet, simply move the dot.
-        double dotCenterY = dot.getLeft() + dot.getMeasuredWidth()/2.0;
-        float progressPercent = (float)(dotCenterY - getLeft()) / (float)(getRight() - getLeft());
-        if (progressPercent < PERCENT_REQUIRED) {
-          dot.offsetLeftAndRight((int) (x - dot.getLeft() - dot.getWidth()/2 ));
+        } else {
           invalidate();
-          return true;
         }
-        // At this point, the dot has made it to the threshold.
-        // Make the entire widgit fade away and then call the listener.
-        tracking = false;
-        setVisibility(View.INVISIBLE);
-        Animation fadeOut = new AlphaAnimation(1, 0);
-        fadeOut.setDuration(FADE_MILLIS);
-        fadeOut.setAnimationListener(new AnimationListener() {
-          @Override
-          public void onAnimationEnd(Animation animation) {
-            if (completeListener != null) {
-              completeListener.complete();
-            }
-          }
-          @Override
-          public void onAnimationRepeat(Animation animation) {}
-          @Override
-          public void onAnimationStart(Animation animation) {}
-        });
-        startAnimation(fadeOut);
         return true;
+
       default:
         return super.onTouchEvent(event);
     }
