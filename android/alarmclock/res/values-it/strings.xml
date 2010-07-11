@@ -5,6 +5,7 @@
   <string name="add_alarm">Aggiungi Sveglia...</string>
   <string name="default_settings">Impostazioni Base Sveglia</string>
   <string name="app_settings">Preferenze</string>
+  <string name="delete_all">Elimina Tutto...</string>
   <string name="settings">Impostazioni</string>
   <string name="time">Ora</string>
   <string name="label">Nome</string>
@@ -32,7 +33,6 @@
   <string name="dismiss">SPEGNI</string>
   <string name="plus_five">+5</string>
   <string name="minus_five">-5</string>
-  <string name="slide_to_dismiss">Trascina Per Spegnere ----&gt;</string>
   <string name="next_alarm">Prossima Sveglia:</string>
   <string name="no_pending_alarms">Nessuna sveglia attiva</string>
   <string name="alarm_has_occurred">La sveglia ha suonato</string>
@@ -85,7 +85,7 @@
   <string name="custom_lock_screen_text">Testo schermata di sblocco personalizzato</string>
   <string name="custom_lock_screen_description">Questo è il testo che verrà visualizzato nella schermata di sblocco. Nel testo puoi utilizzare la stringa %c per visualizzare il conto alla rovescia e/o la stringa %t per visualizzare l\'ora della sveglia.\nESEMPIO: Ciao %t\nApparirà come: Ciao 8:00 am\nSe spunti la casella \'Permanente\', il testo rimarrà visibile sulla schermata di sblocco anche se non ci sono sveglie attive.</string>
   <string name="custom_lock_screen_persistent">Permanente</string>
+  <string name="time_out_title">Time Out Allarme</string>
+  <string name="time_out_error">ATTENZIONE: Questo Allarme è scaduto aspettando informazioni.</string>
+  <string name="time_out_summary">Un Allarme attivo sarà automaticamente disattivato dopo questi minuti.</string>
 </resources>
-
-
-
