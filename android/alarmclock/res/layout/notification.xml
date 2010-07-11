@@ -4,7 +4,7 @@
   android:layout_width="fill_parent"
   android:layout_height="fill_parent">
 
-  <LinearLayout android:layout_weight="1"
+  <LinearLayout android:layout_weight="3"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
     <Button android:text="@string/minus_five"
@@ -38,7 +38,7 @@
 
   <Button android:text="@string/snooze"
     android:id="@+id/notify_snooze"
-    android:layout_weight="2"
+    android:layout_weight="4"
     android:textSize="32sp"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
@@ -49,12 +49,13 @@
     android:layout_height="wrap_content" />
 
   <TextView android:id="@+id/alarm_info"
-    android:layout_weight="1"
+    android:layout_weight="3"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
 
   <com.angrydoughnuts.android.alarmclock.Slider
     android:id="@+id/dismiss_slider"
+    android:layout_weight="1"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content" />
 </LinearLayout>
