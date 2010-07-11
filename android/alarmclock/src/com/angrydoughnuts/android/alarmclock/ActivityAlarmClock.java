@@ -155,7 +155,12 @@ public final class ActivityAlarmClock extends Activity {
         } catch (RemoteException e) {
           return;
         } finally {
-          notifyService.unbind();
+          handler.post(new Runnable() {
+            @Override
+            public void run() {
+              notifyService.unbind();
+            }
+          });
         }
         if (count > 0) {
           Intent notifyActivity = new Intent(getApplicationContext(), ActivityAlarmNotification.class);
