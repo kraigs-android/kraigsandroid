@@ -55,12 +55,15 @@ public class NotificationService extends Service {
   private AlarmClockServiceBinder service;
   private DbAccessor db;
   // Notification tools
-  private MediaPlayer mediaPlayer;
-  private Ringtone fallbackSound;
-  private Vibrator vibrator;
-  NotificationManager manager;
-  Notification notification;
-  PendingIntent notificationActivity;
+  // Since the media player objects are expensive to create and destroy,
+  // share them across invocations of this service (there should never be
+  // more than one instance of this class in a given application).
+  private static MediaPlayer mediaPlayer;
+  private static Ringtone fallbackSound;
+  private static Vibrator vibrator;
+  private NotificationManager manager;
+  private Notification notification;
+  private PendingIntent notificationActivity;
   private Handler handler;
   private VolumeIncreaser volumeIncreaseCallback; 
   private Runnable soundCheck;
@@ -88,13 +91,17 @@ public class NotificationService extends Service {
     audio.setStreamVolume(AudioManager.STREAM_ALARM,
         audio.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
     // Setup the media play.
-    mediaPlayer = new MediaPlayer();
-    // Make it use the previously configured alarm stream.
-    mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+    if (mediaPlayer == null) {
+      mediaPlayer = new MediaPlayer();
+      // Make it use the previously configured alarm stream.
+      mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+    }
     // The media player can fail for lots of reasons.  Try to setup a backup
     // sound for use when the media player fails.
-    fallbackSound = RingtoneManager.getRingtone(getApplicationContext(),
-        AlarmUtil.getDefaultAlarmUri());
+    if (fallbackSound == null) {
+      fallbackSound = RingtoneManager.getRingtone(getApplicationContext(),
+          AlarmUtil.getDefaultAlarmUri());
+    }
     if (fallbackSound == null) {
       Uri superFallback = RingtoneManager.getValidRingtoneUri(getApplicationContext());
       fallbackSound = RingtoneManager.getRingtone(getApplicationContext(), superFallback);
@@ -105,7 +112,9 @@ public class NotificationService extends Service {
     }
 
     // Instantiate a vibrator.  That's fun to say.
-    vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+    if (vibrator == null) {
+      vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+    }
 
     // Setup notification bar.
     manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -178,7 +187,7 @@ public class NotificationService extends Service {
     super.onDestroy();
     db.closeConnections();
     service.unbind();
-    mediaPlayer.release();
+
     boolean debug = AppSettings.isDebugMode(getApplicationContext());
     if (debug && firingAlarms.size() != 0) {
       throw new IllegalStateException("Notification service terminated with pending notifications.");
@@ -188,6 +197,13 @@ public class NotificationService extends Service {
     } catch (WakeLockException e) {
       if (debug) { throw new IllegalStateException(e.getMessage()); }
     }
+  }
+
+  @Override
+  protected void finalize() throws Throwable {
+    mediaPlayer.release();
+    mediaPlayer = null;
+    super.finalize();
   }
 
   // OnStart was depreciated in SDK 5.  It is here for backwards compatibility.
