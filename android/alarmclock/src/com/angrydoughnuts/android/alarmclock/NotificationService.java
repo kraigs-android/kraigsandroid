@@ -50,17 +50,93 @@ public class NotificationService extends Service {
     private static final long serialVersionUID = 1L;
   }
 
+  // Since the media player objects are expensive to create and destroy,
+  // share them across invocations of this service (there should never be
+  // more than one instance of this class in a given application).
+  private enum MediaSingleton {
+    INSTANCE;
+
+    private MediaPlayer mediaPlayer = null;
+    private Ringtone fallbackSound = null;
+    private Vibrator vibrator = null;
+
+    MediaSingleton() {
+      mediaPlayer = new MediaPlayer();
+      mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+    }
+
+    // Force the alarm stream to be maximum volume.  This will allow the user
+    // to select a volume between 0 and 100 percent via the settings activity.
+    private void normalizeVolume(Context c, float startVolume) {
+      final AudioManager audio =
+        (AudioManager) c.getSystemService(Context.AUDIO_SERVICE);
+      audio.setStreamVolume(AudioManager.STREAM_ALARM,
+          audio.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
+      setVolume(startVolume);
+    }
+
+    private void setVolume(float volume) {
+      mediaPlayer.setVolume(volume, volume);
+    }
+
+    private void useContext(Context c) {
+      // The media player can fail for lots of reasons.  Try to setup a backup
+      // sound for use when the media player fails.
+      fallbackSound = RingtoneManager.getRingtone(c, AlarmUtil.getDefaultAlarmUri());
+      if (fallbackSound == null) {
+        Uri superFallback = RingtoneManager.getValidRingtoneUri(c);
+        fallbackSound = RingtoneManager.getRingtone(c, superFallback);
+      }
+      // Make the fallback sound use the alarm stream as well.
+      if (fallbackSound != null) {
+        fallbackSound.setStreamType(AudioManager.STREAM_ALARM);
+      }
+
+      // Instantiate a vibrator.  That's fun to say.
+      vibrator = (Vibrator) c.getSystemService(Context.VIBRATOR_SERVICE);
+    }
+
+    private void ensureSound() {
+      if (!mediaPlayer.isPlaying() &&
+          fallbackSound != null && !fallbackSound.isPlaying()) {
+        fallbackSound.play();
+      }
+    }
+
+    private void vibrate() {
+      if (vibrator != null) {
+        vibrator.vibrate(new long[] {500, 500}, 0);
+      }
+    }
+
+    public void play(Context c, Uri tone) {
+      mediaPlayer.reset();
+      mediaPlayer.setLooping(true);
+      try {
+        mediaPlayer.setDataSource(c, tone);
+        mediaPlayer.prepare();
+        mediaPlayer.start();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
+    public void stop() {
+      mediaPlayer.stop();
+      if (vibrator != null) {
+        vibrator.cancel();
+      }
+      if (fallbackSound != null) {
+        fallbackSound.stop();
+      }
+    }
+  }
+
   // Data
   private LinkedList<Long> firingAlarms;
   private AlarmClockServiceBinder service;
   private DbAccessor db;
   // Notification tools
-  // Since the media player objects are expensive to create and destroy,
-  // share them across invocations of this service (there should never be
-  // more than one instance of this class in a given application).
-  private static MediaPlayer mediaPlayer;
-  private static Ringtone fallbackSound;
-  private static Vibrator vibrator;
   private NotificationManager manager;
   private Notification notification;
   private PendingIntent notificationActivity;
@@ -85,36 +161,7 @@ public class NotificationService extends Service {
     db = new DbAccessor(getApplicationContext());
 
     // Setup audio.
-    final AudioManager audio = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-    // Force the alarm stream to be maximum volume.  This will allow the user
-    // to select a volume between 0 and 100 percent via the settings activity.
-    audio.setStreamVolume(AudioManager.STREAM_ALARM,
-        audio.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
-    // Setup the media play.
-    if (mediaPlayer == null) {
-      mediaPlayer = new MediaPlayer();
-      // Make it use the previously configured alarm stream.
-      mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
-    }
-    // The media player can fail for lots of reasons.  Try to setup a backup
-    // sound for use when the media player fails.
-    if (fallbackSound == null) {
-      fallbackSound = RingtoneManager.getRingtone(getApplicationContext(),
-          AlarmUtil.getDefaultAlarmUri());
-    }
-    if (fallbackSound == null) {
-      Uri superFallback = RingtoneManager.getValidRingtoneUri(getApplicationContext());
-      fallbackSound = RingtoneManager.getRingtone(getApplicationContext(), superFallback);
-    }
-    // Make the fallback sound use the alarm stream as well.
-    if (fallbackSound != null) {
-      fallbackSound.setStreamType(AudioManager.STREAM_ALARM);
-    }
-
-    // Instantiate a vibrator.  That's fun to say.
-    if (vibrator == null) {
-      vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-    }
+    MediaSingleton.INSTANCE.useContext(getApplicationContext());
 
     // Setup notification bar.
     manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -132,10 +179,7 @@ public class NotificationService extends Service {
       @Override
       public void run() {
         // Some sound should always be playing.
-        if (!mediaPlayer.isPlaying() &&
-            fallbackSound != null && !fallbackSound.isPlaying()) { 
-          fallbackSound.play();
-        }
+        MediaSingleton.INSTANCE.ensureSound();
 
         long next = AlarmUtil.millisTillNextInterval(AlarmUtil.Interval.SECOND);
         handler.postDelayed(soundCheck, next);
@@ -197,13 +241,6 @@ public class NotificationService extends Service {
     } catch (WakeLockException e) {
       if (debug) { throw new IllegalStateException(e.getMessage()); }
     }
-  }
-
-  @Override
-  protected void finalize() throws Throwable {
-    mediaPlayer.release();
-    mediaPlayer = null;
-    super.finalize();
   }
 
   // OnStart was depreciated in SDK 5.  It is here for backwards compatibility.
@@ -292,19 +329,11 @@ public class NotificationService extends Service {
     // Begin notifying based on settings for this alaram.
     AlarmSettings settings = db.readAlarmSettings(alarmId);
     if (settings.getVibrate()) {
-      vibrator.vibrate(new long[] {500, 500}, 0);
+      MediaSingleton.INSTANCE.vibrate();
     }
 
     volumeIncreaseCallback.reset(settings);
-    mediaPlayer.reset();
-    mediaPlayer.setLooping(true);
-    try {
-      mediaPlayer.setDataSource(getApplicationContext(), settings.getTone());
-      mediaPlayer.prepare();
-      mediaPlayer.start();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    MediaSingleton.INSTANCE.play(getApplicationContext(), settings.getTone());
 
     // Start periodic events for handling this notification.
     handler.post(volumeIncreaseCallback);
@@ -323,11 +352,7 @@ public class NotificationService extends Service {
     handler.removeCallbacks(autoCancel);
 
     // Stop notifying.
-    vibrator.cancel();
-    mediaPlayer.stop();
-    if (fallbackSound != null) {
-      fallbackSound.stop();
-    }
+    MediaSingleton.INSTANCE.stop();
   }
 
   /**
@@ -347,7 +372,7 @@ public class NotificationService extends Service {
       start = (float) (settings.getVolumeStartPercent() / 100.0);
       end = (float) (settings.getVolumeEndPercent() / 100.0);
       increment = (end - start) / (float) settings.getVolumeChangeTimeSec();
-      mediaPlayer.setVolume(start, start);
+      MediaSingleton.INSTANCE.normalizeVolume(getApplicationContext(), start);
     }
 
     @Override
@@ -356,7 +381,7 @@ public class NotificationService extends Service {
       if (start > end) {
         start = end;
       }
-      mediaPlayer.setVolume(start, start);
+      MediaSingleton.INSTANCE.setVolume(start);
 
       if (Math.abs(start - end) > (float) 0.0001) {
         handler.postDelayed(volumeIncreaseCallback, 1000);
