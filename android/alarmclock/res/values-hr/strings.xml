@@ -83,7 +83,7 @@
   <string name="songs">Pesme</string>
   <string name="selected">Odabrano: </string>
   <string name="custom_lock_screen_text">Odredjen tekst na ekranu kad je uredjaj zaključan</string>
-  <string name="custom_lock_screen_description" formatted="false">Ovo je tekst koji će biti na ekranu kad je uredjaj zaključan. Možete koristiti string %c da se na ekranu vidi vreme odbrojavanja ili/i %t da se vidi vreme budjenja.\nPrimer: Zdravo %t\n bi se prikazalo kao: Zdravo 8:00 ujutru\nAko je kutija \'Uporan\' štiklirana, će biti prikazano kao. </string>
+  <string name="custom_lock_screen_description" formatted="false">Ovo je tekst koji će biti na ekranu kad je uredjaj zaključan. Možete koristiti string %c da se na ekranu vidi vreme odbrojavanja ili/i %t da se vidi vreme budjenja.\nPrimer: Zdravo %t\n bi se prikazalo kao: Zdravo 8:00 ujutru\nAko je kutija \'Uporan\' štiklirana, tekst će biti prikazan i kad nema aktivnih budilnika. </string>
   <string name="custom_lock_screen_persistent">Uporan</string>
   <string name="time_out_title">Vreme gašenja budilnika</string>
   <string name="time_out_error">UPOZORENJE: Budilnik se ugasio čekajući vašu komandu.</string>
