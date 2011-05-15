@@ -39,8 +39,8 @@
   <string name="day">%d dag</string>
   <string name="days">%d dagen</string>
   <string name="hour">%d uur</string>
-  <string name="hours">%d uren</string>
-  <string name="minute">%d minute</string>
+  <string name="hours">%d uur</string>
+  <string name="minute">%d minuut</string>
   <string name="minutes">%d minuten</string>
   <string name="am">AM</string>
   <string name="pm">PM</string>
