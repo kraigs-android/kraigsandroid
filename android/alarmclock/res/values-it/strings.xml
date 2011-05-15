@@ -20,7 +20,7 @@
   <string name="enabled">Attivata</string>
   <string name="disabled">Disattivata</string>
   <string name="alarm_fade">Dissolvenza Volume Sveglia</string>
-  <string name="fade_description">Dal %d%% al %d%% in %d secondi.</string>
+  <string name="fade_description">Dal %1$d%% al %2$d%% in %3$d secondi.</string>
   <string name="unknown_name">Senza nome</string>
   <string name="volume_start">Volume Iniziale (percentuale)</string>
   <string name="volume_end">Volume Finale (percentuale)</string>
@@ -83,7 +83,7 @@
   <string name="songs">Brani</string>
   <string name="selected">Selezionato: </string>
   <string name="custom_lock_screen_text">Testo schermata di sblocco personalizzato</string>
-  <string name="custom_lock_screen_description">Questo è il testo che verrà visualizzato nella schermata di sblocco. Nel testo puoi utilizzare la stringa %c per visualizzare il conto alla rovescia e/o la stringa %t per visualizzare l\'ora della sveglia.\nESEMPIO: Ciao %t\nApparirà come: Ciao 8:00 am\nSe spunti la casella \'Permanente\', il testo rimarrà visibile sulla schermata di sblocco anche se non ci sono sveglie attive.</string>
+  <string name="custom_lock_screen_description" formatted="false">Questo è il testo che verrà visualizzato nella schermata di sblocco. Nel testo puoi utilizzare la stringa %c per visualizzare il conto alla rovescia e/o la stringa %t per visualizzare l\'ora della sveglia.\nESEMPIO: Ciao %t\nApparirà come: Ciao 8:00 am\nSe spunti la casella \'Permanente\', il testo rimarrà visibile sulla schermata di sblocco anche se non ci sono sveglie attive.</string>
   <string name="custom_lock_screen_persistent">Permanente</string>
   <string name="time_out_title">Time Out Allarme</string>
   <string name="time_out_error">ATTENZIONE: Questo Allarme è scaduto aspettando informazioni.</string>

@@ -20,7 +20,7 @@
   <string name="enabled">Ativado</string>
   <string name="disabled">Desativado</string>
   <string name="alarm_fade">Volume crescente do alarme</string>
-  <string name="fade_description">De %d%% até %d%% por %d segundos.</string>
+  <string name="fade_description">De %1$d%% até %2$d%% por %3$d segundos.</string>
   <string name="unknown_name">Nome desconhecido</string>
   <string name="volume_start">Volume inicial (porcento)</string>
   <string name="volume_end">Volume final (porcento)</string>
@@ -83,7 +83,7 @@
   <string name="songs">Músicas</string>
   <string name="selected">Selecionado: </string>
   <string name="custom_lock_screen_text">Texto personalizado da tela de travamento</string>
-  <string name="custom_lock_screen_description">Este é o texto que irá aparecer na tela de travamento.  No seu texto, você pode usar a string %c para exibir a contagem regressiva e/ou a string %t para exibir a hora do alarme .\nExemplo: Olá %t\nApareceria como: Olá 8:00 am\nSe a caixa \'Persistente\' estiver marcada.  O texto aparecerá na tela travada mesmo se não houver alarmes agendados.</string>
+  <string name="custom_lock_screen_description" formatted="false">Este é o texto que irá aparecer na tela de travamento.  No seu texto, você pode usar a string %c para exibir a contagem regressiva e/ou a string %t para exibir a hora do alarme .\nExemplo: Olá %t\nApareceria como: Olá 8:00 am\nSe a caixa \'Persistente\' estiver marcada.  O texto aparecerá na tela travada mesmo se não houver alarmes agendados.</string>
   <string name="custom_lock_screen_persistent">Persistente</string>
   <string name="time_out_title">Expiração do alarme</string>
   <string name="time_out_error">AVISO: Este alarme expirou esperando por alguma confirmação.</string>

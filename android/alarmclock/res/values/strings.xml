@@ -19,7 +19,7 @@
   <string name="enabled">Enabled</string>
   <string name="disabled">Disabled</string>
   <string name="alarm_fade">Alarm volume fade</string>
-  <string name="fade_description">From %d%% to %d%% over %d seconds.</string>
+  <string name="fade_description">From %1$d%% to %2$d%% over %3$d seconds.</string>
   <string name="unknown_name">Unknown name</string>
   <string name="volume_start">Start volume (percent)</string>
   <string name="volume_end">End volume (percent)</string>
@@ -82,7 +82,7 @@
   <string name="songs">Songs</string>
   <string name="selected">Selected: </string>
   <string name="custom_lock_screen_text">Custom lock screen text</string>
-  <string name="custom_lock_screen_description">This is the text that will display on the lock screen.  In your text, you may use the string %c to display the count down time and/or the string %t to display the alarm time.\nExample: Hello %t\nWould appear as: Hello 8:00 am\nIf the \'Persistent\' box is checked.  The string will remain on the lock screen even when no alarm is scheduled.</string>
+  <string name="custom_lock_screen_description" formatted="false">This is the text that will display on the lock screen.  In your text, you may use the string %c to display the count down time and/or the string %t to display the alarm time.\nExample: Hello %t\nWould appear as: Hello 8:00 am\nIf the \'Persistent\' box is checked.  The string will remain on the lock screen even when no alarm is scheduled.</string>
   <string name="custom_lock_screen_persistent">Persistent</string>
   <string name="time_out_title">Alarm time out</string>
   <string name="time_out_error">WARNING: This alarm has timed out waiting for an acknowledgment.</string>

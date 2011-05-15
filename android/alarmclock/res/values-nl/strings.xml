@@ -20,7 +20,7 @@
   <string name="enabled">Aan</string>
   <string name="disabled">Uit</string>
   <string name="alarm_fade">Alarm volume wegvagen</string>
-  <string name="fade_description">Van %d%% tot %d%% over %d seconden.</string>
+  <string name="fade_description">Van %1$d%% tot %2$d%% over %3$d seconden.</string>
   <string name="unknown_name">Naam onbekend</string>
   <string name="volume_start">Start volume (procenten)</string>
   <string name="volume_end">Eind volume (procenten)</string>
@@ -83,7 +83,7 @@
   <string name="songs">Liedjes</string>
   <string name="selected">Geselecteerd: </string>
   <string name="custom_lock_screen_text">Uitzonderings schermtekst wanneer het scherm gelocked staat</string>
-  <string name="custom_lock_screen_description">Deze tekst wordt getoont op het locked scherm.  In je tekst, mag je gebruiken: de tekst %c om de aftel tijd te laten zien en of de tekst %t om het de alarmtijd te laten zien.\nVoorbeeld: Hallo %t\nWordt getoont als: Hallo 8:00 am\nAls de \'Aanhouden\' box is aangevinkt.  De tekst blijft staan op het locked scherm zelfs als er een alarm staat ingesteld.</string>
+  <string name="custom_lock_screen_description" formatted="false">Deze tekst wordt getoont op het locked scherm.  In je tekst, mag je gebruiken: de tekst %c om de aftel tijd te laten zien en of de tekst %t om het de alarmtijd te laten zien.\nVoorbeeld: Hallo %t\nWordt getoont als: Hallo 8:00 am\nAls de \'Aanhouden\' box is aangevinkt.  De tekst blijft staan op het locked scherm zelfs als er een alarm staat ingesteld.</string>
   <string name="custom_lock_screen_persistent">Aanhouden</string>
   <string name="time_out_title">Alarm tijd uit</string>
   <string name="time_out_error">WAARSCHUWING: Dit alarm is vergaan tijdens het wachten op erkenning.</string>
