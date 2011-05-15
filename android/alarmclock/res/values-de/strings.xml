@@ -83,7 +83,7 @@
   <string name="songs">Lieder</string>
   <string name="selected">Ausgewählt: </string>
   <string name="custom_lock_screen_text">Benutzerdefinierter Text bei Tastensperre</string>
-  <string name="custom_lock_screen_description">Dies ist der Text, der bei aktivierter Tastensperre auf dem Bildschirm angezeigt wird. In ihrem Text können Sie folgende Platzhalter verwenden: %1$c für die Countdown-Zeit und/oder %2$t für die eingestellte Weckzeit. \nBeispiel: Hallo %3$t\n würde als "Hallo 8:00" angezeigt. \nWenn \'Dauerhaft\' markiert ist, bleibt der Text auch erhalten, wenn keine Weckzeit geplant ist.</string>
+  <string name="custom_lock_screen_description" formatted="false">Dies ist der Text, der bei aktivierter Tastensperre auf dem Bildschirm angezeigt wird. In ihrem Text können Sie folgende Platzhalter verwenden: %c für die Countdown-Zeit und/oder %t für die eingestellte Weckzeit. \nBeispiel: Hallo %t\nwürde als \"Hallo 8:00\" angezeigt. \nWenn \'Dauerhaft\' markiert ist, bleibt der Text auch erhalten, wenn keine Weckzeit geplant ist.</string>
   <string name="custom_lock_screen_persistent">Dauerhaft</string>
   <string name="time_out_title">Wecker-Time-out</string>
   <string name="time_out_error">ACHTUNG: Diese Weckzeit hat ihren Time-Out erreicht.</string>
