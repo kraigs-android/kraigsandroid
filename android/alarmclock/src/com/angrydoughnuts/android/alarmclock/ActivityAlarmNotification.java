@@ -18,15 +18,13 @@ package com.angrydoughnuts.android.alarmclock;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.KeyguardManager;
-import android.app.KeyguardManager.KeyguardLock;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
@@ -45,7 +43,6 @@ public final class ActivityAlarmNotification extends Activity {
 
   private NotificationServiceBinder notifyService;
   private DbAccessor db;
-  private KeyguardLock screenLock;
   private Handler handler;
   private Runnable timeTick;
 
@@ -56,6 +53,8 @@ public final class ActivityAlarmNotification extends Activity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.notification);
+    // Make sure this window always shows over the lock screen.
+    getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 
     db = new DbAccessor(getApplicationContext());
 
@@ -83,13 +82,6 @@ public final class ActivityAlarmNotification extends Activity {
         });
       }
     };
-
-    // Setup the screen lock object.  The screen will be unlocked onResume() and
-    // re-locked onPause();
-    final KeyguardManager screenLockManager =
-      (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-    screenLock = screenLockManager.newKeyguardLock(
-        "AlarmNotification screen lock");
 
     // Setup individual UI elements.
     final Button snoozeButton = (Button) findViewById(R.id.notify_snooze);
@@ -140,7 +132,6 @@ public final class ActivityAlarmNotification extends Activity {
   @Override
   protected void onResume() {
     super.onResume();
-    screenLock.disableKeyguard();
     handler.post(timeTick);
     redraw();
   }
@@ -149,7 +140,6 @@ public final class ActivityAlarmNotification extends Activity {
   protected void onPause() {
     super.onPause();
     handler.removeCallbacks(timeTick);
-    screenLock.reenableKeyguard();
   }
 
   @Override
