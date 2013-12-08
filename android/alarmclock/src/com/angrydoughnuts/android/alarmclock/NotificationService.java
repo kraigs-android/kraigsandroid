@@ -59,6 +59,7 @@ public class NotificationService extends Service {
     private MediaPlayer mediaPlayer = null;
     private Ringtone fallbackSound = null;
     private Vibrator vibrator = null;
+    private int systemNotificationVolume = 0;
 
     MediaSingleton() {
       mediaPlayer = new MediaPlayer();
@@ -70,6 +71,8 @@ public class NotificationService extends Service {
     private void normalizeVolume(Context c, float startVolume) {
       final AudioManager audio =
         (AudioManager) c.getSystemService(Context.AUDIO_SERVICE);
+      systemNotificationVolume =
+          audio.getStreamVolume(AudioManager.STREAM_ALARM);
       audio.setStreamVolume(AudioManager.STREAM_ALARM,
           audio.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
       setVolume(startVolume);
@@ -77,6 +80,13 @@ public class NotificationService extends Service {
 
     private void setVolume(float volume) {
       mediaPlayer.setVolume(volume, volume);
+    }
+
+    private void resetVolume(Context c) {
+      final AudioManager audio =
+        (AudioManager) c.getSystemService(Context.AUDIO_SERVICE);
+      audio.setStreamVolume(
+          AudioManager.STREAM_ALARM, systemNotificationVolume, 0);
     }
 
     private void useContext(Context c) {
@@ -333,6 +343,8 @@ public class NotificationService extends Service {
     }
 
     volumeIncreaseCallback.reset(settings);
+    MediaSingleton.INSTANCE.normalizeVolume(
+        getApplicationContext(), volumeIncreaseCallback.volume());
     MediaSingleton.INSTANCE.play(getApplicationContext(), settings.getTone());
 
     // Start periodic events for handling this notification.
@@ -353,6 +365,7 @@ public class NotificationService extends Service {
 
     // Stop notifying.
     MediaSingleton.INSTANCE.stop();
+    MediaSingleton.INSTANCE.resetVolume(getApplicationContext());
   }
 
   /**
@@ -372,7 +385,6 @@ public class NotificationService extends Service {
       start = (float) (settings.getVolumeStartPercent() / 100.0);
       end = (float) (settings.getVolumeEndPercent() / 100.0);
       increment = (end - start) / (float) settings.getVolumeChangeTimeSec();
-      MediaSingleton.INSTANCE.normalizeVolume(getApplicationContext(), start);
     }
 
     @Override
