@@ -103,7 +103,7 @@ public class Slider extends ViewGroup {
       return;
     }
     // Start the dot left-aligned.
-    dot.layout(0, 0, dot.getMeasuredWidth(), dot.getMeasuredHeight());
+    dot.layout(0, 7, dot.getMeasuredWidth(), dot.getMeasuredHeight());
     // Make the tray fill the background.
     tray.layout(0, 0, getMeasuredWidth(), getMeasuredHeight());
   }
