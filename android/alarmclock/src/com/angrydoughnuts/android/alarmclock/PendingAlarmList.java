@@ -15,6 +15,8 @@
 
 package com.angrydoughnuts.android.alarmclock;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.TreeMap;
 
 import android.app.AlarmManager;
@@ -64,9 +66,31 @@ public final class PendingAlarmList {
     PendingIntent scheduleIntent =
       PendingIntent.getBroadcast(context, 0, notifyIntent, 0);
 
+    // Schedule the alarm with the AlarmManager.
     // Previous instances of this intent will be overwritten in
     // the alarm manager.
-    alarmManager.set(AlarmManager.RTC_WAKEUP, time.calendar().getTimeInMillis(), scheduleIntent);
+    try {
+      // In API version 19 (KitKat), the set() method of is no longer
+      // guaranteed to have exact timing semantics.  A setExact()
+      // method is supplied, but is not available with the minimum SDK
+      // version used by this application.  Here we look for this
+      // new method and use it if we find it.  Otherwise, we fall back
+      // to the old set() method.
+      Method setExact = AlarmManager.class.getDeclaredMethod(
+          "setExact", int.class, long.class, PendingIntent.class);
+      setExact.invoke(alarmManager, AlarmManager.RTC_WAKEUP,
+          time.calendar().getTimeInMillis(), scheduleIntent);
+    } catch (NoSuchMethodException e) {
+      alarmManager.set(AlarmManager.RTC_WAKEUP,
+          time.calendar().getTimeInMillis(), scheduleIntent);
+    } catch (IllegalAccessException e) {
+      // TODO(cgallek) combine these all with the java 7 OR syntax.
+      throw new RuntimeException(e);
+    } catch (IllegalArgumentException e) {
+      throw new RuntimeException(e);
+    } catch (InvocationTargetException e) {
+      throw new RuntimeException(e);
+    }
 
     // Keep track of all scheduled alarms.
     pendingAlarms.put(alarmId, new PendingAlarm(time, scheduleIntent));
