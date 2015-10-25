@@ -21,14 +21,18 @@ import java.util.List;
 
 import com.angrydoughnuts.android.alarmclock.MediaPickerDialog.OnMediaPickListener;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnMultiChoiceClickListener;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -91,6 +95,13 @@ public final class ActivityAlarmSettings extends Activity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.settings);
+
+    if (ContextCompat.checkSelfPermission(
+        getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+        != PackageManager.PERMISSION_GRANTED) {
+      ActivityCompat.requestPermissions(
+          this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
+    }
 
     // An alarm id is required in the extras bundle.
     alarmId = getIntent().getExtras().getLong(EXTRAS_ALARM_ID, MISSING_EXTRAS);

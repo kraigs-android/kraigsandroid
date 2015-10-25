@@ -18,14 +18,18 @@ package com.angrydoughnuts.android.alarmclock;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.database.MergeCursor;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
@@ -138,9 +142,16 @@ public class MediaListView extends ListView implements OnItemClickListener {
       queryColumns.add(BaseColumns._ID);
     }
 
-    Cursor dbCursor = getContext().getContentResolver().query(
-        contentUri, queryColumns.toArray(new String[] {}),
-        selection, null, sortOrder);
+    Cursor dbCursor;
+    if (ContextCompat.checkSelfPermission(
+        getContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+        == PackageManager.PERMISSION_GRANTED) {
+      dbCursor = getContext().getContentResolver().query(
+          contentUri, queryColumns.toArray(new String[] {}),
+          selection, null, sortOrder);
+    } else {
+      dbCursor = new MatrixCursor(queryColumns.toArray(new String[] {}));
+    }
     if (staticCursor != null) {
       Cursor[] cursors = new Cursor[] { staticCursor, dbCursor };
       cursor = new MergeCursor(cursors);
