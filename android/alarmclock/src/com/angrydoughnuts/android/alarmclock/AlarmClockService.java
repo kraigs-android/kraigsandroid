@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -163,9 +164,11 @@ public final class AlarmClockService extends Service {
     }
 
     // Set the system alarm string for display on the lock screen.
-    String lockScreenText = AppSettings.lockScreenString(getApplicationContext(), nextTime);
-    if (lockScreenText != null) {
-      Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED, lockScreenText);
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+      String lockScreenText = AppSettings.lockScreenString(c, nextTime);
+      if (lockScreenText != null) {
+        Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED, lockScreenText);
+      }
     }
   }
 
@@ -210,10 +213,12 @@ public final class AlarmClockService extends Service {
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     manager.cancel(NOTIFICATION_BAR_ID);
 
-    String lockScreenText = AppSettings.lockScreenString(getApplicationContext(), null);
-    // Only clear the lock screen if the preference is set.
-    if (lockScreenText != null) {
-      Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED, lockScreenText);
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+      String lockScreenText = AppSettings.lockScreenString(getApplicationContext(), null);
+      // Only clear the lock screen if the preference is set.
+      if (lockScreenText != null) {
+        Settings.System.putString(getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED, lockScreenText);
+      }
     }
   }
 
