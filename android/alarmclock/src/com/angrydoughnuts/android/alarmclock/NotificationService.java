@@ -33,6 +33,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Vibrator;
+import android.support.v4.app.NotificationCompat;
 
 /**
  * This service is responsible for notifying the user when an alarm is
@@ -148,8 +149,7 @@ public class NotificationService extends Service {
   private DbAccessor db;
   // Notification tools
   private NotificationManager manager;
-  private Notification notification;
-  private PendingIntent notificationActivity;
+  private NotificationCompat.Builder notification;
   private Handler handler;
   private VolumeIncreaser volumeIncreaseCallback; 
   private Runnable soundCheck;
@@ -178,9 +178,10 @@ public class NotificationService extends Service {
     // Use the notification activity explicitly in this intent just in case the
     // activity can't be viewed via the root activity.
     Intent intent = new Intent(getApplicationContext(), ActivityAlarmNotification.class);
-    notificationActivity = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
-    notification = new Notification(R.drawable.alarmclock_notification, null, 0);
-    notification.flags |= Notification.FLAG_ONGOING_EVENT;
+    notification = new NotificationCompat.Builder(getApplicationContext())
+      .setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, intent, 0))
+      .setOngoing(true)
+      .setSmallIcon(R.drawable.alarmclock_notification);
 
     // Setup a self-scheduling event loops.
     handler = new Handler();
@@ -196,6 +197,7 @@ public class NotificationService extends Service {
       }
     };
     notificationBlinker = new Runnable() {
+      boolean on = false;
       @Override
       public void run() {
         String notifyText;
@@ -208,14 +210,13 @@ public class NotificationService extends Service {
         } catch (NoAlarmsException e) {
           return;
         }
-        notification.setLatestEventInfo(getApplicationContext(), notifyText, "", notificationActivity);
-        if (notification.icon == R.drawable.alarmclock_notification) {
-          notification.icon = R.drawable.alarmclock_notification2;
-        } else {
-          notification.icon = R.drawable.alarmclock_notification;
-        }
-        manager.notify(AlarmClockService.NOTIFICATION_BAR_ID, notification);
+        Notification n = notification
+          .setContentTitle(notifyText)
+          .setSmallIcon(on ? R.drawable.alarmclock_notification2 : R.drawable.alarmclock_notification)
+          .build();
+        manager.notify(AlarmClockService.NOTIFICATION_BAR_ID, n);
 
+        on = !on;
         long next = AlarmUtil.millisTillNextInterval(AlarmUtil.Interval.SECOND);
         handler.postDelayed(notificationBlinker, next);
       }
