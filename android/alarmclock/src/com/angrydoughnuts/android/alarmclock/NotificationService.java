@@ -379,7 +379,7 @@ public class NotificationService extends Service {
     float increment;
 
     public float volume() {
-      return start;
+      return normalize(start);
     }
 
     public void reset(AlarmSettings settings) {
@@ -394,11 +394,16 @@ public class NotificationService extends Service {
       if (start > end) {
         start = end;
       }
-      MediaSingleton.INSTANCE.setVolume(start);
+      MediaSingleton.INSTANCE.setVolume(normalize(start));
 
       if (Math.abs(start - end) > (float) 0.0001) {
         handler.postDelayed(volumeIncreaseCallback, 1000);
       }
+    }
+
+    private float normalize(float x) {
+      final float exp = 5;
+      return (float) ((Math.pow(exp, start)-1)/(exp-1));
     }
   }
 }
