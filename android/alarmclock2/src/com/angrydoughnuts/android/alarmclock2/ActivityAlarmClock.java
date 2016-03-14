@@ -16,12 +16,46 @@
 package com.angrydoughnuts.android.alarmclock2;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 
 public class ActivityAlarmClock extends Activity {
+  private ServiceAlarmClock service = null;
+  private ServiceConnection connection = new ServiceConnection() {
+      @Override
+      public void onServiceConnected(ComponentName name, IBinder binder) {
+        service = ((ServiceAlarmClock.IdentityBinder)binder).getService();
+      }
+      @Override
+      public void onServiceDisconnected(ComponentName name) {
+        service = null;
+      }
+    };
+
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.alarm_list);
+  }
+
+  @Override
+  public void onStart() {
+    super.onStart();
+    if (service == null) {
+      bindService(new Intent(this, ServiceAlarmClock.class), connection,
+                  Context.BIND_AUTO_CREATE);
+    }
+  }
+
+  @Override
+  public void onStop() {
+    super.onStop();
+    if (service != null) {
+      unbindService(connection);
+    }
   }
 }
