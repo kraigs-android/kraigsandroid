@@ -6,10 +6,5 @@
   <TextView
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
-      android:text="Hello World, ActivityAlarmClock"/>
-  <Button
-      android:text="Test Alarm"
-      android:id="@+id/test_alarm"
-      android:layout_width="fill_parent"
-      android:layout_height="wrap_content" />
+      android:text="Alarm notification"/>
 </LinearLayout>

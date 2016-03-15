@@ -15,7 +15,11 @@
 
 package com.angrydoughnuts.android.alarmclock2;
 
+import android.app.AlarmManager;
+import android.content.BroadcastReceiver;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
@@ -30,5 +34,50 @@ public class ServiceAlarmClock extends Service {
   @Override
   public IBinder onBind(Intent intent) {
     return new IdentityBinder();
+  }
+
+  public static class AlarmTriggerReceiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      // TODO: wake lock
+      context.startService(new Intent(context, ServiceAlarmClock.class)
+                           .putExtra(COMMAND, TRIGGER_ALARM_NOTIFICATION));
+    }
+  }
+
+  public static final String COMMAND = "command";
+  public static final int TRIGGER_ALARM_NOTIFICATION = 1;
+
+  @Override
+  public int onStartCommand(Intent intent, int flags, int startId) {
+    if (intent.hasExtra(COMMAND)) {
+      switch (intent.getExtras().getInt(COMMAND)) {
+      case TRIGGER_ALARM_NOTIFICATION:
+        startActivity(new Intent(this, ActivityAlarmNotification.class)
+                      .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        break;
+      }
+    }
+
+    stopSelf(startId);
+    return START_NOT_STICKY;
+  }
+
+  // TODO: temp
+  private static int id = 0;
+  public void createTestAlarm() {
+    // Intents are considered equal if they have the same action, data, type,
+    // class, and categories.  In order to schedule multiple alarms, every
+    // pending intent must be different.  This means that we must encode
+    // the alarm id in the request code.
+    PendingIntent schedule = PendingIntent.getBroadcast(
+        this, id++,
+        new Intent(this, AlarmTriggerReceiver.class), 0);
+
+    // TODO, implement other alarm calls?  This one only works for api 23.
+    // changed again.  Need to use setExactAndAllowWhileIdle
+    ((AlarmManager)getSystemService(Context.ALARM_SERVICE))
+      .setExactAndAllowWhileIdle(
+          AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, schedule);
   }
 }

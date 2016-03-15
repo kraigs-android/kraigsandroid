@@ -22,10 +22,12 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.view.View;
+import android.widget.Button;
 
 public class ActivityAlarmClock extends Activity {
   private ServiceAlarmClock service = null;
-  private ServiceConnection connection = new ServiceConnection() {
+  private final ServiceConnection connection = new ServiceConnection() {
       @Override
       public void onServiceConnected(ComponentName name, IBinder binder) {
         service = ((ServiceAlarmClock.IdentityBinder)binder).getService();
@@ -40,6 +42,15 @@ public class ActivityAlarmClock extends Activity {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.alarm_list);
+
+    ((Button)findViewById(R.id.test_alarm)).setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            if (service != null) service.createTestAlarm();
+          }
+        });
+
   }
 
   @Override
@@ -56,6 +67,7 @@ public class ActivityAlarmClock extends Activity {
     super.onStop();
     if (service != null) {
       unbindService(connection);
+      service = null;
     }
   }
 }
