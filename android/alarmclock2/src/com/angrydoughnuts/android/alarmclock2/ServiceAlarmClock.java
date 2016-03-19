@@ -16,6 +16,8 @@
 package com.angrydoughnuts.android.alarmclock2;
 
 import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -111,6 +113,9 @@ public class ServiceAlarmClock extends Service {
     } else {
       Log.w("ServiceAlarmClock", "No wake lock found when dismissing alarm");
     }
+
+    ((NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE))
+      .cancel(TRIGGER_ALARM_NOTIFICATION);
   }
 
   private void handleTriggerAlarm(Intent intent) {
@@ -131,7 +136,26 @@ public class ServiceAlarmClock extends Service {
             "No wake lock present for TRIGGER_ALARM_NOTIFICATION");
     }
 
-    startActivity(new Intent(this, ActivityAlarmNotification.class)
-                  .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+    Intent i = new Intent(this, ActivityAlarmNotification.class)
+      .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+    ((NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE))
+      .notify(
+          TRIGGER_ALARM_NOTIFICATION,
+          new Notification.Builder(this)
+          .setContentTitle("Alarming...")
+          .setContentText("Second line...")
+          .setSmallIcon(R.drawable.ic_launcher)
+          .setCategory(Notification.CATEGORY_ALARM)
+          .setPriority(Notification.PRIORITY_MAX)
+          .setVisibility(Notification.VISIBILITY_PUBLIC)
+          .setOngoing(true)
+          // TODO
+          // .setLights()
+          // .setSound() ???
+          .setContentIntent(PendingIntent.getActivity(this, 0, i, 0))
+          .build());
+
+    startActivity(i);
   }
 }
