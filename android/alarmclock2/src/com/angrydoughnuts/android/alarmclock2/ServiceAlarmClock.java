@@ -76,26 +76,7 @@ public class ServiceAlarmClock extends Service {
     if (intent.hasExtra(COMMAND)) {
       switch (intent.getExtras().getInt(COMMAND)) {
       case TRIGGER_ALARM_NOTIFICATION:
-        PowerManager.WakeLock w = null;
-        if (intent.hasExtra(AlarmTriggerReceiver.WAKELOCK_ID)) {
-          w = AlarmTriggerReceiver.consumeLock(
-              intent.getExtras().getInt(AlarmTriggerReceiver.WAKELOCK_ID));
-        }
-        if (w != null) {
-          if (wakelock == null) {
-            wakelock = w;
-          } else {
-            Log.i("ServiceAlarmclock", "Already wake-locked, releasing");
-            w.release();
-          }
-        } else {
-          Log.w("ServiceAlarmClock",
-                "No wake lock present for TRIGGER_ALARM_NOTIFICATION");
-        }
-
-        startActivity(new Intent(this, ActivityAlarmNotification.class)
-                      .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-
+        handleTriggerAlarm(intent);
         break;
       }
     }
@@ -130,5 +111,27 @@ public class ServiceAlarmClock extends Service {
     } else {
       Log.w("ServiceAlarmClock", "No wake lock found when dismissing alarm");
     }
+  }
+
+  private void handleTriggerAlarm(Intent intent) {
+    PowerManager.WakeLock w = null;
+    if (intent.hasExtra(AlarmTriggerReceiver.WAKELOCK_ID)) {
+      w = AlarmTriggerReceiver.consumeLock(
+          intent.getExtras().getInt(AlarmTriggerReceiver.WAKELOCK_ID));
+    }
+    if (w != null) {
+      if (wakelock == null) {
+        wakelock = w;
+      } else {
+        Log.i("ServiceAlarmclock", "Already wake-locked, releasing");
+        w.release();
+      }
+    } else {
+      Log.w("ServiceAlarmClock",
+            "No wake lock present for TRIGGER_ALARM_NOTIFICATION");
+    }
+
+    startActivity(new Intent(this, ActivityAlarmNotification.class)
+                  .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
   }
 }
