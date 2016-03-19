@@ -28,6 +28,8 @@ import android.util.ArrayMap;
 import android.util.Log;
 
 public class ServiceAlarmClock extends Service {
+  private PowerManager.WakeLock wakelock = null;
+
   public class IdentityBinder extends Binder {
     public ServiceAlarmClock getService() {
       return ServiceAlarmClock.this;
@@ -79,8 +81,14 @@ public class ServiceAlarmClock extends Service {
           w = AlarmTriggerReceiver.consumeLock(
               intent.getExtras().getInt(AlarmTriggerReceiver.WAKELOCK_ID));
         }
-
-        if (w == null) {
+        if (w != null) {
+          if (wakelock == null) {
+            wakelock = w;
+          } else {
+            Log.i("ServiceAlarmclock", "Already wake-locked, releasing");
+            w.release();
+          }
+        } else {
           Log.w("ServiceAlarmClock",
                 "No wake lock present for TRIGGER_ALARM_NOTIFICATION");
         }
@@ -88,11 +96,6 @@ public class ServiceAlarmClock extends Service {
         startActivity(new Intent(this, ActivityAlarmNotification.class)
                       .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 
-        // TODO: move this to the dismiss function
-        if (w != null) {
-          Log.i("ServiceAlarmClock", "Releasing wake lock");
-          w.release();
-        }
         break;
       }
     }
@@ -117,5 +120,15 @@ public class ServiceAlarmClock extends Service {
     ((AlarmManager)getSystemService(Context.ALARM_SERVICE))
       .setExactAndAllowWhileIdle(
           AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, schedule);
+  }
+
+  public void dismissAllAlarms() {
+    if (wakelock != null) {
+      Log.i("ServiceAlarmclock", "Releasing wake lock");
+      wakelock.release();
+      wakelock = null;
+    } else {
+      Log.w("ServiceAlarmClock", "No wake lock found when dismissing alarm");
+    }
   }
 }
