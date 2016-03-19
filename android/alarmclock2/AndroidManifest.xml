@@ -21,7 +21,9 @@
 
     <activity
         android:name=".ActivityAlarmNotification"
-        android:launchMode="singleInstance" />
+        android:launchMode="singleInstance"
+        android:taskAffinity=""
+        android:excludeFromRecents="true" />
   </application>
 
   <uses-permission android:name="android.permission.WAKE_LOCK" />
