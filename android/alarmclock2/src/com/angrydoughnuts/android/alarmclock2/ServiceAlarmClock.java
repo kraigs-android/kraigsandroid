@@ -19,15 +19,20 @@ import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.ArrayMap;
 import android.util.Log;
+
+import java.util.Calendar;
+import java.util.TimeZone;
 
 public class ServiceAlarmClock extends Service {
   private PowerManager.WakeLock wakelock = null;
@@ -90,6 +95,23 @@ public class ServiceAlarmClock extends Service {
   // TODO: temp
   private static int id = 0;
   public void createTestAlarm() {
+    final long timeUTC = System.currentTimeMillis() + 5000;
+
+    final Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    c.setTimeInMillis(timeUTC);
+    c.set(Calendar.HOUR_OF_DAY, 0);
+    c.set(Calendar.MINUTE, 0);
+    c.set(Calendar.SECOND, 0);
+    c.set(Calendar.MILLISECOND, 0);
+
+    ContentValues v = new ContentValues();
+    v.put(
+        ProviderAlarmClock.AlarmEntry.TIME,
+        (timeUTC - c.getTimeInMillis()) / 1000);
+    // TODO handle error ??
+    Uri u = getContentResolver().insert(ProviderAlarmClock.ALARMS_URI, v);
+    Log.i("ServiceAlarmClock", "New alarm: " + u);
+
     // Intents are considered equal if they have the same action, data, type,
     // class, and categories.  In order to schedule multiple alarms, every
     // pending intent must be different.  This means that we must encode
@@ -101,8 +123,7 @@ public class ServiceAlarmClock extends Service {
     // TODO, implement other alarm calls?  This one only works for api 23.
     // changed again.  Need to use setExactAndAllowWhileIdle
     ((AlarmManager)getSystemService(Context.ALARM_SERVICE))
-      .setExactAndAllowWhileIdle(
-          AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, schedule);
+      .setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeUTC, schedule);
   }
 
   public void dismissAllAlarms() {

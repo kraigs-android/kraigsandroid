@@ -16,14 +16,21 @@
 package com.angrydoughnuts.android.alarmclock2;
 
 import android.app.Activity;
+import android.app.LoaderManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.ServiceConnection;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CursorAdapter;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 
 public class ActivityAlarmClock extends Activity {
   private ServiceAlarmClock service = null;
@@ -43,6 +50,32 @@ public class ActivityAlarmClock extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.alarm_list);
 
+    final CursorAdapter adapter = new SimpleCursorAdapter(
+        this, R.layout.alarm_list_item, null,
+        new String[] { ProviderAlarmClock.AlarmEntry.TIME },
+        new int[] { R.id.debug_text });
+    ((ListView)findViewById(R.id.alarm_list)).setAdapter(adapter);
+    getLoaderManager().initLoader(
+        0, null, new LoaderManager.LoaderCallbacks<Cursor>() {
+            @Override
+            public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+              return new CursorLoader(
+                  getApplicationContext(), ProviderAlarmClock.ALARMS_URI,
+                  new String[] {
+                    ProviderAlarmClock.AlarmEntry._ID,
+                    ProviderAlarmClock.AlarmEntry.TIME },
+                  null, null, ProviderAlarmClock.AlarmEntry.TIME + " ASC");
+            }
+            @Override
+            public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+              adapter.changeCursor(data);
+            }
+            @Override
+            public void onLoaderReset(Loader<Cursor> loader) {
+              adapter.changeCursor(null);
+            }
+          });
+
     ((Button)findViewById(R.id.test_alarm)).setOnClickListener(
         new View.OnClickListener() {
           @Override
@@ -50,7 +83,6 @@ public class ActivityAlarmClock extends Activity {
             if (service != null) service.createTestAlarm();
           }
         });
-
   }
 
   @Override
