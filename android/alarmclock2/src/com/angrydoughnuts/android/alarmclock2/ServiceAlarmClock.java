@@ -35,6 +35,9 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 public class ServiceAlarmClock extends Service {
+  // TODO: this isn't handled properly if the service is destroyed
+  // while holding a wake lock.  Create a separate service which is
+  // start()-ed ?
   private PowerManager.WakeLock wakelock = null;
 
   public class IdentityBinder extends Binder {
