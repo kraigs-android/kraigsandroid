@@ -35,6 +35,8 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 public class AlarmNotificationService extends Service {
+  private static final String TAG =
+    AlarmNotificationService.class.getSimpleName();
   public static void scheduleAlarmNotification(Context c, int id, long tsUTC) {
     // Intents are considered equal if they have the same action, data, type,
     // class, and categories.  In order to schedule multiple alarms, every
@@ -81,12 +83,11 @@ public class AlarmNotificationService extends Service {
       if (wakelock == null) {
         wakelock = w;
       } else {
-        Log.i("ServiceAlarmclock", "Already wake-locked, releasing");
+        Log.i(TAG, "Already wake-locked, releasing");
         w.release();
       }
     } else {
-      Log.w("ServiceAlarmClock",
-            "No wake lock present for TRIGGER_ALARM_NOTIFICATION");
+      Log.w(TAG, "No wake lock present for TRIGGER_ALARM_NOTIFICATION");
     }
 
     Intent notify = new Intent(this, AlarmNotificationActivity.class)
@@ -114,12 +115,12 @@ public class AlarmNotificationService extends Service {
   @Override
   public void onDestroy() {
     if (wakelock != null) {
-      Log.i("ServiceAlarmclock", "Releasing wake lock");
+      Log.i(TAG, "Releasing wake lock");
       wakelock.release();
       wakelock = null;
     } else {
       // TODO, this will need to go if other commands are added to the service.
-      Log.w("ServiceAlarmClock", "No wake lock found when dismissing alarm");
+      Log.w(TAG, "No wake lock found when dismissing alarm");
     }
   }
 
@@ -141,7 +142,7 @@ public class AlarmNotificationService extends Service {
       w.setReferenceCounted(false);
       w.acquire();
       locks.put(nextid, w);
-      Log.i("AlarmTriggerReceiver", "Acquired lock " + nextid);
+      Log.i(TAG, "Acquired lock " + nextid);
 
       context.startService(new Intent(context, AlarmNotificationService.class)
                            .putExtra(COMMAND, TRIGGER_ALARM_NOTIFICATION)

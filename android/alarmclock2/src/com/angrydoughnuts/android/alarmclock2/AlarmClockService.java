@@ -35,6 +35,8 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 public class AlarmClockService extends Service {
+  private static final String TAG = AlarmClockService.class.getSimpleName();
+
   @Override
   public IBinder onBind(Intent intent) {
     return new IdentityBinder();
@@ -58,7 +60,7 @@ public class AlarmClockService extends Service {
         (tsUTC - c.getTimeInMillis()) / 1000);
     // TODO handle error ??
     Uri u = getContentResolver().insert(AlarmClockProvider.ALARMS_URI, v);
-    Log.i("ServiceAlarmClock", "New alarm: " + u);
+    Log.i(TAG, "New alarm: " + u);
 
     AlarmNotificationService.scheduleAlarmNotification(this, id++, tsUTC);
   }
