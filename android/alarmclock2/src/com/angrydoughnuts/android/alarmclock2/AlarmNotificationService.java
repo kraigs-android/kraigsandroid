@@ -135,6 +135,7 @@ public class AlarmNotificationService extends Service {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+      @SuppressWarnings("deprecation")  // SCREEN_DIM_WAKE_LOCK
       PowerManager.WakeLock w =
         ((PowerManager)context.getSystemService(Context.POWER_SERVICE))
         .newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK |

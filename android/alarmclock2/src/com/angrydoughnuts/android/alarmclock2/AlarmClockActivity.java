@@ -53,7 +53,7 @@ public class AlarmClockActivity extends Activity {
     final CursorAdapter adapter = new SimpleCursorAdapter(
         this, R.layout.alarm_list_item, null,
         new String[] { AlarmClockProvider.AlarmEntry.TIME },
-        new int[] { R.id.debug_text });
+        new int[] { R.id.debug_text }, 0);
     ((ListView)findViewById(R.id.alarm_list)).setAdapter(adapter);
     getLoaderManager().initLoader(
         0, null, new LoaderManager.LoaderCallbacks<Cursor>() {
