@@ -25,7 +25,7 @@ import android.os.IBinder;
 import android.view.View;
 import android.widget.Button;
 
-public class ActivityAlarmNotification extends Activity {
+public class AlarmNotificationActivity extends Activity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -35,7 +35,7 @@ public class ActivityAlarmNotification extends Activity {
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            ServiceNotification.dismissAllNotifications(
+            AlarmNotificationService.dismissAllNotifications(
                 getApplicationContext());
             finish();
           }

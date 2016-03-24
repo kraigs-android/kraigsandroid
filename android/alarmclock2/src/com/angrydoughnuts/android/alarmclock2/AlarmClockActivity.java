@@ -32,12 +32,12 @@ import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
-public class ActivityAlarmClock extends Activity {
-  private ServiceAlarmClock service = null;
+public class AlarmClockActivity extends Activity {
+  private AlarmClockService service = null;
   private final ServiceConnection connection = new ServiceConnection() {
       @Override
       public void onServiceConnected(ComponentName name, IBinder binder) {
-        service = ((ServiceAlarmClock.IdentityBinder)binder).getService();
+        service = ((AlarmClockService.IdentityBinder)binder).getService();
       }
       @Override
       public void onServiceDisconnected(ComponentName name) {
@@ -52,7 +52,7 @@ public class ActivityAlarmClock extends Activity {
 
     final CursorAdapter adapter = new SimpleCursorAdapter(
         this, R.layout.alarm_list_item, null,
-        new String[] { ProviderAlarmClock.AlarmEntry.TIME },
+        new String[] { AlarmClockProvider.AlarmEntry.TIME },
         new int[] { R.id.debug_text });
     ((ListView)findViewById(R.id.alarm_list)).setAdapter(adapter);
     getLoaderManager().initLoader(
@@ -60,11 +60,11 @@ public class ActivityAlarmClock extends Activity {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
               return new CursorLoader(
-                  getApplicationContext(), ProviderAlarmClock.ALARMS_URI,
+                  getApplicationContext(), AlarmClockProvider.ALARMS_URI,
                   new String[] {
-                    ProviderAlarmClock.AlarmEntry._ID,
-                    ProviderAlarmClock.AlarmEntry.TIME },
-                  null, null, ProviderAlarmClock.AlarmEntry.TIME + " ASC");
+                    AlarmClockProvider.AlarmEntry._ID,
+                    AlarmClockProvider.AlarmEntry.TIME },
+                  null, null, AlarmClockProvider.AlarmEntry.TIME + " ASC");
             }
             @Override
             public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
@@ -89,7 +89,7 @@ public class ActivityAlarmClock extends Activity {
   public void onStart() {
     super.onStart();
     if (service == null) {
-      bindService(new Intent(this, ServiceAlarmClock.class), connection,
+      bindService(new Intent(this, AlarmClockService.class), connection,
                   Context.BIND_AUTO_CREATE);
     }
   }

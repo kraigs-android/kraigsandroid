@@ -34,7 +34,7 @@ import android.util.Log;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-public class ServiceNotification extends Service {
+public class AlarmNotificationService extends Service {
   public static void scheduleAlarmNotification(Context c, int id, long tsUTC) {
     // Intents are considered equal if they have the same action, data, type,
     // class, and categories.  In order to schedule multiple alarms, every
@@ -48,7 +48,7 @@ public class ServiceNotification extends Service {
   }
 
   public static void dismissAllNotifications(Context c) {
-    c.stopService(new Intent(c, ServiceNotification.class));
+    c.stopService(new Intent(c, AlarmNotificationService.class));
   }
 
   public static final String COMMAND = "command";
@@ -89,7 +89,7 @@ public class ServiceNotification extends Service {
             "No wake lock present for TRIGGER_ALARM_NOTIFICATION");
     }
 
-    Intent notify = new Intent(this, ActivityAlarmNotification.class)
+    Intent notify = new Intent(this, AlarmNotificationActivity.class)
       .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
     startForeground(
@@ -143,7 +143,7 @@ public class ServiceNotification extends Service {
       locks.put(nextid, w);
       Log.i("AlarmTriggerReceiver", "Acquired lock " + nextid);
 
-      context.startService(new Intent(context, ServiceNotification.class)
+      context.startService(new Intent(context, AlarmNotificationService.class)
                            .putExtra(COMMAND, TRIGGER_ALARM_NOTIFICATION)
                            .putExtra(WAKELOCK_ID, nextid++));
     }

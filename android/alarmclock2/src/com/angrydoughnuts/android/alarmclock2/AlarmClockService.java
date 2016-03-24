@@ -34,7 +34,7 @@ import android.util.Log;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-public class ServiceAlarmClock extends Service {
+public class AlarmClockService extends Service {
   @Override
   public IBinder onBind(Intent intent) {
     return new IdentityBinder();
@@ -54,18 +54,18 @@ public class ServiceAlarmClock extends Service {
 
     ContentValues v = new ContentValues();
     v.put(
-        ProviderAlarmClock.AlarmEntry.TIME,
+        AlarmClockProvider.AlarmEntry.TIME,
         (tsUTC - c.getTimeInMillis()) / 1000);
     // TODO handle error ??
-    Uri u = getContentResolver().insert(ProviderAlarmClock.ALARMS_URI, v);
+    Uri u = getContentResolver().insert(AlarmClockProvider.ALARMS_URI, v);
     Log.i("ServiceAlarmClock", "New alarm: " + u);
 
-    ServiceNotification.scheduleAlarmNotification(this, id++, tsUTC);
+    AlarmNotificationService.scheduleAlarmNotification(this, id++, tsUTC);
   }
 
   public class IdentityBinder extends Binder {
-    public ServiceAlarmClock getService() {
-      return ServiceAlarmClock.this;
+    public AlarmClockService getService() {
+      return AlarmClockService.this;
     }
   }
 }

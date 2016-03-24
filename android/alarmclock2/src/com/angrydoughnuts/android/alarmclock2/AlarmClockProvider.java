@@ -31,7 +31,7 @@ import android.util.Log;
 
 import java.lang.IllegalArgumentException;
 
-public final class ProviderAlarmClock extends ContentProvider {
+public final class AlarmClockProvider extends ContentProvider {
   private SQLiteDatabase db = null;
 
   @Override

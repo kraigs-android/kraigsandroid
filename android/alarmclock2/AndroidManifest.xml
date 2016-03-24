@@ -8,24 +8,22 @@
       android:label="@string/app_name"
       android:icon="@drawable/ic_launcher">
     <activity
-        android:name="ActivityAlarmClock"
+        android:name=".AlarmClockActivity"
         android:label="@string/app_name">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
-
-    <service android:name=".ServiceAlarmClock" android:exported="false" />
-    <service android:name=".ServiceNotification" android:exported="false" />
-    <receiver android:name=".ServiceNotification$AlarmTriggerReceiver" />
+    <service android:name=".AlarmClockService" android:exported="false" />
+    <service android:name=".AlarmNotificationService" android:exported="false"/>
+    <receiver android:name=".AlarmNotificationService$AlarmTriggerReceiver" />
     <provider
-        android:name=".ProviderAlarmClock"
+        android:name=".AlarmClockProvider"
         android:authorities="com.angrydoughnuts.android.alarmclock2.provider"
         android:exported="false" />
-
     <activity
-        android:name=".ActivityAlarmNotification"
+        android:name=".AlarmNotificationActivity"
         android:launchMode="singleInstance"
         android:taskAffinity=""
         android:excludeFromRecents="true" />
