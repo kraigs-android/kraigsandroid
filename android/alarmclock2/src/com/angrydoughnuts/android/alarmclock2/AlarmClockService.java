@@ -15,20 +15,12 @@
 
 package com.angrydoughnuts.android.alarmclock2;
 
-import android.app.AlarmManager;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.content.BroadcastReceiver;
 import android.content.ContentValues;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.PowerManager;
-import android.util.ArrayMap;
 import android.util.Log;
 
 import java.util.Calendar;
