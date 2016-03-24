@@ -17,7 +17,8 @@
     </activity>
 
     <service android:name=".ServiceAlarmClock" android:exported="false" />
-    <receiver android:name=".ServiceAlarmClock$AlarmTriggerReceiver" />
+    <service android:name=".ServiceNotification" android:exported="false" />
+    <receiver android:name=".ServiceNotification$AlarmTriggerReceiver" />
     <provider
         android:name=".ProviderAlarmClock"
         android:authorities="com.angrydoughnuts.android.alarmclock2.provider"
