@@ -15,8 +15,8 @@
 
 package com.angrydoughnuts.android.alarmclock2;
 
-import android.content.ContentValues;
 import android.app.Service;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Binder;
@@ -55,6 +55,10 @@ public class AlarmClockService extends Service {
     Log.i(TAG, "New alarm: " + u);
 
     AlarmNotificationService.scheduleAlarmNotification(this, id++, tsUTC);
+
+    startService(new Intent(this, AlarmNotificationService.class)
+                 .putExtra(AlarmNotificationService.COMMAND,
+                           AlarmNotificationService.DISPLAY_NEXT_ALARM));
   }
 
   public class IdentityBinder extends Binder {

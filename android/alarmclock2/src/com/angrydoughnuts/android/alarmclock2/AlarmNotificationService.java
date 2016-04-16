@@ -17,15 +17,20 @@ package com.angrydoughnuts.android.alarmclock2;
 
 import android.app.AlarmManager;
 import android.app.Notification;
-import android.content.BroadcastReceiver;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.ArrayMap;
 import android.util.Log;
+
+import java.util.Calendar;
+import java.util.TimeZone;
 
 public class AlarmNotificationService extends Service {
   private static final String TAG =
@@ -48,8 +53,12 @@ public class AlarmNotificationService extends Service {
 
   public static final String COMMAND = "command";
   public static final int TRIGGER_ALARM_NOTIFICATION = 1;
-  public static final int ALARM_NOTIFICATION_ID = 69;
+  public static final int DISPLAY_NEXT_ALARM = 2;
+  public static final int FIRING_ALARM_NOTIFICATION_ID = 42;
+  public static final int NEXT_ALARM_NOTIFICATION_ID = 69;
   private PowerManager.WakeLock wakelock = null;
+
+  private boolean alarmFiring() { return wakelock != null; }
 
   @Override
   public int onStartCommand(Intent i, int flags, int startId) {
@@ -57,8 +66,14 @@ public class AlarmNotificationService extends Service {
     case TRIGGER_ALARM_NOTIFICATION:
       handleTriggerAlarm(i);
       break;
+    case DISPLAY_NEXT_ALARM:
+      displayNextAlarm();
+      if (!alarmFiring()) {
+        stopSelf(startId);
+      }
+      break;
     default:
-      if (wakelock != null) {
+      if (!alarmFiring()) {
         stopSelf(startId);
       }
     }
@@ -87,7 +102,7 @@ public class AlarmNotificationService extends Service {
       .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
     startForeground(
-        ALARM_NOTIFICATION_ID,
+        FIRING_ALARM_NOTIFICATION_ID,
         new Notification.Builder(this)
           .setContentTitle("Alarming...")
           .setContentText("Second line...")
@@ -105,15 +120,73 @@ public class AlarmNotificationService extends Service {
     startActivity(notify);
   }
 
+  // TODO temp
+  static int count = 0;
+  private void displayNextAlarm() {
+    final NotificationManager manager =
+      (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    final PendingIntent tick = PendingIntent.getService(
+        this, 0, new Intent(this, AlarmNotificationService.class)
+        .putExtra(AlarmNotificationService.COMMAND,
+                  AlarmNotificationService.DISPLAY_NEXT_ALARM), 0);
+    // TODO: remove after testing cancel path.
+    Log.i(TAG, "Update next time notification");
+
+    // TODO async load?
+    final Cursor c = getContentResolver().query(
+        AlarmClockProvider.ALARMS_URI,
+        new String[] { AlarmClockProvider.AlarmEntry.TIME },
+        AlarmClockProvider.AlarmEntry.ENABLED + " == 1",
+        null, null);
+
+    if (c.getCount() == 0) {
+      manager.cancel(NEXT_ALARM_NOTIFICATION_ID);
+      c.close();
+      ((AlarmManager)getSystemService(Context.ALARM_SERVICE)).cancel(tick);
+      return;
+    }
+
+    final int index = c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME);
+    long next = 0;
+    while (c.moveToNext()) {
+      long time = c.getLong(index);
+      if (time > next) {
+        next = time;
+      }
+    }
+    c.close();
+
+    manager.notify(
+        NEXT_ALARM_NOTIFICATION_ID,
+        new Notification.Builder(this)
+        .setContentTitle("Next Alarm...")
+        .setContentText("TS: " + next + " count: " + ++count + " now: " + System.currentTimeMillis())
+        .setSmallIcon(R.drawable.ic_launcher)
+        .setCategory(Notification.CATEGORY_STATUS)
+        .setVisibility(Notification.VISIBILITY_PUBLIC)
+        .setOngoing(true)
+        .setContentIntent(
+            PendingIntent.getActivity(
+                this, 0, new Intent(this, AlarmClockActivity.class), 0))
+        .build());
+
+    final Calendar wake = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    // TODO
+    // wake.set(Calendar.SECOND, 0);
+    wake.set(Calendar.MILLISECOND, 0);
+    wake.add(Calendar.SECOND, 1);
+    // wake.add(Calendar.MINUTE, 1);
+
+    ((AlarmManager)getSystemService(Context.ALARM_SERVICE)).setExact(
+        AlarmManager.RTC, wake.getTimeInMillis(), tick);
+  }
+
   @Override
   public void onDestroy() {
-    if (wakelock != null) {
+    if (alarmFiring()) {
       Log.i(TAG, "Releasing wake lock");
       wakelock.release();
       wakelock = null;
-    } else {
-      // TODO, this will need to go if other commands are added to the service.
-      Log.w(TAG, "No wake lock found when dismissing alarm");
     }
   }
 
