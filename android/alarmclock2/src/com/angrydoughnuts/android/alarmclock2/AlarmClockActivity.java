@@ -18,6 +18,8 @@ package com.angrydoughnuts.android.alarmclock2;
 import android.app.Activity;
 import android.app.LoaderManager;
 import android.content.ComponentName;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -27,6 +29,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
@@ -75,7 +78,24 @@ public class AlarmClockActivity extends Activity {
         }
       });
 
-    ((ListView)findViewById(R.id.alarm_list)).setAdapter(adapter);
+    ListView list = (ListView)findViewById(R.id.alarm_list);
+    list.setAdapter(adapter);
+    list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View v, int x, long id) {
+          boolean check = ((CheckBox)v.findViewById(R.id.enabled)).isChecked();
+
+          ContentValues val = new ContentValues();
+          val.put(AlarmClockProvider.AlarmEntry.ENABLED, !check);
+          getContentResolver().update(
+              ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
+              val, null, null);
+
+          // TODO, this doesn't actually schedule the alarm yet.
+          AlarmNotificationService.triggerUpdateLoop(getApplicationContext());
+        }
+      });
+
     getLoaderManager().initLoader(
         0, null, new LoaderManager.LoaderCallbacks<Cursor>() {
             @Override
