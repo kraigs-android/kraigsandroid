@@ -82,7 +82,13 @@ public final class AlarmClockProvider extends ContentProvider {
                     String[] selectionArgs) {
     switch (matcher.match(uri)) {
     case ALARMS:
-      return db.update(AlarmEntry.TABLE_NAME, values, selection, selectionArgs);
+      // TODO
+      return 0;
+    case ALARM_ID:
+      final long alarmid = ContentUris.parseId(uri);
+      return db.update(
+          AlarmEntry.TABLE_NAME, values,
+          AlarmEntry._ID + " == " + alarmid, null);
     default:
       throw new IllegalArgumentException("Unknown URI " + uri);
     }

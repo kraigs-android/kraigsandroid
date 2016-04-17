@@ -58,9 +58,7 @@ public class AlarmClockService extends Service {
 
     AlarmNotificationService.scheduleAlarmNotification(this, alarmid, tsUTC);
 
-    startService(new Intent(this, AlarmNotificationService.class)
-                 .putExtra(AlarmNotificationService.COMMAND,
-                           AlarmNotificationService.DISPLAY_NEXT_ALARM));
+    AlarmNotificationService.triggerUpdateLoop(this);
   }
 
   public class IdentityBinder extends Binder {

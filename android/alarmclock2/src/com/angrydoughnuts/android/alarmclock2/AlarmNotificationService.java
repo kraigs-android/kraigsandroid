@@ -21,6 +21,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -35,9 +36,8 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 public class AlarmNotificationService extends Service {
-  private static final String TAG =
-    AlarmNotificationService.class.getSimpleName();
-  public static void scheduleAlarmNotification(Context c, long alarmid, long tsUTC) {
+  public static void scheduleAlarmNotification(
+      Context c, long alarmid, long tsUTC) {
     // Intents are considered equal if they have the same action, data, type,
     // class, and categories.  In order to schedule multiple alarms, every
     // pending intent must be different.  This means that we must encode
@@ -51,45 +51,57 @@ public class AlarmNotificationService extends Service {
         .setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, tsUTC, schedule);
   }
 
-  public static void dismissAllNotifications(Context c) {
-    c.stopService(new Intent(c, AlarmNotificationService.class));
+  public static void triggerUpdateLoop(Context c) {
+    c.startService(new Intent(c, AlarmNotificationService.class)
+                   .putExtra(AlarmNotificationService.COMMAND,
+                             AlarmNotificationService.UPDATE_LOOP));
   }
-
-  public static final String COMMAND = "command";
-  public static final int TRIGGER_ALARM_NOTIFICATION = 1;
-  public static final int DISPLAY_NEXT_ALARM = 2;
-  public static final int FIRING_ALARM_NOTIFICATION_ID = 42;
-  public static final int NEXT_ALARM_NOTIFICATION_ID = 69;
 
   private ActiveAlarms activeAlarms = null;
-
-  private boolean alarmFiring() { return activeAlarms != null; }
-
-  private class ActiveAlarms {
-    public PowerManager.WakeLock wakelock = null;
-    public HashSet<Long> alarmids = new HashSet<Long>();
-  }
 
   @Override
   public int onStartCommand(Intent i, int flags, int startId) {
     switch (i.hasExtra(COMMAND) ? i.getExtras().getInt(COMMAND) : -1) {
     case TRIGGER_ALARM_NOTIFICATION:
       handleTriggerAlarm(i);
-      break;
-    case DISPLAY_NEXT_ALARM:
+      return START_NOT_STICKY;
+    case UPDATE_LOOP:
       displayNextAlarm();
-      if (!alarmFiring()) {
-        stopSelf(startId);
-      }
       break;
-    default:
-      if (!alarmFiring()) {
-        stopSelf(startId);
-      }
     }
+
+    if (activeAlarms == null)
+      stopSelf(startId);
 
     return START_NOT_STICKY;
   }
+
+  @Override
+  public void onDestroy() {
+    if (activeAlarms == null)
+      return;
+
+    for (long alarmid : activeAlarms.alarmids) {
+      // TODO, this should potentially reschedule instead of blindly disable.
+      ContentValues v = new ContentValues();
+      v.put(AlarmClockProvider.AlarmEntry.ENABLED, false);
+      int r = getContentResolver().update(
+          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, alarmid),
+          v, null, null);
+      if (r < 1) {
+        Log.e(TAG, "Failed to disable " + alarmid);
+      }
+    }
+
+    triggerUpdateLoop(this);
+
+    Log.i(TAG, "Releasing wake lock");
+    activeAlarms.wakelock.release();
+    activeAlarms = null;
+  }
+
+  @Override
+  public IBinder onBind(Intent intent) { return null; }
 
   private void handleTriggerAlarm(Intent i) {
     final long alarmid = i.getLongExtra(AlarmClockService.ALARM_ID, -1);
@@ -100,20 +112,17 @@ public class AlarmNotificationService extends Service {
           i.getExtras().getInt(AlarmTriggerReceiver.WAKELOCK_ID));
     }
 
-    if (w == null) {
-      Log.w(TAG, "No wake lock present for TRIGGER_ALARM_NOTIFICATION");
-    }
+    if (w == null)
+      Log.e(TAG, "No wake lock present for TRIGGER_ALARM_NOTIFICATION");
 
-    if (alarmFiring()) {
-        Log.i(TAG, "Already wake-locked, releasing");
-        w.release();
-    } else {
+    if (activeAlarms == null) {
       activeAlarms = new ActiveAlarms();
       activeAlarms.wakelock = w;
+    } else {
+      Log.i(TAG, "Already wake-locked, releasing");
+      w.release();
     }
-    if (!activeAlarms.alarmids.add(alarmid)) {
-      Log.w(TAG, "Already received trigger for " + alarmid);
-    }
+    activeAlarms.alarmids.add(alarmid);
 
     Intent notify = new Intent(this, AlarmNotificationActivity.class)
       .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -134,30 +143,29 @@ public class AlarmNotificationService extends Service {
           .setContentIntent(PendingIntent.getActivity(this, 0, notify, 0))
           .build());
 
+    triggerUpdateLoop(this);
+
     Intent notifyAct = (Intent) notify.clone();
     notifyAct.putExtra(AlarmClockService.ALARM_ID, alarmid);
     startActivity(notifyAct);
   }
 
-  // TODO temp
-  static int count = 0;
   private void displayNextAlarm() {
     final NotificationManager manager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     final PendingIntent tick = PendingIntent.getService(
         this, 0, new Intent(this, AlarmNotificationService.class)
         .putExtra(AlarmNotificationService.COMMAND,
-                  AlarmNotificationService.DISPLAY_NEXT_ALARM), 0);
+                  AlarmNotificationService.UPDATE_LOOP), 0);
 
-    // TODO async load?
     final Cursor c = getContentResolver().query(
         AlarmClockProvider.ALARMS_URI,
         new String[] { AlarmClockProvider.AlarmEntry.TIME },
         AlarmClockProvider.AlarmEntry.ENABLED + " == 1",
         null, null);
 
-    if (c.getCount() == 0) {
-      Log.i(TAG, "Disabled next alarm refresh");
+    if (c.getCount() == 0 || activeAlarms != null) {
+      Log.i(TAG, "Stopping notification refresh loop");
       manager.cancel(NEXT_ALARM_NOTIFICATION_ID);
       c.close();
       ((AlarmManager)getSystemService(Context.ALARM_SERVICE)).cancel(tick);
@@ -178,7 +186,7 @@ public class AlarmNotificationService extends Service {
         NEXT_ALARM_NOTIFICATION_ID,
         new Notification.Builder(this)
         .setContentTitle("Next Alarm...")
-        .setContentText("TS: " + next + " count: " + ++count + " now: " + System.currentTimeMillis())
+        .setContentText("TS: " + next)
         .setSmallIcon(R.drawable.ic_launcher)
         .setCategory(Notification.CATEGORY_STATUS)
         .setVisibility(Notification.VISIBILITY_PUBLIC)
@@ -199,34 +207,18 @@ public class AlarmNotificationService extends Service {
         AlarmManager.RTC, wake.getTimeInMillis(), tick);
   }
 
-  @Override
-  public void onDestroy() {
-    if (alarmFiring()) {
-      for (long alarmid : activeAlarms.alarmids) {
-        // TODO, this should potentially reschedule instead of blindly disable.
-        ContentValues v = new ContentValues();
-        v.put(AlarmClockProvider.AlarmEntry.ENABLED, false);
-        int r = getContentResolver().update(
-            AlarmClockProvider.ALARMS_URI, v,
-            AlarmClockProvider.AlarmEntry._ID + " == " + alarmid,
-            null);
-        if (r < 1) {
-          Log.e(TAG, "Failed to disable " + alarmid);
-        }
-      }
+  private static final String TAG =
+    AlarmNotificationService.class.getSimpleName();
+  private static final String COMMAND = "command";
+  private static final int TRIGGER_ALARM_NOTIFICATION = 1;
+  private static final int UPDATE_LOOP = 2;
+  private static final int FIRING_ALARM_NOTIFICATION_ID = 42;
+  private static final int NEXT_ALARM_NOTIFICATION_ID = 69;
 
-      startService(new Intent(this, AlarmNotificationService.class)
-                   .putExtra(AlarmNotificationService.COMMAND,
-                             AlarmNotificationService.DISPLAY_NEXT_ALARM));
-
-      Log.i(TAG, "Releasing wake lock");
-      activeAlarms.wakelock.release();
-      activeAlarms = null;
-    }
+  private static class ActiveAlarms {
+    public PowerManager.WakeLock wakelock = null;
+    public HashSet<Long> alarmids = new HashSet<Long>();
   }
-
-  @Override
-  public IBinder onBind(Intent intent) { return null; }
 
   public static class AlarmTriggerReceiver extends BroadcastReceiver {
     public static final String WAKELOCK_ID = "wakelock_id";
@@ -235,12 +227,12 @@ public class AlarmNotificationService extends Service {
     private static int nextid = 0;
 
     @Override
-    public void onReceive(Context context, Intent intent) {
-      final long alarmid = intent.getLongExtra(AlarmClockService.ALARM_ID, -1);
+    public void onReceive(Context c, Intent i) {
+      final long alarmid = i.getLongExtra(AlarmClockService.ALARM_ID, -1);
 
       @SuppressWarnings("deprecation")  // SCREEN_DIM_WAKE_LOCK
       PowerManager.WakeLock w =
-        ((PowerManager)context.getSystemService(Context.POWER_SERVICE))
+        ((PowerManager)c.getSystemService(Context.POWER_SERVICE))
         .newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK |
                      PowerManager.ACQUIRE_CAUSES_WAKEUP, "wake id " + nextid);
       w.setReferenceCounted(false);
@@ -248,10 +240,10 @@ public class AlarmNotificationService extends Service {
       locks.put(nextid, w);
       Log.i(TAG, "Acquired lock " + nextid + " for alarm " + alarmid);
 
-      context.startService(new Intent(context, AlarmNotificationService.class)
-                           .putExtra(AlarmClockService.ALARM_ID, alarmid)
-                           .putExtra(COMMAND, TRIGGER_ALARM_NOTIFICATION)
-                           .putExtra(WAKELOCK_ID, nextid++));
+      c.startService(new Intent(c, AlarmNotificationService.class)
+                     .putExtra(AlarmClockService.ALARM_ID, alarmid)
+                     .putExtra(COMMAND, TRIGGER_ALARM_NOTIFICATION)
+                     .putExtra(WAKELOCK_ID, nextid++));
     }
 
     public static PowerManager.WakeLock consumeLock(int id) {
