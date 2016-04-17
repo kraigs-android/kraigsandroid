@@ -86,7 +86,6 @@ public final class AlarmClockProvider extends ContentProvider {
       return 0;
     case ALARM_ID:
       final long alarmid = ContentUris.parseId(uri);
-      getContext().getContentResolver().notifyChange(uri, null);
       int count = db.update(
           AlarmEntry.TABLE_NAME, values,
           AlarmEntry._ID + " == " + alarmid, null);
@@ -100,8 +99,21 @@ public final class AlarmClockProvider extends ContentProvider {
 
   @Override
   public int delete(Uri uri, String selection, String[] selectionArgs) {
-    // TODO
-    return 0;
+    switch (matcher.match(uri)) {
+    case ALARMS:
+      // TODO
+      return 0;
+    case ALARM_ID:
+      final long alarmid = ContentUris.parseId(uri);
+      int count = db.delete(
+          AlarmEntry.TABLE_NAME, AlarmEntry._ID + " == " + alarmid, null);
+      // TODO this doesn't delete from the settings table yet.
+      if (count > 0)
+        getContext().getContentResolver().notifyChange(uri, null);
+      return count;
+    default:
+      throw new IllegalArgumentException("Unknown URI " + uri);
+    }
   }
 
   @Override

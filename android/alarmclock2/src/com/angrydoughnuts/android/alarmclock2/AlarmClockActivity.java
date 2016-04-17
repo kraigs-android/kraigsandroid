@@ -95,6 +95,18 @@ public class AlarmClockActivity extends Activity {
           AlarmNotificationService.triggerUpdateLoop(getApplicationContext());
         }
       });
+    list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+        @Override
+        public boolean onItemLongClick(AdapterView<?> p, View v, int x, long id) {
+          getContentResolver().delete(
+              ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
+              null, null);
+
+          // TODO, this doesn't actually clear the alarm yet.
+          AlarmNotificationService.triggerUpdateLoop(getApplicationContext());
+          return true;
+        }
+      });
 
     getLoaderManager().initLoader(
         0, null, new LoaderManager.LoaderCallbacks<Cursor>() {
