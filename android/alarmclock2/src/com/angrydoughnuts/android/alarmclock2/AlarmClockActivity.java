@@ -28,9 +28,10 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CursorAdapter;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 
 public class AlarmClockActivity extends Activity {
   private AlarmClockService service = null;
@@ -50,10 +51,30 @@ public class AlarmClockActivity extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.alarm_list);
 
-    final CursorAdapter adapter = new SimpleCursorAdapter(
+    final SimpleCursorAdapter adapter = new SimpleCursorAdapter(
         this, R.layout.alarm_list_item, null,
-        new String[] { AlarmClockProvider.AlarmEntry.TIME },
-        new int[] { R.id.debug_text }, 0);
+        new String[] {
+          AlarmClockProvider.AlarmEntry.TIME,
+          AlarmClockProvider.AlarmEntry.ENABLED },
+        new int[] {
+          R.id.debug_text,
+          R.id.enabled }, 0);
+    adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+        @Override
+        public boolean setViewValue(View v, Cursor c, int index) {
+          switch (c.getColumnName(index)) {
+          case AlarmClockProvider.AlarmEntry.TIME:
+            ((TextView) v).setText("" + c.getLong(index));
+            return true;
+          case AlarmClockProvider.AlarmEntry.ENABLED:
+            ((CheckBox) v).setChecked(c.getInt(index) != 0);
+            return true;
+          default:
+            return false;
+          }
+        }
+      });
+
     ((ListView)findViewById(R.id.alarm_list)).setAdapter(adapter);
     getLoaderManager().initLoader(
         0, null, new LoaderManager.LoaderCallbacks<Cursor>() {
@@ -63,7 +84,8 @@ public class AlarmClockActivity extends Activity {
                   getApplicationContext(), AlarmClockProvider.ALARMS_URI,
                   new String[] {
                     AlarmClockProvider.AlarmEntry._ID,
-                    AlarmClockProvider.AlarmEntry.TIME },
+                    AlarmClockProvider.AlarmEntry.TIME,
+                    AlarmClockProvider.AlarmEntry.ENABLED },
                   null, null, AlarmClockProvider.AlarmEntry.TIME + " ASC");
             }
             @Override

@@ -86,9 +86,13 @@ public final class AlarmClockProvider extends ContentProvider {
       return 0;
     case ALARM_ID:
       final long alarmid = ContentUris.parseId(uri);
-      return db.update(
+      getContext().getContentResolver().notifyChange(uri, null);
+      int count = db.update(
           AlarmEntry.TABLE_NAME, values,
           AlarmEntry._ID + " == " + alarmid, null);
+      if (count > 0)
+        getContext().getContentResolver().notifyChange(uri, null);
+      return count;
     default:
       throw new IllegalArgumentException("Unknown URI " + uri);
     }
