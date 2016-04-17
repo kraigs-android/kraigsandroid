@@ -16,15 +16,26 @@
 package com.angrydoughnuts.android.alarmclock2;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 public class AlarmNotificationActivity extends Activity {
+  private static final String TAG =
+    AlarmNotificationActivity.class.getSimpleName();
+
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.notification);
+
+    final long alarmid =
+      getIntent().getLongExtra(AlarmClockService.ALARM_ID, -1);
+    if (alarmid != -1) {
+      Log.i(TAG, "Alarm notification intent " + alarmid);
+    }
 
     ((Button)findViewById(R.id.dismiss_alarm)).setOnClickListener(
         new View.OnClickListener() {
@@ -35,5 +46,15 @@ public class AlarmNotificationActivity extends Activity {
             finish();
           }
         });
+  }
+
+  @Override
+  protected void onNewIntent(Intent i) {
+    super.onNewIntent(i);
+
+    final long alarmid = i.getLongExtra(AlarmClockService.ALARM_ID, -1);
+    if (alarmid != -1) {
+      Log.i(TAG, "Another alarm notification intent " + alarmid);
+    }
   }
 }

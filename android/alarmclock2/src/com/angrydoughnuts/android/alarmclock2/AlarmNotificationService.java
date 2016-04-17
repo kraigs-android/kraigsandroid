@@ -29,19 +29,22 @@ import android.os.PowerManager;
 import android.util.ArrayMap;
 import android.util.Log;
 
+import java.util.HashSet;
 import java.util.Calendar;
 import java.util.TimeZone;
 
 public class AlarmNotificationService extends Service {
   private static final String TAG =
     AlarmNotificationService.class.getSimpleName();
-  public static void scheduleAlarmNotification(Context c, int id, long tsUTC) {
+  public static void scheduleAlarmNotification(Context c, long alarmid, long tsUTC) {
     // Intents are considered equal if they have the same action, data, type,
     // class, and categories.  In order to schedule multiple alarms, every
     // pending intent must be different.  This means that we must encode
     // the alarm id in the request code.
     PendingIntent schedule = PendingIntent.getBroadcast(
-        c, id, new Intent(c, AlarmTriggerReceiver.class), 0);
+        c, (int)alarmid,
+        new Intent(c, AlarmTriggerReceiver.class)
+        .putExtra(AlarmClockService.ALARM_ID, alarmid), 0);
 
     ((AlarmManager)c.getSystemService(Context.ALARM_SERVICE))
         .setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, tsUTC, schedule);
@@ -56,9 +59,15 @@ public class AlarmNotificationService extends Service {
   public static final int DISPLAY_NEXT_ALARM = 2;
   public static final int FIRING_ALARM_NOTIFICATION_ID = 42;
   public static final int NEXT_ALARM_NOTIFICATION_ID = 69;
-  private PowerManager.WakeLock wakelock = null;
 
-  private boolean alarmFiring() { return wakelock != null; }
+  private ActiveAlarms activeAlarms = null;
+
+  private boolean alarmFiring() { return activeAlarms != null; }
+
+  private class ActiveAlarms {
+    public PowerManager.WakeLock wakelock = null;
+    public HashSet<Long> alarmids = new HashSet<Long>();
+  }
 
   @Override
   public int onStartCommand(Intent i, int flags, int startId) {
@@ -82,20 +91,27 @@ public class AlarmNotificationService extends Service {
   }
 
   private void handleTriggerAlarm(Intent i) {
+    final long alarmid = i.getLongExtra(AlarmClockService.ALARM_ID, -1);
+
     PowerManager.WakeLock w = null;
     if (i.hasExtra(AlarmTriggerReceiver.WAKELOCK_ID)) {
       w = AlarmTriggerReceiver.consumeLock(
           i.getExtras().getInt(AlarmTriggerReceiver.WAKELOCK_ID));
     }
-    if (w != null) {
-      if (wakelock == null) {
-        wakelock = w;
-      } else {
+
+    if (w == null) {
+      Log.w(TAG, "No wake lock present for TRIGGER_ALARM_NOTIFICATION");
+    }
+
+    if (alarmFiring()) {
         Log.i(TAG, "Already wake-locked, releasing");
         w.release();
-      }
     } else {
-      Log.w(TAG, "No wake lock present for TRIGGER_ALARM_NOTIFICATION");
+      activeAlarms = new ActiveAlarms();
+      activeAlarms.wakelock = w;
+    }
+    if (!activeAlarms.alarmids.add(alarmid)) {
+      Log.w(TAG, "Already received trigger for " + alarmid);
     }
 
     Intent notify = new Intent(this, AlarmNotificationActivity.class)
@@ -117,7 +133,9 @@ public class AlarmNotificationService extends Service {
           .setContentIntent(PendingIntent.getActivity(this, 0, notify, 0))
           .build());
 
-    startActivity(notify);
+    Intent notifyAct = (Intent) notify.clone();
+    notifyAct.putExtra(AlarmClockService.ALARM_ID, alarmid);
+    startActivity(notifyAct);
   }
 
   // TODO temp
@@ -185,8 +203,8 @@ public class AlarmNotificationService extends Service {
   public void onDestroy() {
     if (alarmFiring()) {
       Log.i(TAG, "Releasing wake lock");
-      wakelock.release();
-      wakelock = null;
+      activeAlarms.wakelock.release();
+      activeAlarms = null;
     }
   }
 
@@ -201,6 +219,8 @@ public class AlarmNotificationService extends Service {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+      final long alarmid = intent.getLongExtra(AlarmClockService.ALARM_ID, -1);
+
       @SuppressWarnings("deprecation")  // SCREEN_DIM_WAKE_LOCK
       PowerManager.WakeLock w =
         ((PowerManager)context.getSystemService(Context.POWER_SERVICE))
@@ -209,9 +229,10 @@ public class AlarmNotificationService extends Service {
       w.setReferenceCounted(false);
       w.acquire();
       locks.put(nextid, w);
-      Log.i(TAG, "Acquired lock " + nextid);
+      Log.i(TAG, "Acquired lock " + nextid + " for alarm " + alarmid);
 
       context.startService(new Intent(context, AlarmNotificationService.class)
+                           .putExtra(AlarmClockService.ALARM_ID, alarmid)
                            .putExtra(COMMAND, TRIGGER_ALARM_NOTIFICATION)
                            .putExtra(WAKELOCK_ID, nextid++));
     }

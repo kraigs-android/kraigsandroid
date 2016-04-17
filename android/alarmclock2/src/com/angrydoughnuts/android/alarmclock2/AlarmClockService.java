@@ -16,6 +16,7 @@
 package com.angrydoughnuts.android.alarmclock2;
 
 import android.app.Service;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
@@ -27,6 +28,8 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 public class AlarmClockService extends Service {
+  public static final String ALARM_ID = "alarm_id";
+
   private static final String TAG = AlarmClockService.class.getSimpleName();
 
   @Override
@@ -34,8 +37,6 @@ public class AlarmClockService extends Service {
     return new IdentityBinder();
   }
 
-  // TODO: temp
-  private static int id = 0;
   public void createTestAlarm() {
     final long tsUTC = System.currentTimeMillis() + 5000;
 
@@ -52,9 +53,10 @@ public class AlarmClockService extends Service {
         (tsUTC - c.getTimeInMillis()) / 1000);
     // TODO handle error ??
     Uri u = getContentResolver().insert(AlarmClockProvider.ALARMS_URI, v);
-    Log.i(TAG, "New alarm: " + u);
+    long alarmid = ContentUris.parseId(u);
+    Log.i(TAG, "New alarm: " + alarmid + " (" + u +")");
 
-    AlarmNotificationService.scheduleAlarmNotification(this, id++, tsUTC);
+    AlarmNotificationService.scheduleAlarmNotification(this, alarmid, tsUTC);
 
     startService(new Intent(this, AlarmNotificationService.class)
                  .putExtra(AlarmNotificationService.COMMAND,
