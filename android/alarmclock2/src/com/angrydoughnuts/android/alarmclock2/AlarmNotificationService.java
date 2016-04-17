@@ -21,6 +21,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -147,8 +148,6 @@ public class AlarmNotificationService extends Service {
         this, 0, new Intent(this, AlarmNotificationService.class)
         .putExtra(AlarmNotificationService.COMMAND,
                   AlarmNotificationService.DISPLAY_NEXT_ALARM), 0);
-    // TODO: remove after testing cancel path.
-    Log.i(TAG, "Update next time notification");
 
     // TODO async load?
     final Cursor c = getContentResolver().query(
@@ -158,6 +157,7 @@ public class AlarmNotificationService extends Service {
         null, null);
 
     if (c.getCount() == 0) {
+      Log.i(TAG, "Disabled next alarm refresh");
       manager.cancel(NEXT_ALARM_NOTIFICATION_ID);
       c.close();
       ((AlarmManager)getSystemService(Context.ALARM_SERVICE)).cancel(tick);
@@ -202,6 +202,23 @@ public class AlarmNotificationService extends Service {
   @Override
   public void onDestroy() {
     if (alarmFiring()) {
+      for (long alarmid : activeAlarms.alarmids) {
+        // TODO, this should potentially reschedule instead of blindly disable.
+        ContentValues v = new ContentValues();
+        v.put(AlarmClockProvider.AlarmEntry.ENABLED, false);
+        int r = getContentResolver().update(
+            AlarmClockProvider.ALARMS_URI, v,
+            AlarmClockProvider.AlarmEntry._ID + " == " + alarmid,
+            null);
+        if (r < 1) {
+          Log.e(TAG, "Failed to disable " + alarmid);
+        }
+      }
+
+      startService(new Intent(this, AlarmNotificationService.class)
+                   .putExtra(AlarmNotificationService.COMMAND,
+                             AlarmNotificationService.DISPLAY_NEXT_ALARM));
+
       Log.i(TAG, "Releasing wake lock");
       activeAlarms.wakelock.release();
       activeAlarms = null;
