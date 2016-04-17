@@ -40,7 +40,7 @@ public class AlarmClockService extends Service {
   public void createTestAlarm() {
     final long tsUTC = System.currentTimeMillis() + 5000;
 
-    final Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    final Calendar c = Calendar.getInstance();
     c.setTimeInMillis(tsUTC);
     c.set(Calendar.HOUR_OF_DAY, 0);
     c.set(Calendar.MINUTE, 0);

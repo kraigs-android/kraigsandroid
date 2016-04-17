@@ -28,9 +28,11 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.text.format.DateFormat;
 import android.util.ArrayMap;
 import android.util.Log;
 
+import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -172,21 +174,37 @@ public class AlarmNotificationService extends Service {
       return;
     }
 
+    // TODO: this uses the local time zone.  Trigger a refresh on time
+    // zone change.
     final int index = c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME);
-    long next = 0;
+    final SimpleDateFormat f = DateFormat.is24HourFormat(this) ?
+      new SimpleDateFormat("HH:mm.ss") :
+      new SimpleDateFormat("h:mm.ss aaa");
+    final Calendar now = Calendar.getInstance();
+    Calendar next = null;
     while (c.moveToNext()) {
-      long time = c.getLong(index);
-      if (time > next) {
-        next = time;
-      }
+      final int seconds = c.getInt(index);
+      final Calendar n = Calendar.getInstance();
+      n.set(Calendar.HOUR_OF_DAY, 0);
+      n.set(Calendar.MINUTE, 0);
+      n.set(Calendar.SECOND, 0);
+      n.set(Calendar.MILLISECOND, 0);
+      n.add(Calendar.SECOND, seconds);
+      if (n.before(now))
+        n.add(Calendar.DATE, 1);
+
+      if (next == null || next.before(n))
+        next = n;
     }
     c.close();
 
+    final long secondsTill =
+      (next.getTimeInMillis() - now.getTimeInMillis()) / 1000;
     manager.notify(
         NEXT_ALARM_NOTIFICATION_ID,
         new Notification.Builder(this)
         .setContentTitle("Next Alarm...")
-        .setContentText("TS: " + next)
+        .setContentText(f.format(next.getTime()) + " in " + secondsTill + "s")
         .setSmallIcon(R.drawable.ic_launcher)
         .setCategory(Notification.CATEGORY_STATUS)
         .setVisibility(Notification.VISIBILITY_PUBLIC)
@@ -196,12 +214,10 @@ public class AlarmNotificationService extends Service {
                 this, 0, new Intent(this, AlarmClockActivity.class), 0))
         .build());
 
-    final Calendar wake = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-    // TODO
-    // wake.set(Calendar.SECOND, 0);
+    final Calendar wake = Calendar.getInstance();
+    wake.set(Calendar.SECOND, 0);
     wake.set(Calendar.MILLISECOND, 0);
-    wake.add(Calendar.SECOND, 1);
-    // wake.add(Calendar.MINUTE, 1);
+    wake.add(Calendar.MINUTE, 1);
 
     ((AlarmManager)getSystemService(Context.ALARM_SERVICE)).setExact(
         AlarmManager.RTC, wake.getTimeInMillis(), tick);
