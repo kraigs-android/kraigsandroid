@@ -92,7 +92,7 @@ public class AlarmClockActivity extends Activity {
               val, null, null);
 
           // TODO, this doesn't actually schedule the alarm yet.
-          AlarmNotificationService.triggerUpdateLoop(getApplicationContext());
+          AlarmNotificationService.refreshNotifyBar(getApplicationContext());
         }
       });
     list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -103,7 +103,7 @@ public class AlarmClockActivity extends Activity {
               null, null);
 
           // TODO, this doesn't actually clear the alarm yet.
-          AlarmNotificationService.triggerUpdateLoop(getApplicationContext());
+          AlarmNotificationService.refreshNotifyBar(getApplicationContext());
           return true;
         }
       });

@@ -19,7 +19,6 @@ import android.app.Service;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
@@ -47,18 +46,8 @@ public class AlarmClockService extends Service {
     c.set(Calendar.SECOND, 0);
     c.set(Calendar.MILLISECOND, 0);
 
-    ContentValues v = new ContentValues();
-    v.put(
-        AlarmClockProvider.AlarmEntry.TIME,
-        (tsUTC - c.getTimeInMillis()) / 1000);
-    // TODO handle error ??
-    Uri u = getContentResolver().insert(AlarmClockProvider.ALARMS_URI, v);
-    long alarmid = ContentUris.parseId(u);
-    Log.i(TAG, "New alarm: " + alarmid + " (" + u +")");
-
-    AlarmNotificationService.scheduleAlarmNotification(this, alarmid, tsUTC);
-
-    AlarmNotificationService.triggerUpdateLoop(this);
+    AlarmNotificationService.newAlarm(
+        this, (int)(tsUTC - c.getTimeInMillis()) / 1000);
   }
 
   public class IdentityBinder extends Binder {

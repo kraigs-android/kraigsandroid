@@ -26,6 +26,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.text.format.DateFormat;
@@ -38,6 +39,35 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 public class AlarmNotificationService extends Service {
+  public static long newAlarm(Context c, int secPastMidnight) {
+
+    ContentValues v = new ContentValues();
+    v.put(AlarmClockProvider.AlarmEntry.TIME, secPastMidnight);
+    // TODO handle error ??
+    Uri u = c.getContentResolver().insert(AlarmClockProvider.ALARMS_URI, v);
+    long alarmid = ContentUris.parseId(u);
+    Log.i(TAG, "New alarm: " + alarmid + " (" + u +")");
+
+    // Inserted entry is ENABLED by default with no options.  Schedule the
+    // first occurrence.
+    final Calendar ts = Calendar.getInstance();
+    // Last midnight
+    ts.set(Calendar.HOUR_OF_DAY, 0);
+    ts.set(Calendar.MINUTE, 0);
+    ts.set(Calendar.SECOND, 0);
+    ts.set(Calendar.MILLISECOND, 0);
+    // Plus offset
+    ts.add(Calendar.SECOND, secPastMidnight);
+    if (ts.getTimeInMillis() < System.currentTimeMillis()) {
+      ts.add(Calendar.DATE, 1);
+    }
+
+    scheduleAlarmNotification(c, alarmid, ts.getTimeInMillis());
+    refreshNotifyBar(c);
+
+    return alarmid;
+  }
+
   public static void scheduleAlarmNotification(
       Context c, long alarmid, long tsUTC) {
     // Intents are considered equal if they have the same action, data, type,
@@ -53,7 +83,7 @@ public class AlarmNotificationService extends Service {
         .setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, tsUTC, schedule);
   }
 
-  public static void triggerUpdateLoop(Context c) {
+  public static void refreshNotifyBar(Context c) {
     c.startService(new Intent(c, AlarmNotificationService.class)
                    .putExtra(AlarmNotificationService.COMMAND,
                              AlarmNotificationService.UPDATE_LOOP));
@@ -95,7 +125,7 @@ public class AlarmNotificationService extends Service {
       }
     }
 
-    triggerUpdateLoop(this);
+    refreshNotifyBar(this);
 
     Log.i(TAG, "Releasing wake lock");
     activeAlarms.wakelock.release();
@@ -145,7 +175,7 @@ public class AlarmNotificationService extends Service {
           .setContentIntent(PendingIntent.getActivity(this, 0, notify, 0))
           .build());
 
-    triggerUpdateLoop(this);
+    refreshNotifyBar(this);
 
     Intent notifyAct = (Intent) notify.clone();
     notifyAct.putExtra(AlarmClockService.ALARM_ID, alarmid);
@@ -225,9 +255,11 @@ public class AlarmNotificationService extends Service {
 
   private static final String TAG =
     AlarmNotificationService.class.getSimpleName();
+  // Commands
   private static final String COMMAND = "command";
   private static final int TRIGGER_ALARM_NOTIFICATION = 1;
   private static final int UPDATE_LOOP = 2;
+  // Notification ids
   private static final int FIRING_ALARM_NOTIFICATION_ID = 42;
   private static final int NEXT_ALARM_NOTIFICATION_ID = 69;
 
