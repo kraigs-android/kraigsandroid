@@ -36,6 +36,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
@@ -147,15 +148,19 @@ public class AlarmClockActivity extends Activity {
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            new DialogFragment() {
+            Bundle b = new Bundle();
+            b.putLong("time", System.currentTimeMillis());
+
+            DialogFragment f = new DialogFragment() {
               @Override
               public Dialog onCreateDialog(Bundle savedInstanceState) {
+                final View v = getLayoutInflater().inflate(R.layout.time_picker, null);
+                ((EditText)v.findViewById(R.id.time_entry)).setText("" + getArguments().getLong("time"));
+
                 return new AlertDialog.Builder(getContext())
                   .setTitle("New Alarm")
-                  .setMessage("Hi!")
-                  //.setView()
                   //.setIcon()
-                  //.setCancelable(true)
+                  .setView(v)
                   .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                       @Override
                       public void onClick(DialogInterface dialog, int which) {}
@@ -163,12 +168,18 @@ public class AlarmClockActivity extends Activity {
                   .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                       @Override
                       public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText(getContext(), "Done", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(
+                            getContext(),
+                            ((EditText)v.findViewById(R.id.time_entry)).getText(),
+                            Toast.LENGTH_SHORT).show();
                       }
                     })
                   .create();
               }
-            }.show(getFragmentManager(), "new_alarm");
+            };
+
+            f.setArguments(b);
+            f.show(getFragmentManager(), "new_alarm");
           }
         });
   }
