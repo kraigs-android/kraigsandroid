@@ -16,12 +16,16 @@
 package com.angrydoughnuts.android.alarmclock2;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.LoaderManager;
 import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.ServiceConnection;
@@ -35,6 +39,7 @@ import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class AlarmClockActivity extends Activity {
   private AlarmClockService service = null;
@@ -135,6 +140,35 @@ public class AlarmClockActivity extends Activity {
           @Override
           public void onClick(View view) {
             if (service != null) service.createTestAlarm();
+          }
+        });
+
+    ((Button)findViewById(R.id.new_alarm)).setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            new DialogFragment() {
+              @Override
+              public Dialog onCreateDialog(Bundle savedInstanceState) {
+                return new AlertDialog.Builder(getContext())
+                  .setTitle("New Alarm")
+                  .setMessage("Hi!")
+                  //.setView()
+                  //.setIcon()
+                  //.setCancelable(true)
+                  .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                      @Override
+                      public void onClick(DialogInterface dialog, int which) {}
+                    })
+                  .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                      @Override
+                      public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(getContext(), "Done", Toast.LENGTH_SHORT).show();
+                      }
+                    })
+                  .create();
+              }
+            }.show(getFragmentManager(), "new_alarm");
           }
         });
   }
