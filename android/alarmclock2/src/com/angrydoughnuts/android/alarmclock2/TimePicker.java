@@ -47,7 +47,7 @@ public class TimePicker extends DialogFragment {
       int secondsPastMidnight = getArguments().getInt("time", -1);
       if (secondsPastMidnight >= 0) {
         int hour = secondsPastMidnight / 3600;
-        int minute = (hour * 60) - secondsPastMidnight / 60;
+        int minute = secondsPastMidnight / 60 - hour * 60;
         c.set(Calendar.HOUR_OF_DAY, hour);
         c.set(Calendar.MINUTE, minute);
       }

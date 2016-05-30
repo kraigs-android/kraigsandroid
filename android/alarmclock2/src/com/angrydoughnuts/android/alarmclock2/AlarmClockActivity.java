@@ -63,9 +63,8 @@ public class AlarmClockActivity extends Activity {
     new TimePicker.OnTimePickListener() {
       @Override
       public void onTimePick(int secondsPastMidnight) {
-        Toast.makeText(
-            getApplicationContext(), "" + secondsPastMidnight,
-            Toast.LENGTH_SHORT).show();
+        AlarmNotificationService.newAlarm(
+            getApplicationContext(), secondsPastMidnight);
       }
     };
 
@@ -87,7 +86,11 @@ public class AlarmClockActivity extends Activity {
         public boolean setViewValue(View v, Cursor c, int index) {
           switch (c.getColumnName(index)) {
           case AlarmClockProvider.AlarmEntry.TIME:
-            ((TextView) v).setText("" + c.getLong(index));
+            // TODO AM/PM
+            int secondsPastMidnight = c.getInt(index);
+            int hour = secondsPastMidnight / 3600;
+            int minute = secondsPastMidnight / 60 - hour * 60;
+            ((TextView) v).setText(String.format("%02d:%02d", hour, minute));
             return true;
           case AlarmClockProvider.AlarmEntry.ENABLED:
             ((CheckBox) v).setChecked(c.getInt(index) != 0);

@@ -39,10 +39,10 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 public class AlarmNotificationService extends Service {
-  public static long newAlarm(Context c, int secPastMidnight) {
+  public static long newAlarm(Context c, int secondsPastMidnight) {
 
     ContentValues v = new ContentValues();
-    v.put(AlarmClockProvider.AlarmEntry.TIME, secPastMidnight);
+    v.put(AlarmClockProvider.AlarmEntry.TIME, secondsPastMidnight);
     // TODO handle error ??
     Uri u = c.getContentResolver().insert(AlarmClockProvider.ALARMS_URI, v);
     long alarmid = ContentUris.parseId(u);
@@ -57,7 +57,7 @@ public class AlarmNotificationService extends Service {
     ts.set(Calendar.SECOND, 0);
     ts.set(Calendar.MILLISECOND, 0);
     // Plus offset
-    ts.add(Calendar.SECOND, secPastMidnight);
+    ts.add(Calendar.SECOND, secondsPastMidnight);
     if (ts.getTimeInMillis() < System.currentTimeMillis()) {
       ts.add(Calendar.DATE, 1);
     }
