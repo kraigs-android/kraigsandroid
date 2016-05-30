@@ -111,7 +111,7 @@ public class TimePicker extends DialogFragment {
         @Override
         public boolean onEditorAction(TextView v, int action, KeyEvent e) {
           d.getButton(DialogInterface.BUTTON_POSITIVE).performClick();
-          return true;
+          return false;
         }
       });
 
