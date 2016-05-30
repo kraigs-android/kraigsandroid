@@ -153,77 +153,12 @@ public class AlarmClockActivity extends Activity {
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
+            DialogFragment time_pick = new TimePicker();
             // TODO: input values
-            Bundle b = new Bundle();
+            //Bundle b = new Bundle();
             //b.putLong("time", System.currentTimeMillis());
-
-            DialogFragment f = new DialogFragment() {
-                @Override
-                public Dialog onCreateDialog(Bundle savedInstanceState) {
-                  final Calendar c = Calendar.getInstance();
-                  final View v = getLayoutInflater().inflate(R.layout.time_picker, null);
-                  // TODO: input values
-                  //getArguments().getLong("time");
-                  // TODO: HOUR/HOUR_OF_DAY for AM/PM??
-                  final EditText e = (EditText)v.findViewById(R.id.time_entry);
-                  e.setText(String.format("%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE)));
-                  e.addTextChangedListener(new TextWatcher() {
-                      @Override
-                      public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
-                      @Override
-                      public void onTextChanged(CharSequence s, int st, int b, int c) {}
-                      @Override
-                      public void afterTextChanged(Editable s) {
-                        String hhmm = s.toString().replaceAll(":", "");
-                        if (hhmm.isEmpty()) {
-                          c.set(Calendar.HOUR_OF_DAY, 0);
-                          c.set(Calendar.MINUTE, 0);
-                        } else if (hhmm.length() <= 2) {
-                          c.set(Calendar.HOUR_OF_DAY, 0);
-                          c.set(Calendar.MINUTE, Integer.parseInt(hhmm));
-                        } else {
-                          c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hhmm.substring(0, hhmm.length() - 2)));
-                          c.set(Calendar.MINUTE, Integer.parseInt(hhmm.substring(hhmm.length() - 2, hhmm.length())));
-                        }
-                        e.removeTextChangedListener(this);
-                        e.setText(String.format("%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE)));
-                        e.setSelection(e.getText().length());
-                        e.addTextChangedListener(this);
-                      }
-                    });
-
-                  final AlertDialog d = new AlertDialog.Builder(getContext())
-                    .setTitle("New Alarm")
-                    //.setIcon()
-                    .setView(v)
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {}
-                    })
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                          Toast.makeText(
-                              getContext(),
-                              String.format("%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE)),
-                              Toast.LENGTH_SHORT).show();
-                        }
-                      })
-                    .create();
-                  e.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                      @Override
-                      public boolean onEditorAction(TextView v, int action, KeyEvent e) {
-                        d.getButton(DialogInterface.BUTTON_POSITIVE).performClick();
-                        return true;
-                      }
-                    });
-
-                  return d;
-                }
-              };
-
-            f.setArguments(b);
-            f.show(getFragmentManager(), "new_alarm");
+            // time_pick.setArguments(b);
+            time_pick.show(getFragmentManager(), "new_alarm");
           }
         });
   }
