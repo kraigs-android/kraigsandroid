@@ -3,11 +3,34 @@
               android:orientation="vertical"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent">
+
+  <Button
+      android:text="Hour +1"
+      android:id="@+id/hour_plus_one"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
+  <Button
+      android:text="Minute +5"
+      android:id="@+id/minute_plus_five"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
+
   <EditText
       android:id="@+id/time_entry"
       android:numeric="integer"
       android:selectAllOnFocus="true"
       android:gravity="right"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
+
+  <Button
+      android:text="Hour -1"
+      android:id="@+id/hour_minus_one"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
+  <Button
+      android:text="Minute -5"
+      android:id="@+id/minute_minus_five"
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
 </LinearLayout>

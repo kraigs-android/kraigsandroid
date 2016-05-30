@@ -42,18 +42,46 @@ public class TimePicker extends DialogFragment {
 
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
+    if (getArguments() != null) {
+      int secondsPastMidnight = getArguments().getInt("time", -1);
+      if (secondsPastMidnight >= 0) {
+        int hour = secondsPastMidnight / 3600;
+        int minute = (hour * 60) - secondsPastMidnight / 60;
+        c.set(Calendar.HOUR_OF_DAY, hour);
+        c.set(Calendar.MINUTE, minute);
+      }
+    }
+
     if (savedInstanceState != null) {
       c.set(Calendar.HOUR_OF_DAY, savedInstanceState.getInt("hour"));
       c.set(Calendar.MINUTE, savedInstanceState.getInt("minute"));
     }
 
-    final View v = ((LayoutInflater)getContext()
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE))
-      .inflate(R.layout.time_picker, null);
-    // TODO: input values
-    //getArguments().getLong("time");
-    // TODO: HOUR/HOUR_OF_DAY for AM/PM??
+    final View v =
+      ((LayoutInflater)getContext().getSystemService(
+          Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.time_picker, null);
+
+    final AlertDialog d = new AlertDialog.Builder(getContext())
+      .setTitle("New Alarm")
+      //.setIcon()
+      .setView(v)
+      .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {}
+        })
+      .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            if (listener != null)
+              listener.onTimePick(
+                  c.get(Calendar.HOUR_OF_DAY) * 3600 +
+                  c.get(Calendar.MINUTE) * 60);
+          }
+        })
+      .create();
+
     final EditText e = (EditText)v.findViewById(R.id.time_entry);
+    // TODO: HOUR/HOUR_OF_DAY for AM/PM??
     e.setText(String.format("%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE)));
     e.addTextChangedListener(new TextWatcher() {
         @Override
@@ -79,25 +107,6 @@ public class TimePicker extends DialogFragment {
           e.addTextChangedListener(this);
         }
       });
-
-    final AlertDialog d = new AlertDialog.Builder(getContext())
-      .setTitle("New Alarm")
-      //.setIcon()
-      .setView(v)
-      .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which) {}
-        })
-      .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which) {
-            if (listener != null)
-              listener.onTimePick(
-                  c.get(Calendar.HOUR_OF_DAY) * 3600 +
-                  c.get(Calendar.MINUTE) * 60);
-          }
-        })
-      .create();
     e.setOnEditorActionListener(new TextView.OnEditorActionListener() {
         @Override
         public boolean onEditorAction(TextView v, int action, KeyEvent e) {
@@ -110,7 +119,8 @@ public class TimePicker extends DialogFragment {
   }
 
   @Override
-  public void onSaveInstanceState (Bundle outState) {
+  public void onSaveInstanceState(Bundle outState) {
+    super.onSaveInstanceState(outState);
     outState.putInt("hour", c.get(Calendar.HOUR_OF_DAY));
     outState.putInt("minute", c.get(Calendar.MINUTE));
   }
