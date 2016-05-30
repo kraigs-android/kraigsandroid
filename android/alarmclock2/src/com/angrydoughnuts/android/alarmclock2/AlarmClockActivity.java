@@ -31,6 +31,7 @@ import android.content.Loader;
 import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -45,6 +46,7 @@ import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.lang.Runnable;
 import java.util.Calendar;
 
 public class AlarmClockActivity extends Activity {
@@ -59,6 +61,8 @@ public class AlarmClockActivity extends Activity {
         service = null;
       }
     };
+  private final Handler handler = new Handler();
+  private Runnable refresh_tick;
   private final TimePicker.OnTimePickListener new_alarm =
     new TimePicker.OnTimePickListener() {
       @Override
@@ -125,7 +129,7 @@ public class AlarmClockActivity extends Activity {
         }
       });
 
-    getLoaderManager().initLoader(
+    final Loader<Cursor> loader = getLoaderManager().initLoader(
         0, null, new LoaderManager.LoaderCallbacks<Cursor>() {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -146,6 +150,14 @@ public class AlarmClockActivity extends Activity {
               adapter.changeCursor(null);
             }
           });
+    refresh_tick = new Runnable() {
+        @Override
+        public void run() {
+          loader.forceLoad();
+          handler.postDelayed(refresh_tick, nextMinute());
+        }
+      };
+    handler.postDelayed(refresh_tick, nextMinute());
 
     ((Button)findViewById(R.id.test_alarm)).setOnClickListener(
         new View.OnClickListener() {
@@ -190,6 +202,7 @@ public class AlarmClockActivity extends Activity {
   @Override
   public void onStop() {
     super.onStop();
+    handler.removeCallbacks(refresh_tick);
     if (service != null) {
       unbindService(connection);
       service = null;
@@ -221,5 +234,14 @@ public class AlarmClockActivity extends Activity {
     else
       return String.format(
           "%d %s", minutes, (minutes > 1) ? "minutes" : "minute");
+  }
+
+  private static long nextMinute() {
+    Calendar now = Calendar.getInstance();
+    Calendar then = (Calendar)now.clone();
+    then.set(Calendar.SECOND, 0);
+    then.set(Calendar.MILLISECOND, 0);
+    then.add(Calendar.MINUTE, 1);
+    return then.getTimeInMillis() - now.getTimeInMillis();
   }
 }
