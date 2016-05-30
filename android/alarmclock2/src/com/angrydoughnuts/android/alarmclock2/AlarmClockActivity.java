@@ -41,7 +41,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
+import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -73,33 +73,25 @@ public class AlarmClockActivity extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.alarm_list);
 
-    final SimpleCursorAdapter adapter = new SimpleCursorAdapter(
-        this, R.layout.alarm_list_item, null,
-        new String[] {
-          AlarmClockProvider.AlarmEntry.TIME,
-          AlarmClockProvider.AlarmEntry.ENABLED },
-        new int[] {
-          R.id.debug_text,
-          R.id.enabled }, 0);
-    adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+    final ResourceCursorAdapter adapter = new ResourceCursorAdapter(
+        this, R.layout.alarm_list_item, null, 0) {
         @Override
-        public boolean setViewValue(View v, Cursor c, int index) {
-          switch (c.getColumnName(index)) {
-          case AlarmClockProvider.AlarmEntry.TIME:
-            // TODO AM/PM
-            int secondsPastMidnight = c.getInt(index);
-            int hour = secondsPastMidnight / 3600;
-            int minute = secondsPastMidnight / 60 - hour * 60;
-            ((TextView) v).setText(String.format("%02d:%02d", hour, minute));
-            return true;
-          case AlarmClockProvider.AlarmEntry.ENABLED:
-            ((CheckBox) v).setChecked(c.getInt(index) != 0);
-            return true;
-          default:
-            return false;
-          }
+        public void bindView(View v, Context context, Cursor c) {
+          final int secondsPastMidnight = c.getInt(
+              c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
+          final int enabled = c.getInt(
+              c.getColumnIndex(AlarmClockProvider.AlarmEntry.ENABLED));
+
+          int hour = secondsPastMidnight / 3600;
+          int minute = secondsPastMidnight / 60 - hour * 60;
+
+          // TODO AM/PM
+          ((TextView)v.findViewById(R.id.debug_text))
+            .setText(String.format("%02d:%02d", hour, minute));
+          ((CheckBox)v.findViewById(R.id.enabled))
+            .setChecked(enabled != 0);
         }
-      });
+      };
 
     ListView list = (ListView)findViewById(R.id.alarm_list);
     list.setAdapter(adapter);
