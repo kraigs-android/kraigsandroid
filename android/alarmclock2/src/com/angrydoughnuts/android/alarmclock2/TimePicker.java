@@ -26,6 +26,7 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -81,8 +82,7 @@ public class TimePicker extends DialogFragment {
       .create();
 
     final EditText e = (EditText)v.findViewById(R.id.time_entry);
-    // TODO: HOUR/HOUR_OF_DAY for AM/PM??
-    e.setText(String.format("%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE)));
+    e.setText(time());
     e.addTextChangedListener(new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
@@ -115,6 +115,45 @@ public class TimePicker extends DialogFragment {
         }
       });
 
+    ((Button)v.findViewById(R.id.hour_plus_one)).setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            c.roll(Calendar.HOUR_OF_DAY, 1);
+            e.setText(time());
+          }
+        });
+    ((Button)v.findViewById(R.id.hour_minus_one)).setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            c.roll(Calendar.HOUR_OF_DAY, -1);
+            e.setText(time());
+          }
+        });
+    ((Button)v.findViewById(R.id.minute_plus_five)).setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            int minute = (c.get(Calendar.MINUTE) / 5 * 5 + 5) % 60;
+            c.set(Calendar.MINUTE, minute);
+            e.setText(time());
+          }
+        });
+    ((Button)v.findViewById(R.id.minute_minus_five)).setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            int minute = c.get(Calendar.MINUTE) / 5 * 5;
+            if (minute == c.get(Calendar.MINUTE))
+              minute -= 5;
+            if (minute < 0)
+              minute += 60;
+            c.set(Calendar.MINUTE, minute);
+            e.setText(time());
+          }
+        });
+
     return d;
   }
 
@@ -123,5 +162,13 @@ public class TimePicker extends DialogFragment {
     super.onSaveInstanceState(outState);
     outState.putInt("hour", c.get(Calendar.HOUR_OF_DAY));
     outState.putInt("minute", c.get(Calendar.MINUTE));
+  }
+
+  private String time() {
+    // TODO: HOUR/HOUR_OF_DAY for AM/PM??
+    return String.format(
+        "%02d:%02d",
+        c.get(Calendar.HOUR_OF_DAY),
+        c.get(Calendar.MINUTE));
   }
 }
