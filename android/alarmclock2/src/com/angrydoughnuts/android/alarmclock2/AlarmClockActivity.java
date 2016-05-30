@@ -87,7 +87,9 @@ public class AlarmClockActivity extends Activity {
 
           // TODO AM/PM
           ((TextView)v.findViewById(R.id.debug_text))
-            .setText(String.format("%02d:%02d", hour, minute));
+            .setText(String.format("%02d:%02d ", hour, minute));
+          ((TextView)v.findViewById(R.id.countdown))
+            .setText(until(secondsPastMidnight));
           ((CheckBox)v.findViewById(R.id.enabled))
             .setChecked(enabled != 0);
         }
@@ -192,5 +194,32 @@ public class AlarmClockActivity extends Activity {
       unbindService(connection);
       service = null;
     }
+  }
+
+  private String until(int secondsPastMidnight) {
+    final Calendar now = Calendar.getInstance();
+    now.set(Calendar.SECOND, 0);
+    now.set(Calendar.MILLISECOND, 0);
+    final Calendar then = (Calendar)now.clone();
+    then.set(Calendar.HOUR_OF_DAY, 0);
+    then.set(Calendar.MINUTE, 0);
+    then.set(Calendar.SECOND, 0);
+    then.set(Calendar.MILLISECOND, 0);
+    then.add(Calendar.SECOND, secondsPastMidnight);
+    if (then.before(now))
+      then.add(Calendar.DATE, 1);
+
+    long minutes = (then.getTimeInMillis() - now.getTimeInMillis()) / 1000 / 60;
+    long hours = minutes / 60;
+    minutes -= (hours * 60);
+
+    if (hours > 0)
+      return String.format(
+          "%d %s %d %s",
+          hours, (hours > 1) ? "hours" : "hour",
+          minutes, (minutes > 1) ? "minutes" : "minute");
+    else
+      return String.format(
+          "%d %s", minutes, (minutes > 1) ? "minutes" : "minute");
   }
 }

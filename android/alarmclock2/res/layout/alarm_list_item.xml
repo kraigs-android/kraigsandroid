@@ -8,6 +8,10 @@
       android:id="@+id/debug_text"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content" />
+  <TextView
+      android:id="@+id/countdown"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content" />
 
   <CheckBox
       android:id="@+id/enabled"
