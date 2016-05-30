@@ -31,6 +31,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.lang.NumberFormatException;
 import java.util.Calendar;
 
 public class TimePicker extends DialogFragment {
@@ -115,14 +116,23 @@ public class TimePicker extends DialogFragment {
         @Override
         public void afterTextChanged(Editable s) {
           String hhmm = s.toString().replaceAll(":", "");
+          int hour;
+          int minute;
           if (hhmm.length() < 3)
             return;
+          try {
+            hour = Integer.parseInt(hhmm.substring(0, hhmm.length() - 2));
+            minute = Integer.parseInt(hhmm.substring(
+                hhmm.length() - 2, hhmm.length()));
+          } catch (NumberFormatException e) {
+            return;
+          }
+          if (!DateFormat.is24HourFormat(getContext()) && hour == 12) hour = 0;
+
           int hour_field = DateFormat.is24HourFormat(getContext()) ?
             Calendar.HOUR_OF_DAY : Calendar.HOUR;
-          int hour = Integer.parseInt(hhmm.substring(0, hhmm.length() - 2));
-          if (!DateFormat.is24HourFormat(getContext()) && hour == 12) hour = 0;
           c.set(hour_field, hour);
-          c.set(Calendar.MINUTE, Integer.parseInt(hhmm.substring(hhmm.length() - 2, hhmm.length())));
+          c.set(Calendar.MINUTE, minute);
 
           e.removeTextChangedListener(this);
           e.setText(time());
