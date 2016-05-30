@@ -15,43 +15,38 @@
 
 package com.angrydoughnuts.android.alarmclock2;
 
-// import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-// import android.app.LoaderManager;
-// import android.content.ComponentName;
-// import android.content.ContentUris;
-// import android.content.ContentValues;
 import android.content.Context;
-// import android.content.CursorLoader;
 import android.content.DialogInterface;
-// import android.content.Intent;
-// import android.content.Loader;
-// import android.content.ServiceConnection;
-// import android.database.Cursor;
 import android.os.Bundle;
-// import android.os.IBinder;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-// import android.widget.AdapterView;
-// import android.widget.Button;
-// import android.widget.CheckBox;
 import android.widget.EditText;
-// import android.widget.ListView;
-// import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.Calendar;
 
 public class TimePicker extends DialogFragment {
+  public static interface OnTimePickListener {
+    abstract void onTimePick(int secondsPastMidnight);
+  }
+
+  private final Calendar c = Calendar.getInstance();
+  private OnTimePickListener listener = null;
+  public void setListener(OnTimePickListener l) { listener = l; }
+
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
-    final Calendar c = Calendar.getInstance();
+    if (savedInstanceState != null) {
+      c.set(Calendar.HOUR_OF_DAY, savedInstanceState.getInt("hour"));
+      c.set(Calendar.MINUTE, savedInstanceState.getInt("minute"));
+    }
+
     final View v = ((LayoutInflater)getContext()
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE))
       .inflate(R.layout.time_picker, null);
@@ -96,10 +91,10 @@ public class TimePicker extends DialogFragment {
       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
-            Toast.makeText(
-                getContext(),
-                String.format("%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE)),
-                Toast.LENGTH_SHORT).show();
+            if (listener != null)
+              listener.onTimePick(
+                  c.get(Calendar.HOUR_OF_DAY) * 3600 +
+                  c.get(Calendar.MINUTE) * 60);
           }
         })
       .create();
@@ -112,5 +107,11 @@ public class TimePicker extends DialogFragment {
       });
 
     return d;
+  }
+
+  @Override
+  public void onSaveInstanceState (Bundle outState) {
+    outState.putInt("hour", c.get(Calendar.HOUR_OF_DAY));
+    outState.putInt("minute", c.get(Calendar.MINUTE));
   }
 }

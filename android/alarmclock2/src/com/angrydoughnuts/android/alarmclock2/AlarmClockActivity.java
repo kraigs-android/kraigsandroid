@@ -59,6 +59,15 @@ public class AlarmClockActivity extends Activity {
         service = null;
       }
     };
+  private final TimePicker.OnTimePickListener new_alarm =
+    new TimePicker.OnTimePickListener() {
+      @Override
+      public void onTimePick(int secondsPastMidnight) {
+        Toast.makeText(
+            getApplicationContext(), "" + secondsPastMidnight,
+            Toast.LENGTH_SHORT).show();
+      }
+    };
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -149,11 +158,20 @@ public class AlarmClockActivity extends Activity {
           }
         });
 
+    // Listener can not be serialized in time picker, so it must be explicitly
+    // set each time.
+    if (savedInstanceState != null) {
+      TimePicker t = (TimePicker)getFragmentManager()
+        .findFragmentByTag("new_alarm");
+      if (t != null)
+        t.setListener(new_alarm);
+    }
     ((Button)findViewById(R.id.new_alarm)).setOnClickListener(
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            DialogFragment time_pick = new TimePicker();
+            TimePicker time_pick = new TimePicker();
+            time_pick.setListener(new_alarm);
             // TODO: input values
             //Bundle b = new Bundle();
             //b.putLong("time", System.currentTimeMillis());
