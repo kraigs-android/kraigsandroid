@@ -22,6 +22,10 @@
       android:gravity="right"
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
+  <Button
+      android:id="@+id/am_pm"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
 
   <Button
       android:text="Hour -1"

@@ -23,6 +23,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.format.DateFormat;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -81,6 +82,25 @@ public class TimePicker extends DialogFragment {
         })
       .create();
 
+    final Button am_pm = (Button)v.findViewById(R.id.am_pm);
+    if (DateFormat.is24HourFormat(getContext())) {
+      am_pm.setVisibility(View.GONE);
+    } else {
+      am_pm.setVisibility(View.VISIBLE);
+      am_pm.setText(am());
+      am_pm.setOnClickListener(new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            if (c.get(Calendar.AM_PM) == Calendar.AM)
+              c.set(Calendar.AM_PM, Calendar.PM);
+            else
+              c.set(Calendar.AM_PM, Calendar.AM);
+            am_pm.setText(am());
+          }
+        });
+    }
+
+
     final EditText e = (EditText)v.findViewById(R.id.time_entry);
     e.setText(time());
     e.addTextChangedListener(new TextWatcher() {
@@ -91,18 +111,18 @@ public class TimePicker extends DialogFragment {
         @Override
         public void afterTextChanged(Editable s) {
           String hhmm = s.toString().replaceAll(":", "");
-          if (hhmm.isEmpty()) {
-            c.set(Calendar.HOUR_OF_DAY, 0);
-            c.set(Calendar.MINUTE, 0);
-          } else if (hhmm.length() <= 2) {
-            c.set(Calendar.HOUR_OF_DAY, 0);
-            c.set(Calendar.MINUTE, Integer.parseInt(hhmm));
-          } else {
-            c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hhmm.substring(0, hhmm.length() - 2)));
-            c.set(Calendar.MINUTE, Integer.parseInt(hhmm.substring(hhmm.length() - 2, hhmm.length())));
-          }
+          if (hhmm.length() < 3)
+            return;
+          int hour_field = DateFormat.is24HourFormat(getContext()) ?
+            Calendar.HOUR_OF_DAY : Calendar.HOUR;
+          int hour = Integer.parseInt(hhmm.substring(0, hhmm.length() - 2));
+          if (!DateFormat.is24HourFormat(getContext()) && hour == 12) hour = 0;
+          c.set(hour_field, hour);
+          c.set(Calendar.MINUTE, Integer.parseInt(hhmm.substring(hhmm.length() - 2, hhmm.length())));
+
           e.removeTextChangedListener(this);
-          e.setText(String.format("%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE)));
+          e.setText(time());
+          am_pm.setText(am());
           e.setSelection(e.getText().length());
           e.addTextChangedListener(this);
         }
@@ -120,7 +140,9 @@ public class TimePicker extends DialogFragment {
           @Override
           public void onClick(View view) {
             c.roll(Calendar.HOUR_OF_DAY, 1);
+            am_pm.setText(am());
             e.setText(time());
+            e.setSelection(e.getText().length());
           }
         });
     ((Button)v.findViewById(R.id.hour_minus_one)).setOnClickListener(
@@ -128,7 +150,9 @@ public class TimePicker extends DialogFragment {
           @Override
           public void onClick(View view) {
             c.roll(Calendar.HOUR_OF_DAY, -1);
+            am_pm.setText(am());
             e.setText(time());
+            e.setSelection(e.getText().length());
           }
         });
     ((Button)v.findViewById(R.id.minute_plus_five)).setOnClickListener(
@@ -138,6 +162,7 @@ public class TimePicker extends DialogFragment {
             int minute = (c.get(Calendar.MINUTE) / 5 * 5 + 5) % 60;
             c.set(Calendar.MINUTE, minute);
             e.setText(time());
+            e.setSelection(e.getText().length());
           }
         });
     ((Button)v.findViewById(R.id.minute_minus_five)).setOnClickListener(
@@ -151,6 +176,7 @@ public class TimePicker extends DialogFragment {
               minute += 60;
             c.set(Calendar.MINUTE, minute);
             e.setText(time());
+            e.setSelection(e.getText().length());
           }
         });
 
@@ -165,10 +191,20 @@ public class TimePicker extends DialogFragment {
   }
 
   private String time() {
-    // TODO: HOUR/HOUR_OF_DAY for AM/PM??
-    return String.format(
-        "%02d:%02d",
-        c.get(Calendar.HOUR_OF_DAY),
-        c.get(Calendar.MINUTE));
+    if (DateFormat.is24HourFormat(getContext()))
+      return String.format(
+          "%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
+    else {
+      int hour = c.get(Calendar.HOUR);
+      if (hour == 0) hour = 12;
+      return String.format("%d:%02d", hour, c.get(Calendar.MINUTE));
+    }
+  }
+
+  private String am() {
+    if (c.get(Calendar.AM_PM) == Calendar.AM)
+      return "AM";
+    else
+      return "PM";
   }
 }
