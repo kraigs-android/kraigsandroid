@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 
 public class AlarmNotificationActivity extends Activity {
@@ -30,6 +31,8 @@ public class AlarmNotificationActivity extends Activity {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.notification);
+    // Make sure this window always shows over the lock screen.
+    getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 
     final long alarmid =
       getIntent().getLongExtra(AlarmClockService.ALARM_ID, -1);
