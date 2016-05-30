@@ -83,10 +83,10 @@ public class TimePicker extends DialogFragment {
         })
       .create();
 
-    final TextView t = (TextView)v.findViewById(R.id.countdown);
+    final TextView t = (TextView)v.findViewById(R.id.picker_countdown);
     t.setText(until());
 
-    final Button am_pm = (Button)v.findViewById(R.id.am_pm);
+    final Button am_pm = (Button)v.findViewById(R.id.picker_am_pm);
     if (DateFormat.is24HourFormat(getContext())) {
       am_pm.setVisibility(View.GONE);
     } else {
@@ -106,7 +106,7 @@ public class TimePicker extends DialogFragment {
     }
 
 
-    final EditText e = (EditText)v.findViewById(R.id.time_entry);
+    final EditText e = (EditText)v.findViewById(R.id.picker_time_entry);
     e.setText(time());
     e.addTextChangedListener(new TextWatcher() {
         @Override
