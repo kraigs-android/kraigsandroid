@@ -132,14 +132,16 @@ public class TimePicker extends DialogFragment {
           int hour_field = DateFormat.is24HourFormat(getContext()) ?
             Calendar.HOUR_OF_DAY : Calendar.HOUR;
           c.set(hour_field, hour);
-          c.set(Calendar.MINUTE, minute);
+          if (minute < 60) {
+            c.set(Calendar.MINUTE, minute);
 
-          e.removeTextChangedListener(this);
-          e.setText(time());
-          e.setSelection(e.getText().length());
-          e.addTextChangedListener(this);
-          am_pm.setText(ampm());
-          t.setText(until());
+            e.removeTextChangedListener(this);
+            e.setText(time());
+            e.setSelection(e.getText().length());
+            e.addTextChangedListener(this);
+            am_pm.setText(ampm());
+            t.setText(until());
+          }
         }
       });
     e.setOnEditorActionListener(new TextView.OnEditorActionListener() {
