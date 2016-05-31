@@ -112,7 +112,31 @@ public class AlarmClockActivity extends Activity {
               ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
               val, null, null);
 
-          // TODO, this doesn't actually schedule the alarm yet.
+          if (check) {
+            AlarmNotificationService.removeAlarmNotification(
+                getApplicationContext(), id);
+          } else {
+            Cursor c = getContentResolver().query(
+                AlarmClockProvider.ALARMS_URI,
+                new String[] { AlarmClockProvider.AlarmEntry.TIME },
+                AlarmClockProvider.AlarmEntry._ID + " == " + id,
+                null, null);
+            c.moveToFirst();
+            int secondsPastMidnight =
+              c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
+            c.close();
+            Calendar alarm = Calendar.getInstance();
+            alarm.set(Calendar.HOUR_OF_DAY, 0);
+            alarm.set(Calendar.MINUTE, 0);
+            alarm.set(Calendar.SECOND, 0);
+            alarm.set(Calendar.MILLISECOND, 0);
+            alarm.add(Calendar.SECOND, secondsPastMidnight);
+            if (alarm.before(Calendar.getInstance()))
+              alarm.add(Calendar.DATE, 1);
+
+            AlarmNotificationService.scheduleAlarmNotification(
+                getApplicationContext(), id, alarm.getTimeInMillis());
+          }
           AlarmNotificationService.refreshNotifyBar(getApplicationContext());
         }
       });
@@ -123,7 +147,8 @@ public class AlarmClockActivity extends Activity {
               ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
               null, null);
 
-          // TODO, this doesn't actually clear the alarm yet.
+          AlarmNotificationService.removeAlarmNotification(
+              getApplicationContext(), id);
           AlarmNotificationService.refreshNotifyBar(getApplicationContext());
           return true;
         }

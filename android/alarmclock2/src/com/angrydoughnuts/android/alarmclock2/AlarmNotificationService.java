@@ -83,6 +83,14 @@ public class AlarmNotificationService extends Service {
         .setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, tsUTC, schedule);
   }
 
+  public static void removeAlarmNotification(Context c, long alarmid) {
+    PendingIntent schedule = PendingIntent.getBroadcast(
+        c, (int)alarmid,
+        new Intent(c, AlarmTriggerReceiver.class)
+        .putExtra(AlarmClockService.ALARM_ID, alarmid), 0);
+    ((AlarmManager)c.getSystemService(Context.ALARM_SERVICE)).cancel(schedule);
+  }
+
   public static void refreshNotifyBar(Context c) {
     c.startService(new Intent(c, AlarmNotificationService.class)
                    .putExtra(AlarmNotificationService.COMMAND,
