@@ -27,7 +27,8 @@
       android:layout_height="wrap_content">
     <EditText
         android:id="@+id/picker_time_entry"
-        android:numeric="integer"
+        android:inputType="time"
+        android:imeOptions="actionDone|flagNoFullscreen"
         android:selectAllOnFocus="true"
         android:gravity="right"
         android:textSize="34sp"
