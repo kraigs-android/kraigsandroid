@@ -219,9 +219,11 @@ public class TimePicker extends DialogFragment {
   }
 
   private String time() {
+    // NOTE: these use 'magic' three digits to trigger acceptance in the
+    // edit box parsing above.  Don't zero pad 24 hour time.
     if (DateFormat.is24HourFormat(getContext()))
       return String.format(
-          "%02d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
+          "%d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
     else {
       int hour = c.get(Calendar.HOUR);
       if (hour == 0) hour = 12;
