@@ -27,6 +27,7 @@ import android.text.format.DateFormat;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -82,6 +83,8 @@ public class TimePicker extends DialogFragment {
           }
         })
       .create();
+    d.getWindow().setSoftInputMode(
+        WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 
     final TextView t = (TextView)v.findViewById(R.id.picker_countdown);
     t.setText(until());
