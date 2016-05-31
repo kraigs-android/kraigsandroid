@@ -3,43 +3,64 @@
               android:orientation="vertical"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent">
+  <LinearLayout
+      android:orientation="horizontal"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content">
+    <Button
+        android:text="Hour +1"
+        android:id="@+id/hour_plus_one"
+        android:layout_weight="1"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent" />
+    <Button
+        android:text="Minute +5"
+        android:id="@+id/minute_plus_five"
+        android:layout_weight="1"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent" />
+  </LinearLayout>
 
-  <Button
-      android:text="Hour +1"
-      android:id="@+id/hour_plus_one"
+  <LinearLayout
+      android:orientation="horizontal"
       android:layout_width="fill_parent"
-      android:layout_height="wrap_content" />
-  <Button
-      android:text="Minute +5"
-      android:id="@+id/minute_plus_five"
-      android:layout_width="fill_parent"
-      android:layout_height="wrap_content" />
-
-  <EditText
-      android:id="@+id/picker_time_entry"
-      android:numeric="integer"
-      android:selectAllOnFocus="true"
-      android:gravity="right"
-      android:layout_width="fill_parent"
-      android:layout_height="wrap_content" />
-  <Button
-      android:id="@+id/picker_am_pm"
-      android:layout_width="fill_parent"
-      android:layout_height="wrap_content" />
+      android:layout_height="wrap_content">
+    <EditText
+        android:id="@+id/picker_time_entry"
+        android:numeric="integer"
+        android:selectAllOnFocus="true"
+        android:gravity="right"
+        android:textSize="34sp"
+        android:layout_weight="1"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent" />
+    <Button
+        android:id="@+id/picker_am_pm"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent" />
+  </LinearLayout>
 
   <TextView
       android:id="@+id/picker_countdown"
+      android:gravity="center"
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
 
-  <Button
-      android:text="Hour -1"
-      android:id="@+id/hour_minus_one"
+  <LinearLayout
+      android:orientation="horizontal"
       android:layout_width="fill_parent"
-      android:layout_height="wrap_content" />
-  <Button
-      android:text="Minute -5"
-      android:id="@+id/minute_minus_five"
-      android:layout_width="fill_parent"
-      android:layout_height="wrap_content" />
+      android:layout_height="wrap_content">
+    <Button
+        android:text="Hour -1"
+        android:id="@+id/hour_minus_one"
+        android:layout_weight="1"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent" />
+    <Button
+        android:text="Minute -5"
+        android:id="@+id/minute_minus_five"
+        android:layout_weight="1"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent" />
+  </LinearLayout>
 </LinearLayout>
