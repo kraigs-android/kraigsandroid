@@ -182,7 +182,6 @@ public class AlarmClockActivity extends Activity {
           handler.postDelayed(refresh_tick, nextMinute());
         }
       };
-    handler.postDelayed(refresh_tick, nextMinute());
 
     ((Button)findViewById(R.id.test_alarm)).setOnClickListener(
         new View.OnClickListener() {
@@ -218,6 +217,7 @@ public class AlarmClockActivity extends Activity {
   @Override
   public void onStart() {
     super.onStart();
+    handler.postDelayed(refresh_tick, TimeUtil.nextMinuteDelay());
     if (service == null) {
       bindService(new Intent(this, AlarmClockService.class), connection,
                   Context.BIND_AUTO_CREATE);
