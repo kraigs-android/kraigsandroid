@@ -88,7 +88,7 @@ public class TimePicker extends DialogFragment {
         WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 
     final TextView t = (TextView)v.findViewById(R.id.picker_countdown);
-    t.setText(until());
+    t.setText(TimeUtil.until(c));
 
     final Button am_pm = (Button)v.findViewById(R.id.picker_am_pm);
     if (DateFormat.is24HourFormat(getContext())) {
@@ -104,7 +104,7 @@ public class TimePicker extends DialogFragment {
             else
               c.set(Calendar.AM_PM, Calendar.AM);
             am_pm.setText(ampm());
-            t.setText(until());
+            t.setText(TimeUtil.until(c));
           }
         });
     }
@@ -144,7 +144,7 @@ public class TimePicker extends DialogFragment {
             e.setSelection(e.getText().length());
             e.addTextChangedListener(this);
             am_pm.setText(ampm());
-            t.setText(until());
+            t.setText(TimeUtil.until(c));
           }
         }
       });
@@ -167,7 +167,7 @@ public class TimePicker extends DialogFragment {
             am_pm.setText(ampm());
             e.setText(time());
             e.setSelection(e.getText().length());
-            t.setText(until());
+            t.setText(TimeUtil.until(c));
           }
         });
     ((Button)v.findViewById(R.id.hour_minus_one)).setOnClickListener(
@@ -178,7 +178,7 @@ public class TimePicker extends DialogFragment {
             am_pm.setText(ampm());
             e.setText(time());
             e.setSelection(e.getText().length());
-            t.setText(until());
+            t.setText(TimeUtil.until(c));
           }
         });
     ((Button)v.findViewById(R.id.minute_plus_five)).setOnClickListener(
@@ -189,7 +189,7 @@ public class TimePicker extends DialogFragment {
             c.set(Calendar.MINUTE, minute);
             e.setText(time());
             e.setSelection(e.getText().length());
-            t.setText(until());
+            t.setText(TimeUtil.until(c));
           }
         });
     ((Button)v.findViewById(R.id.minute_minus_five)).setOnClickListener(
@@ -204,7 +204,7 @@ public class TimePicker extends DialogFragment {
             c.set(Calendar.MINUTE, minute);
             e.setText(time());
             e.setSelection(e.getText().length());
-            t.setText(until());
+            t.setText(TimeUtil.until(c));
           }
         });
 
@@ -219,16 +219,7 @@ public class TimePicker extends DialogFragment {
   }
 
   private String time() {
-    // NOTE: these use 'magic' three digits to trigger acceptance in the
-    // edit box parsing above.  Don't zero pad 24 hour time.
-    if (DateFormat.is24HourFormat(getContext()))
-      return String.format(
-          "%d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
-    else {
-      int hour = c.get(Calendar.HOUR);
-      if (hour == 0) hour = 12;
-      return String.format("%d:%02d", hour, c.get(Calendar.MINUTE));
-    }
+    return TimeUtil.format(getContext(), c);
   }
 
   private String ampm() {
@@ -236,27 +227,5 @@ public class TimePicker extends DialogFragment {
       return "AM";
     else
       return "PM";
-  }
-
-  private String until() {
-    final Calendar now = Calendar.getInstance();
-    final Calendar then = (Calendar)now.clone();
-    then.set(Calendar.HOUR_OF_DAY, c.get(Calendar.HOUR_OF_DAY));
-    then.set(Calendar.MINUTE, c.get(Calendar.MINUTE));
-    if (then.before(now))
-      then.add(Calendar.DATE, 1);
-
-    long minutes = (then.getTimeInMillis() - now.getTimeInMillis()) / 1000 / 60;
-    long hours = minutes / 60;
-    minutes -= (hours * 60);
-
-    if (hours > 0)
-      return String.format(
-          "%d %s %d %s",
-          hours, (hours > 1) ? "hours" : "hour",
-          minutes, (minutes > 1) ? "minutes" : "minute");
-    else
-      return String.format(
-          "%d %s", minutes, (minutes > 1) ? "minutes" : "minute");
   }
 }

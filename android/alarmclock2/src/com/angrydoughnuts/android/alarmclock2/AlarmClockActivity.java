@@ -85,15 +85,12 @@ public class AlarmClockActivity extends Activity {
               c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
           final int enabled = c.getInt(
               c.getColumnIndex(AlarmClockProvider.AlarmEntry.ENABLED));
+          final Calendar next = TimeUtil.nextOccurrence(secondsPastMidnight);
 
-          int hour = secondsPastMidnight / 3600;
-          int minute = secondsPastMidnight / 60 - hour * 60;
-
-          // TODO AM/PM
           ((TextView)v.findViewById(R.id.debug_text))
-            .setText(String.format("%02d:%02d ", hour, minute));
+            .setText(TimeUtil.formatLong(getApplicationContext(), next));
           ((TextView)v.findViewById(R.id.countdown))
-            .setText(until(secondsPastMidnight));
+            .setText(TimeUtil.until(next));
           ((CheckBox)v.findViewById(R.id.enabled))
             .setChecked(enabled != 0);
         }
@@ -125,15 +122,7 @@ public class AlarmClockActivity extends Activity {
             int secondsPastMidnight =
               c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
             c.close();
-            Calendar alarm = Calendar.getInstance();
-            alarm.set(Calendar.HOUR_OF_DAY, 0);
-            alarm.set(Calendar.MINUTE, 0);
-            alarm.set(Calendar.SECOND, 0);
-            alarm.set(Calendar.MILLISECOND, 0);
-            alarm.add(Calendar.SECOND, secondsPastMidnight);
-            if (alarm.before(Calendar.getInstance()))
-              alarm.add(Calendar.DATE, 1);
-
+            Calendar alarm = TimeUtil.nextOccurrence(secondsPastMidnight);
             AlarmNotificationService.scheduleAlarmNotification(
                 getApplicationContext(), id, alarm.getTimeInMillis());
           }
@@ -179,7 +168,7 @@ public class AlarmClockActivity extends Activity {
         @Override
         public void run() {
           loader.forceLoad();
-          handler.postDelayed(refresh_tick, nextMinute());
+          handler.postDelayed(refresh_tick, TimeUtil.nextMinuteDelay());
         }
       };
 
@@ -232,41 +221,5 @@ public class AlarmClockActivity extends Activity {
       unbindService(connection);
       service = null;
     }
-  }
-
-  private String until(int secondsPastMidnight) {
-    final Calendar now = Calendar.getInstance();
-    now.set(Calendar.SECOND, 0);
-    now.set(Calendar.MILLISECOND, 0);
-    final Calendar then = (Calendar)now.clone();
-    then.set(Calendar.HOUR_OF_DAY, 0);
-    then.set(Calendar.MINUTE, 0);
-    then.set(Calendar.SECOND, 0);
-    then.set(Calendar.MILLISECOND, 0);
-    then.add(Calendar.SECOND, secondsPastMidnight);
-    if (then.before(now))
-      then.add(Calendar.DATE, 1);
-
-    long minutes = (then.getTimeInMillis() - now.getTimeInMillis()) / 1000 / 60;
-    long hours = minutes / 60;
-    minutes -= (hours * 60);
-
-    if (hours > 0)
-      return String.format(
-          "%d %s %d %s",
-          hours, (hours > 1) ? "hours" : "hour",
-          minutes, (minutes > 1) ? "minutes" : "minute");
-    else
-      return String.format(
-          "%d %s", minutes, (minutes > 1) ? "minutes" : "minute");
-  }
-
-  private static long nextMinute() {
-    Calendar now = Calendar.getInstance();
-    Calendar then = (Calendar)now.clone();
-    then.set(Calendar.SECOND, 0);
-    then.set(Calendar.MILLISECOND, 0);
-    then.add(Calendar.MINUTE, 1);
-    return then.getTimeInMillis() - now.getTimeInMillis();
   }
 }
