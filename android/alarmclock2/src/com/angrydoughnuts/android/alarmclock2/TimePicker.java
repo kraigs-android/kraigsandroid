@@ -41,25 +41,28 @@ public class TimePicker extends DialogFragment {
     abstract void onTimePick(int secondsPastMidnight);
   }
 
-  private final Calendar c = Calendar.getInstance();
+  private int hour;
+  private int minute;
   private OnTimePickListener listener = null;
   public void setListener(OnTimePickListener l) { listener = l; }
 
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
+    final Calendar now = Calendar.getInstance();
+    hour = now.get(Calendar.HOUR_OF_DAY);
+    minute = now.get(Calendar.MINUTE);
+
     if (getArguments() != null) {
       int secondsPastMidnight = getArguments().getInt("time", -1);
       if (secondsPastMidnight >= 0) {
-        int hour = secondsPastMidnight / 3600;
-        int minute = secondsPastMidnight / 60 - hour * 60;
-        c.set(Calendar.HOUR_OF_DAY, hour);
-        c.set(Calendar.MINUTE, minute);
+        hour = secondsPastMidnight / 3600;
+        minute = secondsPastMidnight / 60 - hour * 60;
       }
     }
 
     if (savedInstanceState != null) {
-      c.set(Calendar.HOUR_OF_DAY, savedInstanceState.getInt("hour"));
-      c.set(Calendar.MINUTE, savedInstanceState.getInt("minute"));
+      hour = savedInstanceState.getInt("hour");
+      minute = savedInstanceState.getInt("minute");
     }
 
     final View v =
@@ -78,9 +81,7 @@ public class TimePicker extends DialogFragment {
           @Override
           public void onClick(DialogInterface dialog, int which) {
             if (listener != null)
-              listener.onTimePick(
-                  c.get(Calendar.HOUR_OF_DAY) * 3600 +
-                  c.get(Calendar.MINUTE) * 60);
+              listener.onTimePick(toSeconds());
           }
         })
       .create();
@@ -88,7 +89,7 @@ public class TimePicker extends DialogFragment {
         WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 
     final TextView t = (TextView)v.findViewById(R.id.picker_countdown);
-    t.setText(TimeUtil.until(c));
+    t.setText(TimeUtil.until(next()));
 
     final Button am_pm = (Button)v.findViewById(R.id.picker_am_pm);
     if (DateFormat.is24HourFormat(getContext())) {
@@ -99,12 +100,12 @@ public class TimePicker extends DialogFragment {
       am_pm.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            if (c.get(Calendar.AM_PM) == Calendar.AM)
-              c.set(Calendar.AM_PM, Calendar.PM);
+            if (hour < 12)
+              hour += 12;
             else
-              c.set(Calendar.AM_PM, Calendar.AM);
+              hour -= 12;
             am_pm.setText(ampm());
-            t.setText(TimeUtil.until(c));
+            t.setText(TimeUtil.until(next()));
           }
         });
     }
@@ -120,32 +121,41 @@ public class TimePicker extends DialogFragment {
         @Override
         public void afterTextChanged(Editable s) {
           String hhmm = s.toString().replaceAll(":", "");
-          int hour;
-          int minute;
+          int new_hour;
+          int new_minute;
           if (hhmm.length() < 3)
             return;
           try {
-            hour = Integer.parseInt(hhmm.substring(0, hhmm.length() - 2));
-            minute = Integer.parseInt(hhmm.substring(
+            new_hour = Integer.parseInt(hhmm.substring(0, hhmm.length() - 2));
+            new_minute = Integer.parseInt(hhmm.substring(
                 hhmm.length() - 2, hhmm.length()));
           } catch (NumberFormatException e) {
             return;
           }
-          if (!DateFormat.is24HourFormat(getContext()) && hour == 12) hour = 0;
 
-          int hour_field = DateFormat.is24HourFormat(getContext()) ?
-            Calendar.HOUR_OF_DAY : Calendar.HOUR;
-          c.set(hour_field, hour);
-          if (minute < 60) {
-            c.set(Calendar.MINUTE, minute);
-
-            e.removeTextChangedListener(this);
-            e.setText(time());
-            e.setSelection(e.getText().length());
-            e.addTextChangedListener(this);
-            am_pm.setText(ampm());
-            t.setText(TimeUtil.until(c));
+          if (DateFormat.is24HourFormat(getContext())) {
+            if (new_hour < 0 || new_hour > 23)
+              return;
+          } else {
+            if (new_hour < 1 || new_hour > 12)
+              return;
+            if (new_hour == 12)
+              new_hour = 0;
+            if (hour > 11)
+              new_hour += 12;
           }
+          if (new_minute < 0 || new_minute > 59)
+            return;
+
+          hour = new_hour;
+          minute = new_minute;
+
+          e.removeTextChangedListener(this);
+          e.setText(time());
+          e.setSelection(e.getText().length());
+          e.addTextChangedListener(this);
+          am_pm.setText(ampm());
+          t.setText(TimeUtil.until(next()));
         }
       });
     e.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -163,48 +173,49 @@ public class TimePicker extends DialogFragment {
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            c.roll(Calendar.HOUR_OF_DAY, 1);
+            hour = (hour + 1) % 24;
             am_pm.setText(ampm());
             e.setText(time());
             e.setSelection(e.getText().length());
-            t.setText(TimeUtil.until(c));
+            t.setText(TimeUtil.until(next()));
           }
         });
     ((Button)v.findViewById(R.id.hour_minus_one)).setOnClickListener(
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            c.roll(Calendar.HOUR_OF_DAY, -1);
+            hour = (hour - 1) % 24;
+            if (hour < 0)
+              hour += 24;
             am_pm.setText(ampm());
             e.setText(time());
             e.setSelection(e.getText().length());
-            t.setText(TimeUtil.until(c));
+            t.setText(TimeUtil.until(next()));
           }
         });
     ((Button)v.findViewById(R.id.minute_plus_five)).setOnClickListener(
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            int minute = (c.get(Calendar.MINUTE) / 5 * 5 + 5) % 60;
-            c.set(Calendar.MINUTE, minute);
+            minute = (minute / 5 * 5 + 5) % 60;
             e.setText(time());
             e.setSelection(e.getText().length());
-            t.setText(TimeUtil.until(c));
+            t.setText(TimeUtil.until(next()));
           }
         });
     ((Button)v.findViewById(R.id.minute_minus_five)).setOnClickListener(
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            int minute = c.get(Calendar.MINUTE) / 5 * 5;
-            if (minute == c.get(Calendar.MINUTE))
-              minute -= 5;
-            if (minute < 0)
-              minute += 60;
-            c.set(Calendar.MINUTE, minute);
+            int new_minute = minute / 5 * 5;
+            if (new_minute == minute)
+              new_minute -= 5;
+            if (new_minute < 0)
+              new_minute += 60;
+            minute = new_minute;
             e.setText(time());
             e.setSelection(e.getText().length());
-            t.setText(TimeUtil.until(c));
+            t.setText(TimeUtil.until(next()));
           }
         });
 
@@ -214,16 +225,24 @@ public class TimePicker extends DialogFragment {
   @Override
   public void onSaveInstanceState(Bundle outState) {
     super.onSaveInstanceState(outState);
-    outState.putInt("hour", c.get(Calendar.HOUR_OF_DAY));
-    outState.putInt("minute", c.get(Calendar.MINUTE));
+    outState.putInt("hour", hour);
+    outState.putInt("minute", minute);
+  }
+
+  private int toSeconds() {
+    return hour * 3600 + minute * 60;
+  }
+
+  private Calendar next() {
+    return TimeUtil.nextOccurrence(toSeconds());
   }
 
   private String time() {
-    return TimeUtil.format(getContext(), c);
+    return TimeUtil.format(getContext(), next());
   }
 
   private String ampm() {
-    if (c.get(Calendar.AM_PM) == Calendar.AM)
+    if (hour < 12)
       return "AM";
     else
       return "PM";
