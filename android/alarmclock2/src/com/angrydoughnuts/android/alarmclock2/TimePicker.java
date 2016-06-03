@@ -121,6 +121,8 @@ public class TimePicker extends DialogFragment {
         public void onTextChanged(CharSequence s, int st, int b, int c) {}
         @Override
         public void afterTextChanged(Editable s) {
+          d.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+
           String hhmm =
             s.toString().replaceAll(":", "").replaceFirst("^0+(?!$)", "");
           int new_hour;
@@ -158,6 +160,7 @@ public class TimePicker extends DialogFragment {
           e.addTextChangedListener(this);
           am_pm.setText(ampm());
           t.setText(until());
+          d.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
         }
       });
     e.setOnEditorActionListener(new TextView.OnEditorActionListener() {
