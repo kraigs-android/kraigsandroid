@@ -126,7 +126,6 @@ public class AlarmClockActivity extends Activity {
             AlarmNotificationService.scheduleAlarmNotification(
                 getApplicationContext(), id, alarm.getTimeInMillis());
           }
-          AlarmNotificationService.refreshNotifyBar(getApplicationContext());
         }
       });
     list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -138,7 +137,6 @@ public class AlarmClockActivity extends Activity {
 
           AlarmNotificationService.removeAlarmNotification(
               getApplicationContext(), id);
-          AlarmNotificationService.refreshNotifyBar(getApplicationContext());
           return true;
         }
       });
