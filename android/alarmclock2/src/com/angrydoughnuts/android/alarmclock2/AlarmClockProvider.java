@@ -148,6 +148,7 @@ public final class AlarmClockProvider extends ContentProvider {
     public static final String ENABLED = "enabled";
     public static final String NAME = "name";
     public static final String DAY_OF_WEEK = "dow";
+    public static final String NEXT_SNOOZE = "next_snooze";
   }
 
   public static class SettingsEntry implements BaseColumns {
@@ -165,7 +166,7 @@ public final class AlarmClockProvider extends ContentProvider {
 
   private static class DbAlarmClockHelper extends SQLiteOpenHelper {
     private static final String DB_NAME = "alarmclock";
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 2;
 
     public DbAlarmClockHelper(Context context) {
       super(context, DB_NAME, null, DB_VERSION);
@@ -174,8 +175,8 @@ public final class AlarmClockProvider extends ContentProvider {
     @Override
     public void onCreate(SQLiteDatabase db) {
       // Alarm metadata table:
-      // |(auto primary) | (0 to 86399) | (boolean) | (string) | (bitmask(7)) |
-      // |     _id       |    time      |  enabled  |   name   |     dow      |
+      // |(auto primary) | (0 to 86399) | (boolean) | (string) | (bitmask(7)) |  (millisUTC) |
+      // |     _id       |    time      |  enabled  |   name   |     dow      |  next_snooze |
       // time is seconds past midnight.
       db.execSQL(
           "CREATE TABLE " + AlarmEntry.TABLE_NAME + " (" +
@@ -183,7 +184,8 @@ public final class AlarmClockProvider extends ContentProvider {
           AlarmEntry.TIME + " UNSIGNED INTEGER (0, 86399)," +
           AlarmEntry.ENABLED + " UNSIGNED INTEGER (0, 1)," +
           AlarmEntry.NAME + " TEXT, " +
-          AlarmEntry.DAY_OF_WEEK + " UNSIGNED INTEGER (0, 127))");
+          AlarmEntry.DAY_OF_WEEK + " UNSIGNED INTEGER (0, 127)," +
+          AlarmEntry.NEXT_SNOOZE + " UNSIGNED INTEGER DEFAULT 0)");
 
       // |(primary) | (string) | (string)  | (1 to 60) | (boolean) | (0 to 100) | (0 to 100) | (0 to 60) |
       // |   id     | tone_url | tone_name |   snooze  |  vibrate  |  vol_start |  vol_end   | vol_time  |
@@ -201,6 +203,12 @@ public final class AlarmClockProvider extends ContentProvider {
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {}
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+      if (oldVersion < 2) {
+        db.execSQL(
+            "ALTER TABLE " + AlarmEntry.TABLE_NAME + " ADD COLUMN " +
+            AlarmEntry.NEXT_SNOOZE + " UNSIGNED INTEGER DEFAULT 0");
+      }
+    }
   }
 }
