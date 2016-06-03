@@ -166,8 +166,9 @@ public class TimePicker extends DialogFragment {
     e.setOnEditorActionListener(new TextView.OnEditorActionListener() {
         @Override
         public boolean onEditorAction(TextView v, int action, KeyEvent e) {
-          if (action == EditorInfo.IME_ACTION_DONE) {
-            d.getButton(DialogInterface.BUTTON_POSITIVE).performClick();
+          Button ok = d.getButton(DialogInterface.BUTTON_POSITIVE);
+          if (action == EditorInfo.IME_ACTION_DONE && ok.isEnabled()) {
+            ok.performClick();
             return true;
           }
           return false;
