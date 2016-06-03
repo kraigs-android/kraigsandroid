@@ -90,7 +90,7 @@ public class TimePicker extends DialogFragment {
         WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 
     final TextView t = (TextView)v.findViewById(R.id.picker_countdown);
-    t.setText(TimeUtil.until(next()));
+    t.setText(until());
 
     final Button am_pm = (Button)v.findViewById(R.id.picker_am_pm);
     if (DateFormat.is24HourFormat(getContext())) {
@@ -106,7 +106,7 @@ public class TimePicker extends DialogFragment {
             else
               hour -= 12;
             am_pm.setText(ampm());
-            t.setText(TimeUtil.until(next()));
+            t.setText(until());
           }
         });
     }
@@ -156,7 +156,7 @@ public class TimePicker extends DialogFragment {
           e.setSelection(e.getText().length());
           e.addTextChangedListener(this);
           am_pm.setText(ampm());
-          t.setText(TimeUtil.until(next()));
+          t.setText(until());
         }
       });
     e.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -178,7 +178,7 @@ public class TimePicker extends DialogFragment {
             am_pm.setText(ampm());
             e.setText(time());
             e.setSelection(e.getText().length());
-            t.setText(TimeUtil.until(next()));
+            t.setText(until());
           }
         });
     ((Button)v.findViewById(R.id.hour_minus_one)).setOnClickListener(
@@ -191,7 +191,7 @@ public class TimePicker extends DialogFragment {
             am_pm.setText(ampm());
             e.setText(time());
             e.setSelection(e.getText().length());
-            t.setText(TimeUtil.until(next()));
+            t.setText(until());
           }
         });
     ((Button)v.findViewById(R.id.minute_plus_five)).setOnClickListener(
@@ -201,7 +201,7 @@ public class TimePicker extends DialogFragment {
             minute = (minute / 5 * 5 + 5) % 60;
             e.setText(time());
             e.setSelection(e.getText().length());
-            t.setText(TimeUtil.until(next()));
+            t.setText(until());
           }
         });
     ((Button)v.findViewById(R.id.minute_minus_five)).setOnClickListener(
@@ -216,7 +216,7 @@ public class TimePicker extends DialogFragment {
             minute = new_minute;
             e.setText(time());
             e.setSelection(e.getText().length());
-            t.setText(TimeUtil.until(next()));
+            t.setText(until());
           }
         });
 
@@ -240,6 +240,10 @@ public class TimePicker extends DialogFragment {
 
   private String time() {
     return TimeUtil.format(getContext(), next());
+  }
+
+  private String until() {
+    return TimeUtil.until(next());
   }
 
   private String ampm() {
