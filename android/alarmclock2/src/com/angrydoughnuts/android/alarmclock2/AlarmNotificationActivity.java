@@ -40,6 +40,17 @@ public class AlarmNotificationActivity extends Activity {
       Log.i(TAG, "Alarm notification intent " + alarmid);
     }
 
+    ((Button)findViewById(R.id.snooze_alarm)).setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            AlarmNotificationService.snoozeAllAlarms(
+                getApplicationContext(),
+                TimeUtil.nextMinute(5).getTimeInMillis());
+            finish();
+          }
+        });
+
     ((Button)findViewById(R.id.dismiss_alarm)).setOnClickListener(
         new View.OnClickListener() {
           @Override

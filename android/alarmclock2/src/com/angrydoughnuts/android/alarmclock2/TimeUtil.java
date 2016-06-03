@@ -60,11 +60,19 @@ public class TimeUtil {
     return nextMinute(Calendar.getInstance());
   }
 
+  public static Calendar nextMinute(int minutes) {
+    return nextMinute(Calendar.getInstance(), minutes);
+  }
+
   public static Calendar nextMinute(Calendar now) {
+    return nextMinute(now, 1);
+  }
+
+  public static Calendar nextMinute(Calendar now, int minutes) {
     Calendar then = (Calendar)now.clone();
     then.set(Calendar.SECOND, 0);
     then.set(Calendar.MILLISECOND, 0);
-    then.add(Calendar.MINUTE, 1);
+    then.add(Calendar.MINUTE, minutes);
     return then;
   }
 

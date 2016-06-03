@@ -39,6 +39,7 @@ import java.util.TimeZone;
 
 public class AlarmNotificationService extends Service {
   public static final String ALARM_ID = "alarm_id";
+  private static final String SNOOZE_UTC = "snooze_utc";
 
   public static long newAlarm(Context c, int secondsPastMidnight) {
 
@@ -74,6 +75,23 @@ public class AlarmNotificationService extends Service {
     refreshNotifyBar(c);
   }
 
+  // TODO: clean up these duplicates.  There should be versions callable
+  // from within the service and versions from outside.
+  private void scheduleAlarmNotification(long alarmid, long tsUTC) {
+    // Intents are considered equal if they have the same action, data, type,
+    // class, and categories.  In order to schedule multiple alarms, every
+    // pending intent must be different.  This means that we must encode
+    // the alarm id in the request code.
+    PendingIntent schedule = PendingIntent.getBroadcast(
+        this, (int)alarmid,
+        new Intent(this, AlarmTriggerReceiver.class)
+        .putExtra(ALARM_ID, alarmid), 0);
+
+    ((AlarmManager)getSystemService(Context.ALARM_SERVICE))
+        .setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, tsUTC, schedule);
+    refreshNotifyBar();
+  }
+
   public static void removeAlarmNotification(Context c, long alarmid) {
     PendingIntent schedule = PendingIntent.getBroadcast(
         c, (int)alarmid,
@@ -85,13 +103,18 @@ public class AlarmNotificationService extends Service {
 
   private static void refreshNotifyBar(Context c) {
     c.startService(new Intent(c, AlarmNotificationService.class)
-                   .putExtra(AlarmNotificationService.COMMAND,
-                             AlarmNotificationService.REFRESH));
+                   .putExtra(COMMAND, REFRESH));
   }
 
   public static void dismissAllAlarms(Context c) {
     c.startService(new Intent(c, AlarmNotificationService.class)
                    .putExtra(COMMAND, DISMISS_ALL));
+  }
+
+  public static void snoozeAllAlarms(Context c, long snoozeUtc) {
+    c.startService(new Intent(c, AlarmNotificationService.class)
+                   .putExtra(COMMAND, SNOOZE_ALL)
+                   .putExtra(SNOOZE_UTC, snoozeUtc));
   }
 
   private ActiveAlarms activeAlarms = null;
@@ -104,11 +127,12 @@ public class AlarmNotificationService extends Service {
       return START_NOT_STICKY;
     case DISMISS_ALL:
       dismissAll();
-      stopSelf(startId);
+      stopSelf(startId);    // TODO should this be stopSelf() ??
       return START_NOT_STICKY;
     case SNOOZE_ALL:
-      // TODO
-      break;
+      snoozeAll(i);
+      stopSelf(startId);  // TODO should this be stopSelf() ??
+      return START_NOT_STICKY;
     case REFRESH:
       refreshNotifyBar();
       break;
@@ -203,6 +227,30 @@ public class AlarmNotificationService extends Service {
       if (r < 1) {
         Log.e(TAG, "Failed to disable " + alarmid);
       }
+    }
+
+    activeAlarms.alarmids.clear();
+    refreshNotifyBar();
+  }
+
+  private void snoozeAll(Intent i) {
+    final long snoozeUtc = i.getLongExtra(SNOOZE_UTC, -1);
+
+    if (activeAlarms == null) {
+      Log.w(TAG, "No active alarms when snoozed");
+      return;
+    }
+
+    for (long alarmid : activeAlarms.alarmids) {
+      ContentValues v = new ContentValues();
+      v.put(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE, snoozeUtc);
+      int r = getContentResolver().update(
+          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, alarmid),
+          v, null, null);
+      if (r < 1) {
+        Log.e(TAG, "Failed to snooze " + alarmid);
+      }
+      scheduleAlarmNotification(alarmid, snoozeUtc);
     }
 
     activeAlarms.alarmids.clear();
