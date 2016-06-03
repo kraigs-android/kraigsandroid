@@ -159,21 +159,25 @@ public class AlarmNotificationService extends Service {
     Intent notify = new Intent(this, AlarmNotificationActivity.class)
       .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-    startForeground(
-        FIRING_ALARM_NOTIFICATION_ID,
-        new Notification.Builder(this)
-          .setContentTitle("Alarming...")
-          .setContentText("Second line...")
-          .setSmallIcon(R.drawable.ic_launcher)
-          .setCategory(Notification.CATEGORY_ALARM)
-          .setPriority(Notification.PRIORITY_MAX)
-          .setVisibility(Notification.VISIBILITY_PUBLIC)
-          .setOngoing(true)
-          // TODO
-          // .setLights()
-          // .setSound() ???
-          .setContentIntent(PendingIntent.getActivity(this, 0, notify, 0))
-          .build());
+    final Notification notification =
+      new Notification.Builder(this)
+      .setContentTitle("Alarming...")
+      .setContentText("Second line...")
+      .setSmallIcon(R.drawable.ic_launcher)
+      .setContentIntent(PendingIntent.getActivity(this, 0, notify, 0))
+      .setCategory(Notification.CATEGORY_ALARM)
+      .setPriority(Notification.PRIORITY_MAX)
+      .setVisibility(Notification.VISIBILITY_PUBLIC)
+      .setOngoing(true)
+      // TODO replace each of these with an explicit below
+      .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS)
+      // TODO
+      // .setLights()
+      // .setSound()
+      // .setVibrate()
+      .build();
+    notification.flags |= Notification.FLAG_INSISTENT;  // Loop sound
+    startForeground(FIRING_ALARM_NOTIFICATION_ID, notification);
 
     refreshNotifyBar(this);
 
