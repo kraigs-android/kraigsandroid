@@ -44,8 +44,7 @@ public class AlarmNotificationActivity extends Activity {
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            stopService(new Intent(
-                getApplicationContext(), AlarmNotificationService.class));
+            AlarmNotificationService.dismissAllAlarms(getApplicationContext());
             finish();
           }
         });

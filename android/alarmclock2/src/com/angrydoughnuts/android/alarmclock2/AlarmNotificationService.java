@@ -86,7 +86,12 @@ public class AlarmNotificationService extends Service {
   private static void refreshNotifyBar(Context c) {
     c.startService(new Intent(c, AlarmNotificationService.class)
                    .putExtra(AlarmNotificationService.COMMAND,
-                             AlarmNotificationService.UPDATE_LOOP));
+                             AlarmNotificationService.REFRESH));
+  }
+
+  public static void dismissAllAlarms(Context c) {
+    c.startService(new Intent(c, AlarmNotificationService.class)
+                   .putExtra(COMMAND, DISMISS_ALL));
   }
 
   private ActiveAlarms activeAlarms = null;
@@ -97,8 +102,15 @@ public class AlarmNotificationService extends Service {
     case TRIGGER_ALARM_NOTIFICATION:
       handleTriggerAlarm(i);
       return START_NOT_STICKY;
-    case UPDATE_LOOP:
-      displayNextAlarm();
+    case DISMISS_ALL:
+      dismissAll();
+      stopSelf(startId);
+      return START_NOT_STICKY;
+    case SNOOZE_ALL:
+      // TODO
+      break;
+    case REFRESH:
+      refreshNotifyBar();
       break;
     }
 
@@ -113,20 +125,9 @@ public class AlarmNotificationService extends Service {
     if (activeAlarms == null)
       return;
 
-    for (long alarmid : activeAlarms.alarmids) {
-      // TODO, this should potentially reschedule instead of blindly disable.
-      ContentValues v = new ContentValues();
-      v.put(AlarmClockProvider.AlarmEntry.ENABLED, false);
-      int r = getContentResolver().update(
-          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, alarmid),
-          v, null, null);
-      if (r < 1) {
-        Log.e(TAG, "Failed to disable " + alarmid);
-      }
-    }
-
-    refreshNotifyBar(this);
-
+    if (!activeAlarms.alarmids.isEmpty())
+      Log.w(TAG, "Releasing wake lock with active alarms! (" +
+            activeAlarms.alarmids.size() + ")");
     Log.i(TAG, "Releasing wake lock");
     activeAlarms.wakelock.release();
     activeAlarms = null;
@@ -151,7 +152,7 @@ public class AlarmNotificationService extends Service {
       activeAlarms = new ActiveAlarms();
       activeAlarms.wakelock = w;
     } else {
-      Log.i(TAG, "Already wake-locked, releasing");
+      Log.i(TAG, "Already wake-locked, releasing extra lock");
       w.release();
     }
     activeAlarms.alarmids.add(alarmid);
@@ -179,20 +180,42 @@ public class AlarmNotificationService extends Service {
     notification.flags |= Notification.FLAG_INSISTENT;  // Loop sound
     startForeground(FIRING_ALARM_NOTIFICATION_ID, notification);
 
-    refreshNotifyBar(this);
+    refreshNotifyBar();
 
     Intent notifyAct = (Intent) notify.clone();
     notifyAct.putExtra(ALARM_ID, alarmid);
     startActivity(notifyAct);
   }
 
-  private void displayNextAlarm() {
+  private void dismissAll() {
+    if (activeAlarms == null) {
+      Log.w(TAG, "No active alarms when dismissed");
+      return;
+    }
+
+    for (long alarmid : activeAlarms.alarmids) {
+      ContentValues v = new ContentValues();
+      v.put(AlarmClockProvider.AlarmEntry.ENABLED, false);
+      v.put(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE, 0);
+      int r = getContentResolver().update(
+          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, alarmid),
+          v, null, null);
+      if (r < 1) {
+        Log.e(TAG, "Failed to disable " + alarmid);
+      }
+    }
+
+    activeAlarms.alarmids.clear();
+    refreshNotifyBar();
+  }
+
+  private void refreshNotifyBar() {
     final NotificationManager manager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     final PendingIntent tick = PendingIntent.getService(
         this, 0, new Intent(this, AlarmNotificationService.class)
         .putExtra(AlarmNotificationService.COMMAND,
-                  AlarmNotificationService.UPDATE_LOOP), 0);
+                  AlarmNotificationService.REFRESH), 0);
 
     final Cursor c = getContentResolver().query(
         AlarmClockProvider.ALARMS_URI,
@@ -201,8 +224,8 @@ public class AlarmNotificationService extends Service {
         AlarmClockProvider.AlarmEntry.ENABLED + " == 1",
         null, null);
 
-    if (c.getCount() == 0 || activeAlarms != null) {
-      Log.i(TAG, "Stopping notification refresh loop");
+    if (c.getCount() == 0 ||
+        (activeAlarms != null && !activeAlarms.alarmids.isEmpty())) {
       manager.cancel(NEXT_ALARM_NOTIFICATION_ID);
       c.close();
       ((AlarmManager)getSystemService(Context.ALARM_SERVICE)).cancel(tick);
@@ -245,7 +268,9 @@ public class AlarmNotificationService extends Service {
   // Commands
   private static final String COMMAND = "command";
   private static final int TRIGGER_ALARM_NOTIFICATION = 1;
-  private static final int UPDATE_LOOP = 2;
+  private static final int DISMISS_ALL = 2;
+  private static final int SNOOZE_ALL = 3;
+  private static final int REFRESH = 4;
   // Notification ids
   private static final int FIRING_ALARM_NOTIFICATION_ID = 42;
   private static final int NEXT_ALARM_NOTIFICATION_ID = 69;
