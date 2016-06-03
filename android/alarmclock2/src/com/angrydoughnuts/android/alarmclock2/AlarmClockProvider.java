@@ -62,12 +62,9 @@ public final class AlarmClockProvider extends ContentProvider {
     case ALARMS:
       if (!values.containsKey(AlarmEntry.TIME))
         throw new IllegalArgumentException("Missing time");
-      if (!values.containsKey(AlarmEntry.ENABLED))
-        values.put(AlarmEntry.ENABLED, true);
-      if (!values.containsKey(AlarmEntry.NAME))
-        values.put(AlarmEntry.NAME, "");
-      if (!values.containsKey(AlarmEntry.DAY_OF_WEEK))
-        values.put(AlarmEntry.DAY_OF_WEEK, 0);
+      values.put(AlarmEntry.ENABLED, true);
+      values.put(AlarmEntry.NAME, "");
+      values.put(AlarmEntry.DAY_OF_WEEK, 0);
       Uri result = ContentUris.withAppendedId(
           ALARMS_URI, db.insertOrThrow(AlarmEntry.TABLE_NAME, null, values));
       getContext().getContentResolver().notifyChange(uri, null);
