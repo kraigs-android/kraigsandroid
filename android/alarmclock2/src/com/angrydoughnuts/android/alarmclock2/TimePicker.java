@@ -121,7 +121,8 @@ public class TimePicker extends DialogFragment {
         public void onTextChanged(CharSequence s, int st, int b, int c) {}
         @Override
         public void afterTextChanged(Editable s) {
-          String hhmm = s.toString().replaceAll(":", "");
+          String hhmm =
+            s.toString().replaceAll(":", "").replaceFirst("^0+(?!$)", "");
           int new_hour;
           int new_minute;
           if (hhmm.length() < 3)

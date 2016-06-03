@@ -79,16 +79,10 @@ public class TimeUtil {
   }
 
   public static String format(Context context, Calendar c) {
-    // NOTE: these use 'magic' three digits to trigger acceptance in the
-    // TimePicker edit box parsing.  Don't zero pad 24 hour time.
-    if (DateFormat.is24HourFormat(context))
-      return String.format(
-          "%d:%02d", c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
-    else {
-      int hour = c.get(Calendar.HOUR);
-      if (hour == 0) hour = 12;
-      return String.format("%d:%02d", hour, c.get(Calendar.MINUTE));
-    }
+    SimpleDateFormat f = DateFormat.is24HourFormat(context) ?
+      new SimpleDateFormat("HH:mm") :
+      new SimpleDateFormat("h:mm");
+    return f.format(c.getTime());
   }
 
   public static String formatLong(Context context, Calendar c) {
