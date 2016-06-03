@@ -50,17 +50,6 @@ import java.lang.Runnable;
 import java.util.Calendar;
 
 public class AlarmClockActivity extends Activity {
-  private AlarmClockService service = null;
-  private final ServiceConnection connection = new ServiceConnection() {
-      @Override
-      public void onServiceConnected(ComponentName name, IBinder binder) {
-        service = ((AlarmClockService.IdentityBinder)binder).getService();
-      }
-      @Override
-      public void onServiceDisconnected(ComponentName name) {
-        service = null;
-      }
-    };
   private final Handler handler = new Handler();
   private Runnable refresh_tick;
   private final TimePicker.OnTimePickListener new_alarm =
@@ -174,7 +163,13 @@ public class AlarmClockActivity extends Activity {
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            if (service != null) service.createTestAlarm();
+            final Calendar c = Calendar.getInstance();
+            final int secondsPastMidnight = 5 +
+              c.get(Calendar.HOUR_OF_DAY) * 3600 +
+              c.get(Calendar.MINUTE) * 60 +
+              c.get(Calendar.SECOND);
+            AlarmNotificationService.newAlarm(
+                getApplicationContext(), secondsPastMidnight);
           }
         });
 
@@ -205,19 +200,11 @@ public class AlarmClockActivity extends Activity {
   public void onStart() {
     super.onStart();
     handler.postDelayed(refresh_tick, TimeUtil.nextMinuteDelay());
-    if (service == null) {
-      bindService(new Intent(this, AlarmClockService.class), connection,
-                  Context.BIND_AUTO_CREATE);
-    }
   }
 
   @Override
   public void onStop() {
     super.onStop();
     handler.removeCallbacks(refresh_tick);
-    if (service != null) {
-      unbindService(connection);
-      service = null;
-    }
   }
 }

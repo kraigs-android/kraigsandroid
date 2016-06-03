@@ -38,6 +38,8 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 public class AlarmNotificationService extends Service {
+  public static final String ALARM_ID = "alarm_id";
+
   public static long newAlarm(Context c, int secondsPastMidnight) {
 
     ContentValues v = new ContentValues();
@@ -65,7 +67,7 @@ public class AlarmNotificationService extends Service {
     PendingIntent schedule = PendingIntent.getBroadcast(
         c, (int)alarmid,
         new Intent(c, AlarmTriggerReceiver.class)
-        .putExtra(AlarmClockService.ALARM_ID, alarmid), 0);
+        .putExtra(ALARM_ID, alarmid), 0);
 
     ((AlarmManager)c.getSystemService(Context.ALARM_SERVICE))
         .setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, tsUTC, schedule);
@@ -76,7 +78,7 @@ public class AlarmNotificationService extends Service {
     PendingIntent schedule = PendingIntent.getBroadcast(
         c, (int)alarmid,
         new Intent(c, AlarmTriggerReceiver.class)
-        .putExtra(AlarmClockService.ALARM_ID, alarmid), 0);
+        .putExtra(ALARM_ID, alarmid), 0);
     ((AlarmManager)c.getSystemService(Context.ALARM_SERVICE)).cancel(schedule);
     refreshNotifyBar(c);
   }
@@ -134,7 +136,7 @@ public class AlarmNotificationService extends Service {
   public IBinder onBind(Intent intent) { return null; }
 
   private void handleTriggerAlarm(Intent i) {
-    final long alarmid = i.getLongExtra(AlarmClockService.ALARM_ID, -1);
+    final long alarmid = i.getLongExtra(ALARM_ID, -1);
 
     PowerManager.WakeLock w = null;
     if (i.hasExtra(AlarmTriggerReceiver.WAKELOCK_ID)) {
@@ -176,7 +178,7 @@ public class AlarmNotificationService extends Service {
     refreshNotifyBar(this);
 
     Intent notifyAct = (Intent) notify.clone();
-    notifyAct.putExtra(AlarmClockService.ALARM_ID, alarmid);
+    notifyAct.putExtra(ALARM_ID, alarmid);
     startActivity(notifyAct);
   }
 
@@ -254,7 +256,7 @@ public class AlarmNotificationService extends Service {
 
     @Override
     public void onReceive(Context c, Intent i) {
-      final long alarmid = i.getLongExtra(AlarmClockService.ALARM_ID, -1);
+      final long alarmid = i.getLongExtra(ALARM_ID, -1);
 
       @SuppressWarnings("deprecation")  // SCREEN_DIM_WAKE_LOCK
       PowerManager.WakeLock w =
@@ -267,7 +269,7 @@ public class AlarmNotificationService extends Service {
       Log.i(TAG, "Acquired lock " + nextid + " for alarm " + alarmid);
 
       c.startService(new Intent(c, AlarmNotificationService.class)
-                     .putExtra(AlarmClockService.ALARM_ID, alarmid)
+                     .putExtra(ALARM_ID, alarmid)
                      .putExtra(COMMAND, TRIGGER_ALARM_NOTIFICATION)
                      .putExtra(WAKELOCK_ID, nextid++));
     }

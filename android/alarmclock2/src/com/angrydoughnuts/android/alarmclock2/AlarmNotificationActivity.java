@@ -35,7 +35,7 @@ public class AlarmNotificationActivity extends Activity {
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 
     final long alarmid =
-      getIntent().getLongExtra(AlarmClockService.ALARM_ID, -1);
+      getIntent().getLongExtra(AlarmNotificationService.ALARM_ID, -1);
     if (alarmid != -1) {
       Log.i(TAG, "Alarm notification intent " + alarmid);
     }
@@ -55,7 +55,7 @@ public class AlarmNotificationActivity extends Activity {
   protected void onNewIntent(Intent i) {
     super.onNewIntent(i);
 
-    final long alarmid = i.getLongExtra(AlarmClockService.ALARM_ID, -1);
+    final long alarmid = i.getLongExtra(AlarmNotificationService.ALARM_ID, -1);
     if (alarmid != -1) {
       Log.i(TAG, "Another alarm notification intent " + alarmid);
     }
