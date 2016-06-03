@@ -286,7 +286,7 @@ public class AlarmNotificationService extends Service {
       Calendar n = TimeUtil.nextOccurrence(
           now,
           c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME)),
-          c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE)));
+          c.getLong(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE)));
       if (next == null || n.before(next))
         next = n;
     }
