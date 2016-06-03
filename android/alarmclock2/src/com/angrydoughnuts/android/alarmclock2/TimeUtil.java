@@ -26,6 +26,12 @@ public class TimeUtil {
     return nextOccurrence(Calendar.getInstance(), secondsPastMidnight);
   }
 
+  public static Calendar nextOccurrence(
+      int secondsPastMidnight, long nextSnooze) {
+    return nextOccurrence(
+        Calendar.getInstance(), secondsPastMidnight, nextSnooze);
+  }
+
   public static Calendar nextOccurrence(Calendar now, int secondsPastMidnight) {
     Calendar then = (Calendar)now.clone();
     then.set(Calendar.HOUR_OF_DAY, 0);
@@ -36,6 +42,18 @@ public class TimeUtil {
     if (then.before(now))
       then.add(Calendar.DATE, 1);
     return then;
+  }
+
+  public static Calendar nextOccurrence(
+      Calendar now, int secondsPastMidnight, long nextSnooze) {
+    Calendar next = nextOccurrence(now, secondsPastMidnight);
+    if (nextSnooze > now.getTimeInMillis()) {
+      Calendar snooze = Calendar.getInstance();
+      snooze.setTimeInMillis(nextSnooze);
+      if (snooze.before(next))
+        return snooze;
+    }
+    return next;
   }
 
   public static Calendar nextMinute() {

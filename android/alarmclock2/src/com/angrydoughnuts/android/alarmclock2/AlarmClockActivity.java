@@ -72,9 +72,12 @@ public class AlarmClockActivity extends Activity {
         public void bindView(View v, Context context, Cursor c) {
           final int secondsPastMidnight = c.getInt(
               c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
+          final long nextSnooze = c.getLong(
+              c.getColumnIndex(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE));
           final int enabled = c.getInt(
               c.getColumnIndex(AlarmClockProvider.AlarmEntry.ENABLED));
-          final Calendar next = TimeUtil.nextOccurrence(secondsPastMidnight);
+          final Calendar next =
+            TimeUtil.nextOccurrence(secondsPastMidnight, nextSnooze);
 
           ((TextView)v.findViewById(R.id.debug_text))
             .setText(TimeUtil.formatLong(getApplicationContext(), next));
@@ -94,6 +97,7 @@ public class AlarmClockActivity extends Activity {
 
           ContentValues val = new ContentValues();
           val.put(AlarmClockProvider.AlarmEntry.ENABLED, !check);
+          val.put(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE, 0);
           getContentResolver().update(
               ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
               val, null, null);
@@ -139,7 +143,8 @@ public class AlarmClockActivity extends Activity {
                   new String[] {
                     AlarmClockProvider.AlarmEntry._ID,
                     AlarmClockProvider.AlarmEntry.TIME,
-                    AlarmClockProvider.AlarmEntry.ENABLED },
+                    AlarmClockProvider.AlarmEntry.ENABLED,
+                    AlarmClockProvider.AlarmEntry.NEXT_SNOOZE },
                   null, null, AlarmClockProvider.AlarmEntry.TIME + " ASC");
             }
             @Override

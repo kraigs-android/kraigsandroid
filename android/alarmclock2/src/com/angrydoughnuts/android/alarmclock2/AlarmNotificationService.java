@@ -196,7 +196,8 @@ public class AlarmNotificationService extends Service {
 
     final Cursor c = getContentResolver().query(
         AlarmClockProvider.ALARMS_URI,
-        new String[] { AlarmClockProvider.AlarmEntry.TIME },
+        new String[] { AlarmClockProvider.AlarmEntry.TIME,
+                       AlarmClockProvider.AlarmEntry.NEXT_SNOOZE },
         AlarmClockProvider.AlarmEntry.ENABLED + " == 1",
         null, null);
 
@@ -208,12 +209,14 @@ public class AlarmNotificationService extends Service {
       return;
     }
 
-    final int index = c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME);
     final Calendar now = Calendar.getInstance();
     Calendar next = null;
     while (c.moveToNext()) {
-      Calendar n = TimeUtil.nextOccurrence(now, c.getInt(index));
-      if (next == null || next.before(n))
+      Calendar n = TimeUtil.nextOccurrence(
+          now,
+          c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME)),
+          c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE)));
+      if (next == null || n.before(next))
         next = n;
     }
     c.close();
