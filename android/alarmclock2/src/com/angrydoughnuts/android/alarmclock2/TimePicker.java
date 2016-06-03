@@ -48,6 +48,7 @@ public class TimePicker extends DialogFragment {
 
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
+    super.onCreateDialog(savedInstanceState);
     final Calendar now = Calendar.getInstance();
     hour = now.get(Calendar.HOUR_OF_DAY);
     minute = now.get(Calendar.MINUTE);
@@ -242,9 +243,6 @@ public class TimePicker extends DialogFragment {
   }
 
   private String ampm() {
-    if (hour < 12)
-      return "AM";
-    else
-      return "PM";
+    return (hour < 12) ? "AM" : "PM";
   }
 }
