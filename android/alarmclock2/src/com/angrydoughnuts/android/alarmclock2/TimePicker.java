@@ -37,6 +37,8 @@ import java.lang.NumberFormatException;
 import java.util.Calendar;
 
 public class TimePicker extends DialogFragment {
+  public static final String TIME = "time";
+  public static final String TITLE = "title";
   public static interface OnTimePickListener {
     abstract void onTimePick(int secondsPastMidnight);
   }
@@ -53,12 +55,14 @@ public class TimePicker extends DialogFragment {
     hour = now.get(Calendar.HOUR_OF_DAY);
     minute = now.get(Calendar.MINUTE);
 
+    String title = "";
     if (getArguments() != null) {
-      int secondsPastMidnight = getArguments().getInt("time", -1);
+      int secondsPastMidnight = getArguments().getInt(TIME, -1);
       if (secondsPastMidnight >= 0) {
         hour = secondsPastMidnight / 3600;
         minute = secondsPastMidnight / 60 - hour * 60;
       }
+      title = getArguments().getString(TITLE, "");
     }
 
     if (savedInstanceState != null) {
@@ -72,7 +76,7 @@ public class TimePicker extends DialogFragment {
 
     final AlertDialog d = new AlertDialog.Builder(getContext())
       // TODO edit alarm
-      .setTitle("New Alarm")
+      .setTitle(title.isEmpty() ? "New Alarm" : title)
       .setView(v)
       .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
           @Override
