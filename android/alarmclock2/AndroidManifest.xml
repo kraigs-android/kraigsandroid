@@ -19,7 +19,6 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
-    <service android:name=".AlarmClockService" android:exported="false" />
     <service android:name=".AlarmNotificationService" android:exported="false"/>
     <receiver android:name=".AlarmNotificationService$AlarmTriggerReceiver" />
     <provider
