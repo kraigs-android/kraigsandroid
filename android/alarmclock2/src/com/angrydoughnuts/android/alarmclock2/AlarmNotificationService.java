@@ -95,12 +95,12 @@ public class AlarmNotificationService extends Service {
       return START_NOT_STICKY;
     case DISMISS_ALL:
       dismissAll();
-      stopSelf(startId);    // TODO should this be stopSelf() ??
+      stopSelf();
       return START_NOT_STICKY;
     case SNOOZE_ALL:
       ts = i.getLongExtra(TIME_UTC, -1);
       snoozeAll(ts);
-      stopSelf(startId);  // TODO should this be stopSelf() ??
+      stopSelf();
       return START_NOT_STICKY;
     case SCHEDULE_TRIGGER:
       alarmid = i.getLongExtra(ALARM_ID, -1);
