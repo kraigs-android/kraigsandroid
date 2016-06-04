@@ -39,13 +39,12 @@ import java.util.TimeZone;
 
 public class AlarmNotificationService extends Service {
   public static final String ALARM_ID = "alarm_id";
-  private static final String SNOOZE_UTC = "snooze_utc";
+  private static final String TIME_UTC = "time_utc";
 
   public static long newAlarm(Context c, int secondsPastMidnight) {
 
     ContentValues v = new ContentValues();
     v.put(AlarmClockProvider.AlarmEntry.TIME, secondsPastMidnight);
-    // TODO handle error ??
     Uri u = c.getContentResolver().insert(AlarmClockProvider.ALARMS_URI, v);
     long alarmid = ContentUris.parseId(u);
     Log.i(TAG, "New alarm: " + alarmid + " (" + u +")");
@@ -53,57 +52,23 @@ public class AlarmNotificationService extends Service {
     // Inserted entry is ENABLED by default with no options.  Schedule the
     // first occurrence.
     Calendar ts = TimeUtil.nextOccurrence(secondsPastMidnight);
-    scheduleAlarmNotification(c, alarmid, ts.getTimeInMillis());
-    refreshNotifyBar(c);
+    scheduleAlarmTrigger(c, alarmid, ts.getTimeInMillis());
 
     return alarmid;
   }
 
-  public static void scheduleAlarmNotification(
+  public static void scheduleAlarmTrigger(
       Context c, long alarmid, long tsUTC) {
-    // Intents are considered equal if they have the same action, data, type,
-    // class, and categories.  In order to schedule multiple alarms, every
-    // pending intent must be different.  This means that we must encode
-    // the alarm id in the request code.
-    PendingIntent schedule = PendingIntent.getBroadcast(
-        c, (int)alarmid,
-        new Intent(c, AlarmTriggerReceiver.class)
-        .putExtra(ALARM_ID, alarmid), 0);
-
-    ((AlarmManager)c.getSystemService(Context.ALARM_SERVICE))
-        .setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, tsUTC, schedule);
-    refreshNotifyBar(c);
-  }
-
-  // TODO: clean up these duplicates.  There should be versions callable
-  // from within the service and versions from outside.
-  private void scheduleAlarmNotification(long alarmid, long tsUTC) {
-    // Intents are considered equal if they have the same action, data, type,
-    // class, and categories.  In order to schedule multiple alarms, every
-    // pending intent must be different.  This means that we must encode
-    // the alarm id in the request code.
-    PendingIntent schedule = PendingIntent.getBroadcast(
-        this, (int)alarmid,
-        new Intent(this, AlarmTriggerReceiver.class)
-        .putExtra(ALARM_ID, alarmid), 0);
-
-    ((AlarmManager)getSystemService(Context.ALARM_SERVICE))
-        .setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, tsUTC, schedule);
-    refreshNotifyBar();
-  }
-
-  public static void removeAlarmNotification(Context c, long alarmid) {
-    PendingIntent schedule = PendingIntent.getBroadcast(
-        c, (int)alarmid,
-        new Intent(c, AlarmTriggerReceiver.class)
-        .putExtra(ALARM_ID, alarmid), 0);
-    ((AlarmManager)c.getSystemService(Context.ALARM_SERVICE)).cancel(schedule);
-    refreshNotifyBar(c);
-  }
-
-  private static void refreshNotifyBar(Context c) {
     c.startService(new Intent(c, AlarmNotificationService.class)
-                   .putExtra(COMMAND, REFRESH));
+                   .putExtra(COMMAND, SCHEDULE_TRIGGER)
+                   .putExtra(ALARM_ID, alarmid)
+                   .putExtra(TIME_UTC, tsUTC));
+  }
+
+  public static void removeAlarmTrigger(Context c, long alarmid) {
+    c.startService(new Intent(c, AlarmNotificationService.class)
+                   .putExtra(COMMAND, REMOVE_TRIGGER)
+                   .putExtra(ALARM_ID, alarmid));
   }
 
   public static void dismissAllAlarms(Context c) {
@@ -114,13 +79,16 @@ public class AlarmNotificationService extends Service {
   public static void snoozeAllAlarms(Context c, long snoozeUtc) {
     c.startService(new Intent(c, AlarmNotificationService.class)
                    .putExtra(COMMAND, SNOOZE_ALL)
-                   .putExtra(SNOOZE_UTC, snoozeUtc));
+                   .putExtra(TIME_UTC, snoozeUtc));
   }
 
   private ActiveAlarms activeAlarms = null;
 
   @Override
   public int onStartCommand(Intent i, int flags, int startId) {
+    long alarmid;
+    long ts;
+
     switch (i.hasExtra(COMMAND) ? i.getExtras().getInt(COMMAND) : -1) {
     case TRIGGER_ALARM_NOTIFICATION:
       handleTriggerAlarm(i);
@@ -130,9 +98,19 @@ public class AlarmNotificationService extends Service {
       stopSelf(startId);    // TODO should this be stopSelf() ??
       return START_NOT_STICKY;
     case SNOOZE_ALL:
-      snoozeAll(i);
+      ts = i.getLongExtra(TIME_UTC, -1);
+      snoozeAll(ts);
       stopSelf(startId);  // TODO should this be stopSelf() ??
       return START_NOT_STICKY;
+    case SCHEDULE_TRIGGER:
+      alarmid = i.getLongExtra(ALARM_ID, -1);
+      ts = i.getLongExtra(TIME_UTC, -1);
+      scheduleTrigger(alarmid, ts);
+      break;
+    case REMOVE_TRIGGER:
+      alarmid = i.getLongExtra(ALARM_ID, -1);
+      removeTrigger(alarmid);
+      break;
     case REFRESH:
       refreshNotifyBar();
       break;
@@ -233,9 +211,7 @@ public class AlarmNotificationService extends Service {
     refreshNotifyBar();
   }
 
-  private void snoozeAll(Intent i) {
-    final long snoozeUtc = i.getLongExtra(SNOOZE_UTC, -1);
-
+  private void snoozeAll(long snoozeUtc) {
     if (activeAlarms == null) {
       Log.w(TAG, "No active alarms when snoozed");
       return;
@@ -250,10 +226,33 @@ public class AlarmNotificationService extends Service {
       if (r < 1) {
         Log.e(TAG, "Failed to snooze " + alarmid);
       }
-      scheduleAlarmNotification(alarmid, snoozeUtc);
+      scheduleTrigger(alarmid, snoozeUtc);
     }
 
     activeAlarms.alarmids.clear();
+    refreshNotifyBar();
+  }
+
+  private void scheduleTrigger(long alarmid, long tsUTC) {
+    // Intents are considered equal if they have the same action, data, type,
+    // class, and categories.  In order to schedule multiple alarms, every
+    // pending intent must be different.  This means that we must encode
+    // the alarm id in the request code.
+    PendingIntent schedule = PendingIntent.getBroadcast(
+        this, (int)alarmid, new Intent(this, AlarmTriggerReceiver.class)
+        .putExtra(ALARM_ID, alarmid), 0);
+
+    ((AlarmManager)getSystemService(Context.ALARM_SERVICE))
+        .setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, tsUTC, schedule);
+    refreshNotifyBar();
+  }
+
+  private void removeTrigger(long alarmid) {
+    PendingIntent schedule = PendingIntent.getBroadcast(
+        this, (int)alarmid, new Intent(this, AlarmTriggerReceiver.class)
+        .putExtra(ALARM_ID, alarmid), 0);
+
+    ((AlarmManager)getSystemService(Context.ALARM_SERVICE)).cancel(schedule);
     refreshNotifyBar();
   }
 
@@ -316,9 +315,11 @@ public class AlarmNotificationService extends Service {
   // Commands
   private static final String COMMAND = "command";
   private static final int TRIGGER_ALARM_NOTIFICATION = 1;
-  private static final int DISMISS_ALL = 2;
-  private static final int SNOOZE_ALL = 3;
-  private static final int REFRESH = 4;
+  private static final int SCHEDULE_TRIGGER = 2;
+  private static final int REMOVE_TRIGGER = 3;
+  private static final int DISMISS_ALL = 4;
+  private static final int SNOOZE_ALL = 5;
+  private static final int REFRESH = 6;
   // Notification ids
   private static final int FIRING_ALARM_NOTIFICATION_ID = 42;
   private static final int NEXT_ALARM_NOTIFICATION_ID = 69;

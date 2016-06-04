@@ -103,7 +103,7 @@ public class AlarmClockActivity extends Activity {
               val, null, null);
 
           if (check) {
-            AlarmNotificationService.removeAlarmNotification(
+            AlarmNotificationService.removeAlarmTrigger(
                 getApplicationContext(), id);
           } else {
             Cursor c = getContentResolver().query(
@@ -116,7 +116,7 @@ public class AlarmClockActivity extends Activity {
               c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
             c.close();
             Calendar alarm = TimeUtil.nextOccurrence(secondsPastMidnight);
-            AlarmNotificationService.scheduleAlarmNotification(
+            AlarmNotificationService.scheduleAlarmTrigger(
                 getApplicationContext(), id, alarm.getTimeInMillis());
           }
         }
@@ -128,7 +128,7 @@ public class AlarmClockActivity extends Activity {
               ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
               null, null);
 
-          AlarmNotificationService.removeAlarmNotification(
+          AlarmNotificationService.removeAlarmTrigger(
               getApplicationContext(), id);
           return true;
         }
