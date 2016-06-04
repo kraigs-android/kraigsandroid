@@ -124,12 +124,11 @@ public class AlarmClockActivity extends Activity {
     list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
         @Override
         public boolean onItemLongClick(AdapterView<?> p, View v, int x, long id) {
-          getContentResolver().delete(
-              ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
-              null, null);
-
-          AlarmNotificationService.removeAlarmTrigger(
-              getApplicationContext(), id);
+          AlarmOptions options = new AlarmOptions();
+          Bundle b = new Bundle();
+          b.putLong(AlarmNotificationService.ALARM_ID, id);
+          options.setArguments(b);
+          options.show(getFragmentManager(), "alarm_options");
           return true;
         }
       });
