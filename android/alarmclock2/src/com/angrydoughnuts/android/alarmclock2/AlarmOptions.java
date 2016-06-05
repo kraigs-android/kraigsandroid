@@ -25,6 +25,8 @@ import android.content.DialogInterface;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -133,11 +135,19 @@ public class AlarmOptions extends DialogFragment {
 
     final EditText edit_label = (EditText)v.findViewById(R.id.edit_label);
     edit_label.setText(label);
-    edit_label.setOnClickListener(
-        new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-          }
+    edit_label.setSelection(label.length());
+    edit_label.addTextChangedListener(new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
+        @Override
+        public void onTextChanged(CharSequence s, int st, int b, int c) {}
+        @Override
+        public void afterTextChanged(Editable s) {
+          final String name = s.toString();
+          ContentValues val = new ContentValues();
+          val.put(AlarmClockProvider.AlarmEntry.NAME, name);
+          getContext().getContentResolver().update(uri, val, null, null);
+        }
         });
 
     if (savedInstanceState != null) {
