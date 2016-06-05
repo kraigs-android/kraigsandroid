@@ -67,9 +67,8 @@ public class AlarmOptions extends DialogFragment {
               R.layout.alarm_options, null);
 
     final Button edit_time = (Button)v.findViewById(R.id.edit_time);
-    edit_time.setText(
-        TimeUtil.formatLong(getContext(), TimeUtil.nextOccurrence(time)));
-    final TimePicker.OnTimePickListener tlist = new TimePicker.OnTimePickListener() {
+    final TimePicker.OnTimePickListener time_listener =
+      new TimePicker.OnTimePickListener() {
         @Override
         public void onTimePick(int t) {
           ContentValues val = new ContentValues();
@@ -88,29 +87,15 @@ public class AlarmOptions extends DialogFragment {
           edit_time.setText(TimeUtil.formatLong(getContext(), next));
         }
       };
-    if (savedInstanceState != null) {
-      TimePicker t = (TimePicker)getFragmentManager()
-        .findFragmentByTag("edit_alarm");
-      if (t != null)
-        t.setListener(tlist);
-    }
+    edit_time.setText(
+        TimeUtil.formatLong(getContext(), TimeUtil.nextOccurrence(time)));
     edit_time.setOnClickListener(
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
+            int time = getTime(id);
             TimePicker time_pick = new TimePicker();
-            time_pick.setListener(tlist);
-
-            Cursor c = getContext().getContentResolver().query(
-                AlarmClockProvider.ALARMS_URI,
-                new String[] { AlarmClockProvider.AlarmEntry.TIME },
-                AlarmClockProvider.AlarmEntry._ID + " == " + id,
-                null, null);
-            c.moveToFirst();
-            final int time =
-              c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
-            c.close();
-
+            time_pick.setListener(time_listener);
             Bundle b = new Bundle();
             b.putInt(TimePicker.TIME, time);
             b.putString(TimePicker.TITLE, "Edit time");
@@ -120,43 +105,28 @@ public class AlarmOptions extends DialogFragment {
         });
 
     final Button edit_repeat = (Button)v.findViewById(R.id.edit_repeat);
-    edit_repeat.setText("" + repeat);
-    final RepeatEditor.OnPickListener elist =new RepeatEditor.OnPickListener() {
+    final RepeatEditor.OnPickListener repeat_listener =
+      new RepeatEditor.OnPickListener() {
         @Override
         public void onPick(int repeats) {
           ContentValues val = new ContentValues();
           val.put(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK, repeats);
-          getContext().getContentResolver().update(
-              uri, val, null, null);
+          getContext().getContentResolver().update(uri, val, null, null);
           edit_repeat.setText("" + repeats);
           // TODO: updated triggers
         }
       };
-    if (savedInstanceState != null) {
-      RepeatEditor e = (RepeatEditor)getFragmentManager()
-        .findFragmentByTag("edit_repeat");
-      if (e != null)
-        e.setListener(elist);
-    }
+    edit_repeat.setText("" + repeat);
     edit_repeat.setOnClickListener(
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            Cursor c = getContext().getContentResolver().query(
-                AlarmClockProvider.ALARMS_URI,
-                new String[] { AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
-                AlarmClockProvider.AlarmEntry._ID + " == " + id,
-                null, null);
-            c.moveToFirst();
-            final int repeat =
-              c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
-            c.close();
-
+            int repeat = getRepeat(id);
             RepeatEditor edit = new RepeatEditor();
             Bundle b = new Bundle();
             b.putInt(RepeatEditor.BITMASK, repeat);
             edit.setArguments(b);
-            edit.setListener(elist);
+            edit.setListener(repeat_listener);
             edit.show(getFragmentManager(), "edit_repeat");
           }
         });
@@ -169,6 +139,15 @@ public class AlarmOptions extends DialogFragment {
           public void onClick(View view) {
           }
         });
+
+    if (savedInstanceState != null) {
+      TimePicker t = (TimePicker)getFragmentManager()
+        .findFragmentByTag("edit_alarm");
+      RepeatEditor r = (RepeatEditor)getFragmentManager()
+        .findFragmentByTag("edit_repeat");
+      if (t != null) t.setListener(time_listener);
+      if (r != null) r.setListener(repeat_listener);
+    }
 
     return new AlertDialog.Builder(getContext())
       .setTitle("Alarm Options")
@@ -281,5 +260,30 @@ public class AlarmOptions extends DialogFragment {
       super.onSaveInstanceState(outState);
       outState.putInt(BITMASK, b);
     }
+  }
+
+  private int getTime(long alarmid) {
+    Cursor c = getContext().getContentResolver().query(
+        AlarmClockProvider.ALARMS_URI,
+        new String[] { AlarmClockProvider.AlarmEntry.TIME },
+        AlarmClockProvider.AlarmEntry._ID + " == " + alarmid,
+        null, null);
+    c.moveToFirst();
+    int time = c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
+    c.close();
+    return time;
+  }
+
+  private int getRepeat(long alarmid) {
+    Cursor c = getContext().getContentResolver().query(
+        AlarmClockProvider.ALARMS_URI,
+        new String[] { AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
+        AlarmClockProvider.AlarmEntry._ID + " == " + alarmid,
+        null, null);
+    c.moveToFirst();
+    final int repeat = c.getInt(c.getColumnIndex(
+        AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
+    c.close();
+    return repeat;
   }
 }
