@@ -28,6 +28,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 
 import java.util.Calendar;
 
@@ -44,7 +45,9 @@ public class AlarmOptions extends DialogFragment {
     Cursor c = getContext().getContentResolver().query(
         AlarmClockProvider.ALARMS_URI,
         new String[] { AlarmClockProvider.AlarmEntry.TIME,
-                       AlarmClockProvider.AlarmEntry.ENABLED },
+                       AlarmClockProvider.AlarmEntry.ENABLED,
+                       AlarmClockProvider.AlarmEntry.NAME,
+                       AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
         AlarmClockProvider.AlarmEntry._ID + " == " + id,
         null, null);
     c.moveToFirst();
@@ -52,6 +55,10 @@ public class AlarmOptions extends DialogFragment {
       c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
     final int enabled =
       c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.ENABLED));
+    final String label =
+      c.getString(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NAME));
+    final int repeat =
+      c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
     c.close();
 
     final View v =
@@ -95,6 +102,57 @@ public class AlarmOptions extends DialogFragment {
           }
         });
 
+    final Button edit_repeat = (Button)v.findViewById(R.id.edit_repeat);
+    edit_repeat.setText("" + repeat);
+    final RepeatEditor.OnPickListener elist =new RepeatEditor.OnPickListener() {
+        @Override
+        public void onPick(int repeats) {
+          ContentValues val = new ContentValues();
+          val.put(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK, repeats);
+          getContext().getContentResolver().update(
+              uri, val, null, null);
+          edit_repeat.setText("" + repeats);
+          // TODO: updated triggers
+        }
+      };
+    if (savedInstanceState != null) {
+      RepeatEditor e = (RepeatEditor)getFragmentManager()
+        .findFragmentByTag("edit_repeat");
+      if (e != null)
+        e.setListener(elist);
+    }
+    edit_repeat.setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            Cursor c = getContext().getContentResolver().query(
+                AlarmClockProvider.ALARMS_URI,
+                new String[] { AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
+                AlarmClockProvider.AlarmEntry._ID + " == " + id,
+                null, null);
+            c.moveToFirst();
+            final int repeat =
+              c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
+            c.close();
+
+            RepeatEditor edit = new RepeatEditor();
+            Bundle b = new Bundle();
+            b.putInt(RepeatEditor.BITMASK, repeat);
+            edit.setArguments(b);
+            edit.setListener(elist);
+            edit.show(getFragmentManager(), "edit_repeat");
+          }
+        });
+
+    final EditText edit_label = (EditText)v.findViewById(R.id.edit_label);
+    edit_label.setText(label);
+    edit_label.setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+          }
+        });
+
     return new AlertDialog.Builder(getContext())
       .setTitle("Alarm Options")
       .setView(v)
@@ -133,5 +191,78 @@ public class AlarmOptions extends DialogFragment {
           }
         })
       .create();
+  }
+
+  static public class RepeatEditor extends DialogFragment {
+    final public static String BITMASK = "bitmask";
+    public static interface OnPickListener {
+      abstract void onPick(int repeats);
+    }
+
+    private boolean bit(int bit) { return (b & 1 << bit) != 0; }
+    private int b = 0;
+    private OnPickListener listener = null;
+    public void setListener(OnPickListener l) { listener = l; }
+
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+      super.onCreateDialog(savedInstanceState);
+
+      if (getArguments() != null)
+        b = getArguments().getInt(BITMASK, 0);
+
+      if (savedInstanceState != null)
+        b = savedInstanceState.getInt(BITMASK);
+
+      final boolean checked[] = new boolean[] {
+        bit(0), bit(1), bit(2), bit(3), bit(4), bit(5), bit(6), bit(7)
+      };
+      final CharSequence days[] = new CharSequence[] {
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+      };
+      return new AlertDialog.Builder(getContext())
+        .setTitle("Repeat")
+        .setMultiChoiceItems(
+            days, checked,
+            new DialogInterface.OnMultiChoiceClickListener() {
+              @Override
+              public void onClick(
+                  DialogInterface d, int which, boolean checked) {
+                b ^= 1 << which;
+              }
+            })
+        .setNegativeButton(
+            "Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {}
+              })
+        .setPositiveButton(
+            "OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                  if (listener != null)
+                    listener.onPick(b);
+                }
+              })
+        .setNeutralButton(
+            "All", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                }
+              })
+        .create();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+      super.onSaveInstanceState(outState);
+      outState.putInt(BITMASK, b);
+    }
   }
 }
