@@ -107,10 +107,9 @@ public class AlarmClockActivity extends Activity {
                 getApplicationContext(), id);
           } else {
             Cursor c = getContentResolver().query(
-                AlarmClockProvider.ALARMS_URI,
+                ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
                 new String[] { AlarmClockProvider.AlarmEntry.TIME },
-                AlarmClockProvider.AlarmEntry._ID + " == " + id,
-                null, null);
+                null, null, null);
             c.moveToFirst();
             int secondsPastMidnight =
               c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));

@@ -45,13 +45,11 @@ public class AlarmOptions extends DialogFragment {
         AlarmClockProvider.ALARMS_URI, id);
 
     Cursor c = getContext().getContentResolver().query(
-        AlarmClockProvider.ALARMS_URI,
-        new String[] { AlarmClockProvider.AlarmEntry.TIME,
-                       AlarmClockProvider.AlarmEntry.ENABLED,
-                       AlarmClockProvider.AlarmEntry.NAME,
-                       AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
-        AlarmClockProvider.AlarmEntry._ID + " == " + id,
-        null, null);
+        uri, new String[] { AlarmClockProvider.AlarmEntry.TIME,
+                            AlarmClockProvider.AlarmEntry.ENABLED,
+                            AlarmClockProvider.AlarmEntry.NAME,
+                            AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
+        null, null, null);
     c.moveToFirst();
     final int time =
       c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
@@ -95,7 +93,7 @@ public class AlarmOptions extends DialogFragment {
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            int time = getTime(id);
+            int time = getTime(uri);
             TimePicker time_pick = new TimePicker();
             time_pick.setListener(time_listener);
             Bundle b = new Bundle();
@@ -123,7 +121,7 @@ public class AlarmOptions extends DialogFragment {
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            int repeat = getRepeat(id);
+            int repeat = getRepeat(uri);
             RepeatEditor edit = new RepeatEditor();
             Bundle b = new Bundle();
             b.putInt(RepeatEditor.BITMASK, repeat);
@@ -244,24 +242,20 @@ public class AlarmOptions extends DialogFragment {
     }
   }
 
-  private int getTime(long alarmid) {
+  private int getTime(Uri uri) {
     Cursor c = getContext().getContentResolver().query(
-        AlarmClockProvider.ALARMS_URI,
-        new String[] { AlarmClockProvider.AlarmEntry.TIME },
-        AlarmClockProvider.AlarmEntry._ID + " == " + alarmid,
-        null, null);
+        uri, new String[] { AlarmClockProvider.AlarmEntry.TIME },
+        null, null, null);
     c.moveToFirst();
     int time = c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
     c.close();
     return time;
   }
 
-  private int getRepeat(long alarmid) {
+  private int getRepeat(Uri uri) {
     Cursor c = getContext().getContentResolver().query(
-        AlarmClockProvider.ALARMS_URI,
-        new String[] { AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
-        AlarmClockProvider.AlarmEntry._ID + " == " + alarmid,
-        null, null);
+        uri, new String[] { AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
+        null, null, null);
     c.moveToFirst();
     final int repeat = c.getInt(c.getColumnIndex(
         AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
