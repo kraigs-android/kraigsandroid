@@ -69,33 +69,50 @@ public class AlarmOptions extends DialogFragment {
     final Button edit_time = (Button)v.findViewById(R.id.edit_time);
     edit_time.setText(
         TimeUtil.formatLong(getContext(), TimeUtil.nextOccurrence(time)));
+    final TimePicker.OnTimePickListener tlist = new TimePicker.OnTimePickListener() {
+        @Override
+        public void onTimePick(int t) {
+          ContentValues val = new ContentValues();
+          val.put(AlarmClockProvider.AlarmEntry.TIME, t);
+          getContext().getContentResolver().update(
+              uri, val, null, null);
+
+          final Calendar next = TimeUtil.nextOccurrence(t);
+          if (enabled != 0) {
+            AlarmNotificationService.removeAlarmTrigger(
+                getContext(), id);
+            AlarmNotificationService.scheduleAlarmTrigger(
+                getContext(), id, next.getTimeInMillis());
+          }
+
+          edit_time.setText(TimeUtil.formatLong(getContext(), next));
+        }
+      };
+    if (savedInstanceState != null) {
+      TimePicker t = (TimePicker)getFragmentManager()
+        .findFragmentByTag("edit_alarm");
+      if (t != null)
+        t.setListener(tlist);
+    }
     edit_time.setOnClickListener(
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
             TimePicker time_pick = new TimePicker();
-            time_pick.setListener(new TimePicker.OnTimePickListener() {
-                @Override
-                public void onTimePick(int t) {
-                  ContentValues val = new ContentValues();
-                  val.put(AlarmClockProvider.AlarmEntry.TIME, t);
-                  getContext().getContentResolver().update(
-                      uri, val, null, null);
+            time_pick.setListener(tlist);
 
-                  final Calendar next = TimeUtil.nextOccurrence(t);
-                  if (enabled != 0) {
-                    AlarmNotificationService.removeAlarmTrigger(
-                        getContext(), id);
-                    AlarmNotificationService.scheduleAlarmTrigger(
-                        getContext(), id, next.getTimeInMillis());
-                  }
-
-                  edit_time.setText(TimeUtil.formatLong(getContext(), next));
-                }
-              });
+            Cursor c = getContext().getContentResolver().query(
+                AlarmClockProvider.ALARMS_URI,
+                new String[] { AlarmClockProvider.AlarmEntry.TIME },
+                AlarmClockProvider.AlarmEntry._ID + " == " + id,
+                null, null);
+            c.moveToFirst();
+            final int time =
+              c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
+            c.close();
 
             Bundle b = new Bundle();
-            b.putLong(TimePicker.TIME, System.currentTimeMillis());
+            b.putInt(TimePicker.TIME, time);
             b.putString(TimePicker.TITLE, "Edit time");
             time_pick.setArguments(b);
             time_pick.show(getFragmentManager(), "edit_alarm");
