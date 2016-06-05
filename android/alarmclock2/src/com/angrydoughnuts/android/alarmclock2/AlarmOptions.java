@@ -29,7 +29,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-
+import android.widget.ListView;
 import java.util.Calendar;
 
 public class AlarmOptions extends DialogFragment {
@@ -195,8 +195,6 @@ public class AlarmOptions extends DialogFragment {
       abstract void onPick(int repeats);
     }
 
-    private boolean bit(int bit) { return (b & 1 << bit) != 0; }
-    private int b = 0;
     private OnPickListener listener = null;
     public void setListener(OnPickListener l) { listener = l; }
 
@@ -204,15 +202,14 @@ public class AlarmOptions extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
       super.onCreateDialog(savedInstanceState);
 
-      if (getArguments() != null)
-        b = getArguments().getInt(BITMASK, 0);
-
-      if (savedInstanceState != null)
-        b = savedInstanceState.getInt(BITMASK);
-
       final boolean checked[] = new boolean[] {
-        bit(0), bit(1), bit(2), bit(3), bit(4), bit(5), bit(6), bit(7)
+        false, false,false,false,false,false,false
       };
+      if (getArguments() != null && savedInstanceState == null) {
+        int b = getArguments().getInt(BITMASK, 0);
+        for (int i = 0; i < 7; ++i)
+          checked[i] = (b & (1 << i)) != 0;
+      }
       final CharSequence days[] = new CharSequence[] {
         "Sunday",
         "Monday",
@@ -224,41 +221,23 @@ public class AlarmOptions extends DialogFragment {
       };
       return new AlertDialog.Builder(getContext())
         .setTitle("Repeat")
-        .setMultiChoiceItems(
-            days, checked,
-            new DialogInterface.OnMultiChoiceClickListener() {
-              @Override
-              public void onClick(
-                  DialogInterface d, int which, boolean checked) {
-                b ^= 1 << which;
-              }
-            })
-        .setNegativeButton(
-            "Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {}
-              })
+        .setMultiChoiceItems(days, checked, null)
+        .setNegativeButton("Cancel", null)
         .setPositiveButton(
             "OK", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                  if (listener != null)
-                    listener.onPick(b);
-                }
-              })
-        .setNeutralButton(
-            "All", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
+                  if (listener == null)
+                    return;
+                  int b = 0;
+                  ListView list = ((AlertDialog)dialog).getListView();
+                  for (int i = 0; i < list.getCount(); ++i)
+                    if (list.isItemChecked(i))
+                      b |= 1 << i;
+                  listener.onPick(b);
                 }
               })
         .create();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-      super.onSaveInstanceState(outState);
-      outState.putInt(BITMASK, b);
     }
   }
 
