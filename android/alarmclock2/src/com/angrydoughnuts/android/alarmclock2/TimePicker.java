@@ -78,10 +78,7 @@ public class TimePicker extends DialogFragment {
       // TODO edit alarm
       .setTitle(title.isEmpty() ? "New Alarm" : title)
       .setView(v)
-      .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which) {}
-        })
+      .setNegativeButton("Cancel", null)
       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {

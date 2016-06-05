@@ -162,10 +162,7 @@ public class AlarmOptions extends DialogFragment {
     return new AlertDialog.Builder(getContext())
       .setTitle("Alarm Options")
       .setView(v)
-      .setPositiveButton("Done", new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which) {}
-        })
+      .setPositiveButton("Done", null)
       .setNeutralButton("Delete", new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
@@ -175,11 +172,7 @@ public class AlarmOptions extends DialogFragment {
                 return new AlertDialog.Builder(getContext())
                   .setTitle("Confirm Delete")
                   .setMessage("Are you sure you want to delete this alarm?")
-                  .setNegativeButton(
-                      "Cancel", new DialogInterface.OnClickListener() {
-                      @Override
-                      public void onClick(DialogInterface dialog, int which) {}
-                    })
+                  .setNegativeButton("Cancel", null)
                   .setPositiveButton(
                       "OK", new DialogInterface.OnClickListener() {
                       @Override
