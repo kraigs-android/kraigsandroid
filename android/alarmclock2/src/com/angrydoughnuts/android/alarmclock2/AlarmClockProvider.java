@@ -26,6 +26,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.provider.Settings;
 
 import java.lang.IllegalArgumentException;
 
@@ -42,6 +43,8 @@ public final class AlarmClockProvider extends ContentProvider {
   public Cursor query(Uri uri, String[] projection, String selection,
                       String[] selectionArgs, String sortOrder) {
     Cursor c;
+    long alarmid;
+
     switch (matcher.match(uri)) {
     case ALARMS:
       c = db.query(AlarmEntry.TABLE_NAME, projection, selection, selectionArgs,
@@ -49,14 +52,18 @@ public final class AlarmClockProvider extends ContentProvider {
       c.setNotificationUri(getContext().getContentResolver(), uri);
       return c;
     case ALARM_ID:
-      final long alarmid = ContentUris.parseId(uri);
+      alarmid = ContentUris.parseId(uri);
       c = db.query(AlarmEntry.TABLE_NAME, projection,
                    AlarmEntry._ID + " == " + alarmid, null, null, null, null);
       c.setNotificationUri(getContext().getContentResolver(), uri);
       return c;
     case SETTINGS_ID:
-      // TODO
-      throw new IllegalArgumentException("Unimplemented URI " + uri);
+      alarmid = ContentUris.parseId(uri);
+      c = db.query(SettingsEntry.TABLE_NAME, projection,
+                   SettingsEntry.ALARM_ID + " == " + alarmid,
+                   null, null, null, null);
+      c.setNotificationUri(getContext().getContentResolver(), uri);
+      return c;
     default:
       throw new IllegalArgumentException("Unknown URI " + uri);
     }
@@ -76,8 +83,34 @@ public final class AlarmClockProvider extends ContentProvider {
       getContext().getContentResolver().notifyChange(uri, null);
       return result;
     case SETTINGS_ID:
-      // TODO
-      throw new IllegalArgumentException("Unimplemented URI " + uri);
+      final long alarmid = ContentUris.parseId(uri);
+      if (values.containsKey(SettingsEntry.ALARM_ID)) {
+        if (values.getAsLong(SettingsEntry.ALARM_ID) != alarmid)
+          throw new IllegalArgumentException(
+              "ID does not match url: " + alarmid + " vs " + uri);
+      } else {
+        values.put(SettingsEntry.ALARM_ID, alarmid);
+      }
+      // TODO replace these defaults with global config defaults.
+      if (values.containsKey(SettingsEntry.TONE_URL))
+        values.put(SettingsEntry.TONE_URL,
+                   Settings.System.DEFAULT_NOTIFICATION_URI.toString());
+      if (values.containsKey(SettingsEntry.TONE_NAME))
+        values.put(SettingsEntry.TONE_NAME, "System default");
+      if (values.containsKey(SettingsEntry.SNOOZE))
+        values.put(SettingsEntry.SNOOZE, 10);
+      if (values.containsKey(SettingsEntry.VIBRATE))
+        values.put(SettingsEntry.VIBRATE, 0);
+      if (values.containsKey(SettingsEntry.VOLUME_STARTING))
+        values.put(SettingsEntry.VOLUME_STARTING, 0);
+      if (values.containsKey(SettingsEntry.VOLUME_ENDING))
+        values.put(SettingsEntry.VOLUME_ENDING, 100);
+      if (values.containsKey(SettingsEntry.VOLUME_TIME))
+        values.put(SettingsEntry.VOLUME_TIME, 20);
+
+      db.insertOrThrow(SettingsEntry.TABLE_NAME, null, values);
+      getContext().getContentResolver().notifyChange(uri, null);
+      return uri;
     default:
       throw new IllegalArgumentException("Unknown URI " + uri);
     }
@@ -86,21 +119,33 @@ public final class AlarmClockProvider extends ContentProvider {
   @Override
   public int update(Uri uri, ContentValues values, String selection,
                     String[] selectionArgs) {
+    long alarmid;
+    int count;
+
     switch (matcher.match(uri)) {
-    case ALARMS:
-      // TODO
-      return 0;
     case ALARM_ID:
-      final long alarmid = ContentUris.parseId(uri);
-      int count = db.update(
+      alarmid = ContentUris.parseId(uri);
+       count = db.update(
           AlarmEntry.TABLE_NAME, values,
           AlarmEntry._ID + " == " + alarmid, null);
       if (count > 0)
         getContext().getContentResolver().notifyChange(uri, null);
       return count;
     case SETTINGS_ID:
-      // TODO
-      throw new IllegalArgumentException("Unimplemented URI " + uri);
+      alarmid = ContentUris.parseId(uri);
+      if (values.containsKey(SettingsEntry.ALARM_ID)) {
+        if (values.getAsLong(SettingsEntry.ALARM_ID) != alarmid)
+          throw new IllegalArgumentException(
+              "ID does not match url: " + alarmid + " vs " + uri);
+      } else {
+        values.put(SettingsEntry.ALARM_ID, alarmid);
+      }
+      count = db.update(
+          SettingsEntry.TABLE_NAME, values,
+          SettingsEntry.ALARM_ID + " == " + alarmid, null);
+      if (count > 0)
+        getContext().getContentResolver().notifyChange(uri, null);
+      return count;
     default:
       throw new IllegalArgumentException("Unknown URI " + uri);
     }
@@ -108,21 +153,29 @@ public final class AlarmClockProvider extends ContentProvider {
 
   @Override
   public int delete(Uri uri, String selection, String[] selectionArgs) {
+    long alarmid;
+    int count;
+
     switch (matcher.match(uri)) {
-    case ALARMS:
-      // TODO
-      return 0;
     case ALARM_ID:
-      final long alarmid = ContentUris.parseId(uri);
-      int count = db.delete(
+      alarmid = ContentUris.parseId(uri);
+      count = db.delete(
           AlarmEntry.TABLE_NAME, AlarmEntry._ID + " == " + alarmid, null);
-      // TODO this doesn't delete from the settings table yet.
+      if (count > 0) {
+        getContext().getContentResolver().notifyChange(uri, null);
+        count += db.delete(
+            SettingsEntry.TABLE_NAME,
+            SettingsEntry.ALARM_ID + " == " + alarmid, null);
+      }
+      return count;
+    case SETTINGS_ID:
+      alarmid = ContentUris.parseId(uri);
+      count = db.delete(
+          SettingsEntry.TABLE_NAME,
+          SettingsEntry.ALARM_ID + " == " + alarmid, null);
       if (count > 0)
         getContext().getContentResolver().notifyChange(uri, null);
       return count;
-    case SETTINGS_ID:
-      // TODO
-      throw new IllegalArgumentException("Unimplemented URI " + uri);
     default:
       throw new IllegalArgumentException("Unknown URI " + uri);
     }
@@ -158,6 +211,11 @@ public final class AlarmClockProvider extends ContentProvider {
     .scheme(ContentResolver.SCHEME_CONTENT)
     .authority(AUTHORITY)
     .appendPath(AlarmEntry.TABLE_NAME)
+    .build();
+  public static final Uri SETTINGS_URI = new Uri.Builder()
+    .scheme(ContentResolver.SCHEME_CONTENT)
+    .authority(AUTHORITY)
+    .appendPath(SettingsEntry.TABLE_NAME)
     .build();
 
   public static class AlarmEntry implements BaseColumns {
