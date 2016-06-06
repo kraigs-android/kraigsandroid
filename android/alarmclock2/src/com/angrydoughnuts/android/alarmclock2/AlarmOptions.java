@@ -25,6 +25,7 @@ import android.content.DialogInterface;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -32,6 +33,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
+
 import java.util.Calendar;
 
 public class AlarmOptions extends DialogFragment {
@@ -43,6 +46,8 @@ public class AlarmOptions extends DialogFragment {
         AlarmNotificationService.ALARM_ID, -1);
     final Uri uri = ContentUris.withAppendedId(
         AlarmClockProvider.ALARMS_URI, id);
+    final Uri settings = ContentUris.withAppendedId(
+        AlarmClockProvider.SETTINGS_URI, id);
 
     Cursor c = getContext().getContentResolver().query(
         uri, new String[] { AlarmClockProvider.AlarmEntry.TIME,
@@ -59,6 +64,48 @@ public class AlarmOptions extends DialogFragment {
       c.getString(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NAME));
     final int repeat =
       c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
+    c.close();
+
+    c = getContext().getContentResolver().query(
+        settings, new String[] {
+          AlarmClockProvider.SettingsEntry.TONE_URL,
+          AlarmClockProvider.SettingsEntry.TONE_NAME,
+          AlarmClockProvider.SettingsEntry.SNOOZE,
+          AlarmClockProvider.SettingsEntry.VIBRATE,
+          AlarmClockProvider.SettingsEntry.VOLUME_STARTING,
+          AlarmClockProvider.SettingsEntry.VOLUME_ENDING,
+          AlarmClockProvider.SettingsEntry.VOLUME_TIME },
+        null, null, null);
+    final boolean found = c.moveToFirst();
+    // TODO replace these defaults with global config defaults.
+    final Uri tone_url = found ?
+      Uri.parse(c.getString(c.getColumnIndex(
+        AlarmClockProvider.SettingsEntry.TONE_URL))) :
+      Settings.System.DEFAULT_NOTIFICATION_URI;
+    final String tone_name = found ?
+      c.getString(c.getColumnIndex(
+        AlarmClockProvider.SettingsEntry.TONE_NAME)) :
+      "System default";
+    final int snooze = found ?
+      c.getInt(c.getColumnIndex(
+        AlarmClockProvider.SettingsEntry.SNOOZE)) :
+      10;
+    final boolean vibrate = found ?
+      c.getInt(c.getColumnIndex(
+        AlarmClockProvider.SettingsEntry.VIBRATE)) != 0 :
+      false;
+    final int volume_starting = found ?
+      c.getInt(c.getColumnIndex(
+        AlarmClockProvider.SettingsEntry.VOLUME_STARTING)) :
+      0;
+    final int volume_ending = found ?
+      c.getInt(c.getColumnIndex(
+        AlarmClockProvider.SettingsEntry.VOLUME_ENDING)) :
+      100;
+    final int volume_time = found ?
+      c.getInt(c.getColumnIndex(
+        AlarmClockProvider.SettingsEntry.VOLUME_TIME)) :
+      20;
     c.close();
 
     final View v =
@@ -147,6 +194,18 @@ public class AlarmOptions extends DialogFragment {
           getContext().getContentResolver().update(uri, val, null, null);
         }
         });
+
+    final TextView edit_tone = (TextView)v.findViewById(R.id.edit_tone);
+    edit_tone.setText(tone_name + " " + tone_url.toString());
+
+    final TextView edit_snooze = (TextView)v.findViewById(R.id.edit_snooze);
+    edit_snooze.setText("snooze " + snooze);
+
+    final TextView edit_vibrate = (TextView)v.findViewById(R.id.edit_vibrate);
+    edit_vibrate.setText("vibrate " + vibrate);
+
+    final TextView edit_volume = (TextView)v.findViewById(R.id.edit_volume);
+    edit_volume.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
 
     if (savedInstanceState != null) {
       TimePicker t = (TimePicker)getFragmentManager()

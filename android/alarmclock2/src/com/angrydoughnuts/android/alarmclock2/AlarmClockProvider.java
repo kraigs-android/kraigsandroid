@@ -92,20 +92,20 @@ public final class AlarmClockProvider extends ContentProvider {
         values.put(SettingsEntry.ALARM_ID, alarmid);
       }
       // TODO replace these defaults with global config defaults.
-      if (values.containsKey(SettingsEntry.TONE_URL))
+      if (!values.containsKey(SettingsEntry.TONE_URL))
         values.put(SettingsEntry.TONE_URL,
                    Settings.System.DEFAULT_NOTIFICATION_URI.toString());
-      if (values.containsKey(SettingsEntry.TONE_NAME))
+      if (!values.containsKey(SettingsEntry.TONE_NAME))
         values.put(SettingsEntry.TONE_NAME, "System default");
-      if (values.containsKey(SettingsEntry.SNOOZE))
+      if (!values.containsKey(SettingsEntry.SNOOZE))
         values.put(SettingsEntry.SNOOZE, 10);
-      if (values.containsKey(SettingsEntry.VIBRATE))
+      if (!values.containsKey(SettingsEntry.VIBRATE))
         values.put(SettingsEntry.VIBRATE, 0);
-      if (values.containsKey(SettingsEntry.VOLUME_STARTING))
+      if (!values.containsKey(SettingsEntry.VOLUME_STARTING))
         values.put(SettingsEntry.VOLUME_STARTING, 0);
-      if (values.containsKey(SettingsEntry.VOLUME_ENDING))
+      if (!values.containsKey(SettingsEntry.VOLUME_ENDING))
         values.put(SettingsEntry.VOLUME_ENDING, 100);
-      if (values.containsKey(SettingsEntry.VOLUME_TIME))
+      if (!values.containsKey(SettingsEntry.VOLUME_TIME))
         values.put(SettingsEntry.VOLUME_TIME, 20);
 
       db.insertOrThrow(SettingsEntry.TABLE_NAME, null, values);

@@ -17,4 +17,20 @@
       android:singleLine="true"
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
+  <TextView
+      android:id="@+id/edit_tone"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
+  <TextView
+      android:id="@+id/edit_snooze"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
+  <TextView
+      android:id="@+id/edit_vibrate"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
+  <TextView
+      android:id="@+id/edit_volume"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
 </LinearLayout>
