@@ -201,8 +201,21 @@ public class AlarmOptions extends DialogFragment {
     final TextView edit_snooze = (TextView)v.findViewById(R.id.edit_snooze);
     edit_snooze.setText("snooze " + snooze);
 
-    final TextView edit_vibrate = (TextView)v.findViewById(R.id.edit_vibrate);
+    final Button edit_vibrate = (Button)v.findViewById(R.id.edit_vibrate);
     edit_vibrate.setText("vibrate " + vibrate);
+    edit_vibrate.setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            boolean vibrate = !getVibrate(settings);
+            ContentValues val = new ContentValues();
+            val.put(AlarmClockProvider.SettingsEntry.VIBRATE, vibrate);
+            if (getContext().getContentResolver().update(
+                    settings, val, null, null) < 1)
+              getContext().getContentResolver().insert(settings, val);
+            edit_vibrate.setText("vibrate " + vibrate);
+          }
+        });
 
     final TextView edit_volume = (TextView)v.findViewById(R.id.edit_volume);
     edit_volume.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
@@ -320,5 +333,18 @@ public class AlarmOptions extends DialogFragment {
         AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
     c.close();
     return repeat;
+  }
+
+  private boolean getVibrate(Uri uri) {
+    Cursor c = getContext().getContentResolver().query(
+        uri, new String[] { AlarmClockProvider.SettingsEntry.VIBRATE },
+        null, null, null);
+    // TODO global defaults
+    boolean vibrate = false;
+    if (c.moveToFirst())
+      vibrate = c.getInt(c.getColumnIndex(
+        AlarmClockProvider.SettingsEntry.VIBRATE)) != 0;
+    c.close();
+    return vibrate;
   }
 }
