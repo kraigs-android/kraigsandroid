@@ -22,6 +22,10 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
   <TextView
+      android:id="@+id/snooze_status"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
+  <SeekBar
       android:id="@+id/edit_snooze"
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />

@@ -33,6 +33,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.Calendar;
@@ -198,8 +199,31 @@ public class AlarmOptions extends DialogFragment {
     final TextView edit_tone = (TextView)v.findViewById(R.id.edit_tone);
     edit_tone.setText(tone_name + " " + tone_url.toString());
 
-    final TextView edit_snooze = (TextView)v.findViewById(R.id.edit_snooze);
-    edit_snooze.setText("snooze " + snooze);
+    final TextView snooze_status = (TextView)v.findViewById(R.id.snooze_status);
+    snooze_status.setText("Snooze: " + snooze);
+
+    final SeekBar edit_snooze = (SeekBar)v.findViewById(R.id.edit_snooze);
+    edit_snooze.setMax(11);
+    edit_snooze.setProgress((snooze - 5) / 5);
+    edit_snooze.setOnSeekBarChangeListener(
+        new SeekBar.OnSeekBarChangeListener() {
+          @Override
+          public void onProgressChanged(SeekBar s, int progress, boolean user) {
+            final int snooze = progress * 5 + 5;
+            snooze_status.setText("Snooze: " + snooze);
+          }
+          @Override
+          public void onStartTrackingTouch(SeekBar s) {}
+          @Override
+          public void onStopTrackingTouch(SeekBar s) {
+            final int snooze = s.getProgress() * 5 + 5;
+            ContentValues val = new ContentValues();
+            val.put(AlarmClockProvider.SettingsEntry.SNOOZE, snooze);
+            if (getContext().getContentResolver().update(
+                    settings, val, null, null) < 1)
+              getContext().getContentResolver().insert(settings, val);
+          }
+        });
 
     final Button edit_vibrate = (Button)v.findViewById(R.id.edit_vibrate);
     edit_vibrate.setText("vibrate " + vibrate);
