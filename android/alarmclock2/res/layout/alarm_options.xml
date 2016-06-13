@@ -34,7 +34,19 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
   <TextView
-      android:id="@+id/edit_volume"
+      android:id="@+id/volume_status"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
+  <SeekBar
+      android:id="@+id/edit_volume_starting"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
+  <SeekBar
+      android:id="@+id/edit_volume_ending"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
+  <SeekBar
+      android:id="@+id/edit_volume_time"
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
 </LinearLayout>
