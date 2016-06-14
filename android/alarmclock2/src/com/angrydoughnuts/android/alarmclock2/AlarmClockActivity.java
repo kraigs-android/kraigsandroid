@@ -36,6 +36,8 @@ import android.os.IBinder;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -209,5 +211,30 @@ public class AlarmClockActivity extends Activity {
   public void onStop() {
     super.onStop();
     handler.removeCallbacks(refresh_tick);
+  }
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    getMenuInflater().inflate(R.menu.alarm_list_menu, menu);
+    return super.onCreateOptionsMenu(menu);
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    switch (item.getItemId()) {
+    case R.id.default_settings:
+      AlarmOptions options = new AlarmOptions();
+      Bundle b = new Bundle();
+      b.putLong(AlarmNotificationService.ALARM_ID,
+                AlarmNotificationService.DEFAULTS_ALARM_ID);
+      options.setArguments(b);
+      options.show(getFragmentManager(), "default_alarm_options");
+      return true;
+    case R.id.delete_all:
+      // TODO
+      return true;
+    default:
+      return super.onOptionsItemSelected(item);
+    }
   }
 }

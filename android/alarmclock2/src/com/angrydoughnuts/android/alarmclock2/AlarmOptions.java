@@ -50,22 +50,26 @@ public class AlarmOptions extends DialogFragment {
     final Uri settings = ContentUris.withAppendedId(
         AlarmClockProvider.SETTINGS_URI, id);
 
-    Cursor c = getContext().getContentResolver().query(
-        uri, new String[] { AlarmClockProvider.AlarmEntry.TIME,
-                            AlarmClockProvider.AlarmEntry.ENABLED,
-                            AlarmClockProvider.AlarmEntry.NAME,
-                            AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
-        null, null, null);
-    c.moveToFirst();
-    final int time =
+    Cursor c = null;
+    if (id != AlarmNotificationService.DEFAULTS_ALARM_ID) {
+      c = getContext().getContentResolver().query(
+          uri, new String[] { AlarmClockProvider.AlarmEntry.TIME,
+                              AlarmClockProvider.AlarmEntry.ENABLED,
+                              AlarmClockProvider.AlarmEntry.NAME,
+                              AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
+          null, null, null);
+      c.moveToFirst();
+    }
+    final int time = (c == null) ? 0 :
       c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
-    final int enabled =
+    final int enabled = (c == null) ? 0 :
       c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.ENABLED));
-    final String label =
+    final String label = (c == null) ? "" :
       c.getString(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NAME));
-    final int repeat =
+    final int repeat = (c == null) ? 0 :
       c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
-    c.close();
+    if (c != null)
+      c.close();
 
     c = getContext().getContentResolver().query(
         settings, new String[] {
@@ -196,6 +200,12 @@ public class AlarmOptions extends DialogFragment {
         }
         });
 
+    if (id == AlarmNotificationService.DEFAULTS_ALARM_ID) {
+      edit_time.setVisibility(View.GONE);
+      edit_repeat.setVisibility(View.GONE);
+      edit_label.setVisibility(View.GONE);
+    }
+
     final TextView edit_tone = (TextView)v.findViewById(R.id.edit_tone);
     edit_tone.setText(tone_name + " " + tone_url.toString());
 
@@ -282,7 +292,9 @@ public class AlarmOptions extends DialogFragment {
                     edit_volume_starting.getProgress() * 5);
             val.put(AlarmClockProvider.SettingsEntry.VOLUME_ENDING,
                     edit_volume_ending.getProgress() * 5);
-            getContext().getContentResolver().update(settings, val, null, null);
+            if (getContext().getContentResolver().update(
+                    settings, val, null, null) < 1)
+              getContext().getContentResolver().insert(settings, val);
           }
         });
 
@@ -310,7 +322,9 @@ public class AlarmOptions extends DialogFragment {
                     edit_volume_starting.getProgress() * 5);
             val.put(AlarmClockProvider.SettingsEntry.VOLUME_ENDING,
                     edit_volume_ending.getProgress() * 5);
-            getContext().getContentResolver().update(settings, val, null, null);
+            if (getContext().getContentResolver().update(
+                    settings, val, null, null) < 1)
+              getContext().getContentResolver().insert(settings, val);
           }
         });
 
@@ -330,7 +344,9 @@ public class AlarmOptions extends DialogFragment {
             ContentValues val = new ContentValues();
             val.put(AlarmClockProvider.SettingsEntry.VOLUME_TIME,
                     s.getProgress() * 5);
-            getContext().getContentResolver().update(settings, val, null, null);
+            if (getContext().getContentResolver().update(
+                    settings, val, null, null) < 1)
+              getContext().getContentResolver().insert(settings, val);
           }
         });
 
@@ -345,10 +361,12 @@ public class AlarmOptions extends DialogFragment {
     }
 
     return new AlertDialog.Builder(getContext())
-      .setTitle("Alarm Options")
+      .setTitle((id == AlarmNotificationService.DEFAULTS_ALARM_ID) ?
+                "Default Alarm Options" : "Alarm Options")
       .setView(v)
       .setPositiveButton("Done", null)
-      .setNeutralButton("Delete", new DialogInterface.OnClickListener() {
+      .setNeutralButton((id != AlarmNotificationService.DEFAULTS_ALARM_ID) ?
+                        "Delete" : null, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
             new DialogFragment() {
@@ -368,13 +386,11 @@ public class AlarmOptions extends DialogFragment {
                         AlarmNotificationService.removeAlarmTrigger(
                             getContext(), id);
                       }
-                    })
-                  .create();
+                  }).create();
               }
             }.show(getFragmentManager(), "confirm_delete");
           }
-        })
-      .create();
+        }).create();
   }
 
   static public class RepeatEditor extends DialogFragment {

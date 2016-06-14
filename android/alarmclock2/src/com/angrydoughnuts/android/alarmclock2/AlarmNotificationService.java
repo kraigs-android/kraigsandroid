@@ -40,6 +40,7 @@ import java.util.TimeZone;
 public class AlarmNotificationService extends Service {
   public static final String ALARM_ID = "alarm_id";
   private static final String TIME_UTC = "time_utc";
+  public static final long DEFAULTS_ALARM_ID = Long.MAX_VALUE;
 
   public static long newAlarm(Context c, int secondsPastMidnight) {
 
