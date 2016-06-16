@@ -71,47 +71,7 @@ public class AlarmOptions extends DialogFragment {
     if (c != null)
       c.close();
 
-    c = getContext().getContentResolver().query(
-        settings, new String[] {
-          AlarmClockProvider.SettingsEntry.TONE_URL,
-          AlarmClockProvider.SettingsEntry.TONE_NAME,
-          AlarmClockProvider.SettingsEntry.SNOOZE,
-          AlarmClockProvider.SettingsEntry.VIBRATE,
-          AlarmClockProvider.SettingsEntry.VOLUME_STARTING,
-          AlarmClockProvider.SettingsEntry.VOLUME_ENDING,
-          AlarmClockProvider.SettingsEntry.VOLUME_TIME },
-        null, null, null);
-    final boolean found = c.moveToFirst();
-    // TODO replace these defaults with global config defaults.
-    final Uri tone_url = found ?
-      Uri.parse(c.getString(c.getColumnIndex(
-        AlarmClockProvider.SettingsEntry.TONE_URL))) :
-      Settings.System.DEFAULT_NOTIFICATION_URI;
-    final String tone_name = found ?
-      c.getString(c.getColumnIndex(
-        AlarmClockProvider.SettingsEntry.TONE_NAME)) :
-      "System default";
-    final int snooze = found ?
-      c.getInt(c.getColumnIndex(
-        AlarmClockProvider.SettingsEntry.SNOOZE)) :
-      10;
-    final boolean vibrate = found ?
-      c.getInt(c.getColumnIndex(
-        AlarmClockProvider.SettingsEntry.VIBRATE)) != 0 :
-      false;
-    final int volume_starting = found ?
-      c.getInt(c.getColumnIndex(
-        AlarmClockProvider.SettingsEntry.VOLUME_STARTING)) :
-      0;
-    final int volume_ending = found ?
-      c.getInt(c.getColumnIndex(
-        AlarmClockProvider.SettingsEntry.VOLUME_ENDING)) :
-      100;
-    final int volume_time = found ?
-      c.getInt(c.getColumnIndex(
-        AlarmClockProvider.SettingsEntry.VOLUME_TIME)) :
-      20;
-    c.close();
+    final OptionalSettings s = OptionalSettings.get(getContext(), settings);
 
     final View v =
       ((LayoutInflater)getContext().getSystemService(
@@ -207,14 +167,14 @@ public class AlarmOptions extends DialogFragment {
     }
 
     final TextView edit_tone = (TextView)v.findViewById(R.id.edit_tone);
-    edit_tone.setText(tone_name + " " + tone_url.toString());
+    edit_tone.setText(s.tone_name + " " + s.tone_url.toString());
 
     final TextView snooze_status = (TextView)v.findViewById(R.id.snooze_status);
-    snooze_status.setText("Snooze: " + snooze);
+    snooze_status.setText("Snooze: " + s.snooze);
 
     final SeekBar edit_snooze = (SeekBar)v.findViewById(R.id.edit_snooze);
     edit_snooze.setMax(11);
-    edit_snooze.setProgress((snooze - 5) / 5);
+    edit_snooze.setProgress((s.snooze - 5) / 5);
     edit_snooze.setOnSeekBarChangeListener(
         new SeekBar.OnSeekBarChangeListener() {
           @Override
@@ -236,7 +196,7 @@ public class AlarmOptions extends DialogFragment {
         });
 
     final Button edit_vibrate = (Button)v.findViewById(R.id.edit_vibrate);
-    edit_vibrate.setText("vibrate " + vibrate);
+    edit_vibrate.setText("vibrate " + s.vibrate);
     edit_vibrate.setOnClickListener(
         new View.OnClickListener() {
           @Override
@@ -252,22 +212,22 @@ public class AlarmOptions extends DialogFragment {
         });
 
     final TextView volume_status = (TextView)v.findViewById(R.id.volume_status);
-    volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
+    volume_status.setText("volume " + s.volume_starting + " to " + s.volume_ending + " over " + s.volume_time);
 
     final SeekBar edit_volume_starting = (SeekBar)v.findViewById(
         R.id.edit_volume_starting);
     edit_volume_starting.setMax(20);
-    edit_volume_starting.setProgress(volume_starting / 5);
+    edit_volume_starting.setProgress(s.volume_starting / 5);
 
     final SeekBar edit_volume_ending = (SeekBar)v.findViewById(
         R.id.edit_volume_ending);
     edit_volume_ending.setMax(20);
-    edit_volume_ending.setProgress(volume_ending / 5);
+    edit_volume_ending.setProgress(s.volume_ending / 5);
 
     final SeekBar edit_volume_time = (SeekBar)v.findViewById(
         R.id.edit_volume_time);
     edit_volume_time.setMax(12);
-    edit_volume_time.setProgress(volume_time / 5);
+    edit_volume_time.setProgress(s.volume_time / 5);
 
     edit_volume_starting.setOnSeekBarChangeListener(
         new SeekBar.OnSeekBarChangeListener() {
@@ -477,5 +437,79 @@ public class AlarmOptions extends DialogFragment {
         AlarmClockProvider.SettingsEntry.VIBRATE)) != 0;
     c.close();
     return vibrate;
+  }
+
+  static private class OptionalSettings {
+    private static final Uri default_settings = ContentUris.withAppendedId(
+        AlarmClockProvider.SETTINGS_URI,
+        AlarmNotificationService.DEFAULTS_ALARM_ID);
+
+    public final Uri tone_url;
+    public final String tone_name;
+    public final int snooze;
+    public final boolean vibrate;
+    public final int volume_starting;
+    public final int volume_ending;
+    public final int volume_time;
+
+    public static OptionalSettings get(Context context, Uri settings) {
+      OptionalSettings s = null;
+      Cursor c = query(context, settings);
+      if (c.moveToFirst())
+        s = new OptionalSettings(c);
+      c.close();
+
+      if (s == null) {
+        c = query(context, default_settings);
+        if (c.moveToFirst())
+          s = new OptionalSettings(c);
+        c.close();
+      }
+
+      if (s != null)
+        return s;
+      else
+        return new OptionalSettings();
+    }
+
+    static private Cursor query(Context context, Uri settings) {
+      return context.getContentResolver().query(
+          settings, new String[] {
+            AlarmClockProvider.SettingsEntry.TONE_URL,
+            AlarmClockProvider.SettingsEntry.TONE_NAME,
+            AlarmClockProvider.SettingsEntry.SNOOZE,
+            AlarmClockProvider.SettingsEntry.VIBRATE,
+            AlarmClockProvider.SettingsEntry.VOLUME_STARTING,
+            AlarmClockProvider.SettingsEntry.VOLUME_ENDING,
+            AlarmClockProvider.SettingsEntry.VOLUME_TIME },
+          null, null, null);
+    }
+
+    private OptionalSettings() {
+      tone_url = Settings.System.DEFAULT_NOTIFICATION_URI;
+      tone_name = "System default";
+      snooze = 10;
+      vibrate = false;
+      volume_starting = 0;
+      volume_ending = 100;
+      volume_time = 20;
+    }
+
+    private OptionalSettings(Cursor c) {
+      tone_url = Uri.parse(c.getString(c.getColumnIndex(
+          AlarmClockProvider.SettingsEntry.TONE_URL)));
+      tone_name = c.getString(c.getColumnIndex(
+          AlarmClockProvider.SettingsEntry.TONE_NAME));
+      snooze = c.getInt(c.getColumnIndex(
+          AlarmClockProvider.SettingsEntry.SNOOZE));
+      vibrate = c.getInt(c.getColumnIndex(
+          AlarmClockProvider.SettingsEntry.VIBRATE)) != 0;
+      volume_starting = c.getInt(c.getColumnIndex(
+          AlarmClockProvider.SettingsEntry.VOLUME_STARTING));
+      volume_ending = c.getInt(c.getColumnIndex(
+          AlarmClockProvider.SettingsEntry.VOLUME_ENDING));
+      volume_time = c.getInt(c.getColumnIndex(
+          AlarmClockProvider.SettingsEntry.VOLUME_TIME));
+    }
   }
 }
