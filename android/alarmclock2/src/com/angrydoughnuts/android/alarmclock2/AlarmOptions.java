@@ -39,6 +39,10 @@ import android.widget.TextView;
 import java.util.Calendar;
 
 public class AlarmOptions extends DialogFragment {
+  private static final Uri default_settings = ContentUris.withAppendedId(
+      AlarmClockProvider.SETTINGS_URI,
+      AlarmNotificationService.DEFAULTS_ALARM_ID);
+
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     super.onCreateDialog(savedInstanceState);
@@ -50,27 +54,7 @@ public class AlarmOptions extends DialogFragment {
     final Uri settings = ContentUris.withAppendedId(
         AlarmClockProvider.SETTINGS_URI, id);
 
-    Cursor c = null;
-    if (id != AlarmNotificationService.DEFAULTS_ALARM_ID) {
-      c = getContext().getContentResolver().query(
-          uri, new String[] { AlarmClockProvider.AlarmEntry.TIME,
-                              AlarmClockProvider.AlarmEntry.ENABLED,
-                              AlarmClockProvider.AlarmEntry.NAME,
-                              AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
-          null, null, null);
-      c.moveToFirst();
-    }
-    final int time = (c == null) ? 0 :
-      c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
-    final int enabled = (c == null) ? 0 :
-      c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.ENABLED));
-    final String label = (c == null) ? "" :
-      c.getString(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NAME));
-    final int repeat = (c == null) ? 0 :
-      c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
-    if (c != null)
-      c.close();
-
+    final AlarmSettings alarm = AlarmSettings.get(getContext(), uri);
     final OptionalSettings s = OptionalSettings.get(getContext(), settings);
 
     final View v =
@@ -89,7 +73,7 @@ public class AlarmOptions extends DialogFragment {
               uri, val, null, null);
 
           final Calendar next = TimeUtil.nextOccurrence(t);
-          if (enabled != 0) {
+          if (alarm.enabled) {
             AlarmNotificationService.removeAlarmTrigger(
                 getContext(), id);
             AlarmNotificationService.scheduleAlarmTrigger(
@@ -100,7 +84,7 @@ public class AlarmOptions extends DialogFragment {
         }
       };
     edit_time.setText(
-        TimeUtil.formatLong(getContext(), TimeUtil.nextOccurrence(time)));
+        TimeUtil.formatLong(getContext(), TimeUtil.nextOccurrence(alarm.time)));
     edit_time.setOnClickListener(
         new View.OnClickListener() {
           @Override
@@ -128,7 +112,7 @@ public class AlarmOptions extends DialogFragment {
           // TODO: updated triggers
         }
       };
-    edit_repeat.setText("" + repeat);
+    edit_repeat.setText("" + alarm.repeat);
     edit_repeat.setOnClickListener(
         new View.OnClickListener() {
           @Override
@@ -144,8 +128,8 @@ public class AlarmOptions extends DialogFragment {
         });
 
     final EditText edit_label = (EditText)v.findViewById(R.id.edit_label);
-    edit_label.setText(label);
-    edit_label.setSelection(label.length());
+    edit_label.setText(alarm.label);
+    edit_label.setSelection(alarm.label.length());
     edit_label.addTextChangedListener(new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
@@ -160,7 +144,7 @@ public class AlarmOptions extends DialogFragment {
         }
         });
 
-    if (id == AlarmNotificationService.DEFAULTS_ALARM_ID) {
+    if (settings.equals(default_settings)) {
       edit_time.setVisibility(View.GONE);
       edit_repeat.setVisibility(View.GONE);
       edit_label.setVisibility(View.GONE);
@@ -321,11 +305,11 @@ public class AlarmOptions extends DialogFragment {
     }
 
     return new AlertDialog.Builder(getContext())
-      .setTitle((id == AlarmNotificationService.DEFAULTS_ALARM_ID) ?
+      .setTitle(settings.equals(default_settings) ?
                 "Default Alarm Options" : "Alarm Options")
       .setView(v)
       .setPositiveButton("Done", null)
-      .setNeutralButton((id != AlarmNotificationService.DEFAULTS_ALARM_ID) ?
+      .setNeutralButton(!settings.equals(default_settings) ?
                         "Delete" : null, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
@@ -439,11 +423,46 @@ public class AlarmOptions extends DialogFragment {
     return vibrate;
   }
 
-  static private class OptionalSettings {
-    private static final Uri default_settings = ContentUris.withAppendedId(
-        AlarmClockProvider.SETTINGS_URI,
-        AlarmNotificationService.DEFAULTS_ALARM_ID);
+  static private class AlarmSettings {
+    public final int time;
+    public final boolean enabled;
+    public final String label;
+    public final int repeat;
 
+    static public AlarmSettings get(Context context, Uri uri) {
+      AlarmSettings s = null;
+      final Cursor c = context.getContentResolver().query(
+          uri, new String[] { AlarmClockProvider.AlarmEntry.TIME,
+                              AlarmClockProvider.AlarmEntry.ENABLED,
+                              AlarmClockProvider.AlarmEntry.NAME,
+                              AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
+          null, null, null);
+      if (c.moveToFirst())
+        s = new AlarmSettings(c);
+      else
+        s = new AlarmSettings();
+      c.close();
+      return s;
+    }
+
+    private AlarmSettings() {
+      time = 0;
+      enabled = false;
+      label = "Not found";
+      repeat = 0;
+    }
+
+    private AlarmSettings(Cursor c) {
+      time = c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
+      enabled = c.getInt(c.getColumnIndex(
+          AlarmClockProvider.AlarmEntry.ENABLED)) != 0;
+      label = c.getString(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NAME));
+      repeat = c.getInt(c.getColumnIndex(
+          AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
+    }
+  }
+
+  static private class OptionalSettings {
     public final Uri tone_url;
     public final String tone_name;
     public final int snooze;
