@@ -54,8 +54,8 @@ public class AlarmOptions extends DialogFragment {
     final Uri settings = ContentUris.withAppendedId(
         AlarmClockProvider.SETTINGS_URI, id);
 
-    final AlarmSettings alarm = AlarmSettings.get(getContext(), uri);
-    final OptionalSettings s = OptionalSettings.get(getContext(), settings);
+    final AlarmSettings alarm = AlarmSettings.get(getContext(), id);
+    final OptionalSettings s = OptionalSettings.get(getContext(), id);
 
     final View v =
       ((LayoutInflater)getContext().getSystemService(
@@ -89,7 +89,7 @@ public class AlarmOptions extends DialogFragment {
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            int time = getTime(uri);
+            int time = AlarmSettings.getTime(getContext(), id);
             TimePicker time_pick = new TimePicker();
             time_pick.setListener(time_listener);
             Bundle b = new Bundle();
@@ -117,7 +117,7 @@ public class AlarmOptions extends DialogFragment {
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            int repeat = getRepeat(uri);
+            int repeat = AlarmSettings.getRepeat(getContext(), id);
             RepeatEditor edit = new RepeatEditor();
             Bundle b = new Bundle();
             b.putInt(RepeatEditor.BITMASK, repeat);
@@ -185,7 +185,9 @@ public class AlarmOptions extends DialogFragment {
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            boolean vibrate = !getVibrate(settings);
+            // TODO change this to a toggle button and use the toggle state
+            // rather than a db lookup.
+            boolean vibrate = !OptionalSettings.get(getContext(), id).vibrate;
             ContentValues val = new ContentValues();
             val.put(AlarmClockProvider.SettingsEntry.VIBRATE, vibrate);
             if (getContext().getContentResolver().update(
@@ -389,53 +391,21 @@ public class AlarmOptions extends DialogFragment {
     }
   }
 
-  private int getTime(Uri uri) {
-    Cursor c = getContext().getContentResolver().query(
-        uri, new String[] { AlarmClockProvider.AlarmEntry.TIME },
-        null, null, null);
-    c.moveToFirst();
-    int time = c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
-    c.close();
-    return time;
-  }
-
-  private int getRepeat(Uri uri) {
-    Cursor c = getContext().getContentResolver().query(
-        uri, new String[] { AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
-        null, null, null);
-    c.moveToFirst();
-    final int repeat = c.getInt(c.getColumnIndex(
-        AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
-    c.close();
-    return repeat;
-  }
-
-  private boolean getVibrate(Uri uri) {
-    Cursor c = getContext().getContentResolver().query(
-        uri, new String[] { AlarmClockProvider.SettingsEntry.VIBRATE },
-        null, null, null);
-    // TODO global defaults
-    boolean vibrate = false;
-    if (c.moveToFirst())
-      vibrate = c.getInt(c.getColumnIndex(
-        AlarmClockProvider.SettingsEntry.VIBRATE)) != 0;
-    c.close();
-    return vibrate;
-  }
-
   static private class AlarmSettings {
     public final int time;
     public final boolean enabled;
     public final String label;
     public final int repeat;
 
-    static public AlarmSettings get(Context context, Uri uri) {
+    static public AlarmSettings get(Context context, long id) {
       AlarmSettings s = null;
       final Cursor c = context.getContentResolver().query(
-          uri, new String[] { AlarmClockProvider.AlarmEntry.TIME,
-                              AlarmClockProvider.AlarmEntry.ENABLED,
-                              AlarmClockProvider.AlarmEntry.NAME,
-                              AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
+          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
+          new String[] {
+            AlarmClockProvider.AlarmEntry.TIME,
+            AlarmClockProvider.AlarmEntry.ENABLED,
+            AlarmClockProvider.AlarmEntry.NAME,
+            AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
           null, null, null);
       if (c.moveToFirst())
         s = new AlarmSettings(c);
@@ -443,6 +413,29 @@ public class AlarmOptions extends DialogFragment {
         s = new AlarmSettings();
       c.close();
       return s;
+    }
+
+    public static int getTime(Context context, long id) {
+      Cursor c = context.getContentResolver().query(
+          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
+          new String[] { AlarmClockProvider.AlarmEntry.TIME },
+          null, null, null);
+      c.moveToFirst();
+      int time = c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
+      c.close();
+      return time;
+    }
+
+    public static int getRepeat(Context context, long id) {
+      Cursor c = context.getContentResolver().query(
+          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
+          new String[] { AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
+          null, null, null);
+      c.moveToFirst();
+      int repeat = c.getInt(c.getColumnIndex(
+          AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
+      c.close();
+      return repeat;
     }
 
     private AlarmSettings() {
@@ -471,15 +464,24 @@ public class AlarmOptions extends DialogFragment {
     public final int volume_ending;
     public final int volume_time;
 
-    public static OptionalSettings get(Context context, Uri settings) {
+    static private final Uri tone_url_default =
+      Settings.System.DEFAULT_NOTIFICATION_URI;
+    static private final String tone_name_default = "System default";
+    static private final int snooze_default = 10;
+    static private final boolean vibrate_default = false;
+    static private final int volume_starting_default = 0;
+    static private final int volume_ending_default = 100;
+    static private final int volume_time_default = 20;
+
+    public static OptionalSettings get(Context context, long id) {
       OptionalSettings s = null;
-      Cursor c = query(context, settings);
+      Cursor c = query(context, id);
       if (c.moveToFirst())
         s = new OptionalSettings(c);
       c.close();
 
       if (s == null) {
-        c = query(context, default_settings);
+        c = query(context, AlarmNotificationService.DEFAULTS_ALARM_ID);
         if (c.moveToFirst())
           s = new OptionalSettings(c);
         c.close();
@@ -491,9 +493,10 @@ public class AlarmOptions extends DialogFragment {
         return new OptionalSettings();
     }
 
-    static private Cursor query(Context context, Uri settings) {
+    static private Cursor query(Context context, long id) {
       return context.getContentResolver().query(
-          settings, new String[] {
+          ContentUris.withAppendedId(AlarmClockProvider.SETTINGS_URI, id),
+          new String[] {
             AlarmClockProvider.SettingsEntry.TONE_URL,
             AlarmClockProvider.SettingsEntry.TONE_NAME,
             AlarmClockProvider.SettingsEntry.SNOOZE,
@@ -505,13 +508,13 @@ public class AlarmOptions extends DialogFragment {
     }
 
     private OptionalSettings() {
-      tone_url = Settings.System.DEFAULT_NOTIFICATION_URI;
-      tone_name = "System default";
-      snooze = 10;
-      vibrate = false;
-      volume_starting = 0;
-      volume_ending = 100;
-      volume_time = 20;
+      tone_url = tone_url_default;
+      tone_name = tone_name_default;
+      snooze = snooze_default;
+      vibrate = vibrate_default;
+      volume_starting = volume_starting_default;
+      volume_ending = volume_ending_default;
+      volume_time = volume_time_default;
     }
 
     private OptionalSettings(Cursor c) {
