@@ -75,7 +75,6 @@ public class TimePicker extends DialogFragment {
           Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.time_picker, null);
 
     final AlertDialog d = new AlertDialog.Builder(getContext())
-      // TODO edit alarm
       .setTitle(title.isEmpty() ? "New Alarm" : title)
       .setView(v)
       .setNegativeButton("Cancel", null)

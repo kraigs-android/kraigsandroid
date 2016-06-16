@@ -455,7 +455,7 @@ public class AlarmOptions extends DialogFragment {
     }
   }
 
-  static private class OptionalSettings {
+  static public class OptionalSettings {
     public final Uri tone_url;
     public final String tone_name;
     public final int snooze;
@@ -464,14 +464,14 @@ public class AlarmOptions extends DialogFragment {
     public final int volume_ending;
     public final int volume_time;
 
-    static private final Uri tone_url_default =
+    static public final Uri TONE_URL_DEFAULT =
       Settings.System.DEFAULT_NOTIFICATION_URI;
-    static private final String tone_name_default = "System default";
-    static private final int snooze_default = 10;
-    static private final boolean vibrate_default = false;
-    static private final int volume_starting_default = 0;
-    static private final int volume_ending_default = 100;
-    static private final int volume_time_default = 20;
+    static public final String TONE_NAME_DEFAULT = "System default";
+    static public final int SNOOZE_DEFAULT = 10;
+    static public final boolean VIBRATE_DEFAULT = false;
+    static public final int VOLUME_STARTING_DEFAULT = 0;
+    static public final int VOLUME_ENDING_DEFAULT = 100;
+    static public final int VOLUME_TIME_DEFAULT = 20;
 
     public static OptionalSettings get(Context context, long id) {
       OptionalSettings s = null;
@@ -508,13 +508,13 @@ public class AlarmOptions extends DialogFragment {
     }
 
     private OptionalSettings() {
-      tone_url = tone_url_default;
-      tone_name = tone_name_default;
-      snooze = snooze_default;
-      vibrate = vibrate_default;
-      volume_starting = volume_starting_default;
-      volume_ending = volume_ending_default;
-      volume_time = volume_time_default;
+      tone_url = TONE_URL_DEFAULT;
+      tone_name = TONE_NAME_DEFAULT;
+      snooze = SNOOZE_DEFAULT;
+      vibrate = VIBRATE_DEFAULT;
+      volume_starting = VOLUME_STARTING_DEFAULT;
+      volume_ending = VOLUME_ENDING_DEFAULT;
+      volume_time = VOLUME_TIME_DEFAULT;
     }
 
     private OptionalSettings(Cursor c) {

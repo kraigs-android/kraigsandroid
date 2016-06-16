@@ -46,7 +46,10 @@ public class AlarmNotificationActivity extends Activity {
           public void onClick(View view) {
             AlarmNotificationService.snoozeAllAlarms(
                 getApplicationContext(),
-                TimeUtil.nextMinute(5).getTimeInMillis());
+                TimeUtil.nextMinute(
+                    AlarmOptions.OptionalSettings.get(
+                        getApplicationContext(), alarmid).snooze)
+                .getTimeInMillis());
             finish();
           }
         });

@@ -26,6 +26,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -141,6 +142,8 @@ public class AlarmNotificationService extends Service {
 
   private void handleTriggerAlarm(Intent i) {
     final long alarmid = i.getLongExtra(ALARM_ID, -1);
+    final AlarmOptions.OptionalSettings settings =
+      AlarmOptions.OptionalSettings.get(getApplicationContext(), alarmid);
 
     PowerManager.WakeLock w = null;
     if (i.hasExtra(AlarmTriggerReceiver.WAKELOCK_ID)) {
@@ -173,14 +176,12 @@ public class AlarmNotificationService extends Service {
       .setPriority(Notification.PRIORITY_MAX)
       .setVisibility(Notification.VISIBILITY_PUBLIC)
       .setOngoing(true)
-      // TODO replace each of these with an explicit below
-      .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS)
-      // TODO
-      // .setLights()
-      // .setSound()
-      // .setVibrate()
+      // TODO replace this with a media player.
+      .setDefaults(Notification.DEFAULT_SOUND)
+      .setLights(Color.WHITE, 1000, 1000)
+      .setVibrate(settings.vibrate ? new long[] {1000, 1000} : null)
       .build();
-    notification.flags |= Notification.FLAG_INSISTENT;  // Loop sound
+    notification.flags |= Notification.FLAG_INSISTENT;  // Loop sound/vib/blink
     startForeground(FIRING_ALARM_NOTIFICATION_ID, notification);
 
     refreshNotifyBar();

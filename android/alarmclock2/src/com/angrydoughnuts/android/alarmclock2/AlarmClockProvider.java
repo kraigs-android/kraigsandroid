@@ -91,22 +91,27 @@ public final class AlarmClockProvider extends ContentProvider {
       } else {
         values.put(SettingsEntry.ALARM_ID, alarmid);
       }
-      // TODO replace these defaults with global config defaults.
       if (!values.containsKey(SettingsEntry.TONE_URL))
         values.put(SettingsEntry.TONE_URL,
-                   Settings.System.DEFAULT_NOTIFICATION_URI.toString());
+                   AlarmOptions.OptionalSettings.TONE_URL_DEFAULT.toString());
       if (!values.containsKey(SettingsEntry.TONE_NAME))
-        values.put(SettingsEntry.TONE_NAME, "System default");
+        values.put(SettingsEntry.TONE_NAME,
+                   AlarmOptions.OptionalSettings.TONE_NAME_DEFAULT);
       if (!values.containsKey(SettingsEntry.SNOOZE))
-        values.put(SettingsEntry.SNOOZE, 10);
+        values.put(SettingsEntry.SNOOZE,
+                   AlarmOptions.OptionalSettings.SNOOZE_DEFAULT);
       if (!values.containsKey(SettingsEntry.VIBRATE))
-        values.put(SettingsEntry.VIBRATE, 0);
+        values.put(SettingsEntry.VIBRATE,
+                   AlarmOptions.OptionalSettings.VIBRATE_DEFAULT);
       if (!values.containsKey(SettingsEntry.VOLUME_STARTING))
-        values.put(SettingsEntry.VOLUME_STARTING, 0);
+        values.put(SettingsEntry.VOLUME_STARTING,
+                   AlarmOptions.OptionalSettings.VOLUME_STARTING_DEFAULT);
       if (!values.containsKey(SettingsEntry.VOLUME_ENDING))
-        values.put(SettingsEntry.VOLUME_ENDING, 100);
+        values.put(SettingsEntry.VOLUME_ENDING,
+                   AlarmOptions.OptionalSettings.VOLUME_ENDING_DEFAULT);
       if (!values.containsKey(SettingsEntry.VOLUME_TIME))
-        values.put(SettingsEntry.VOLUME_TIME, 20);
+        values.put(SettingsEntry.VOLUME_TIME,
+                   AlarmOptions.OptionalSettings.VOLUME_TIME_DEFAULT);
 
       db.insertOrThrow(SettingsEntry.TABLE_NAME, null, values);
       getContext().getContentResolver().notifyChange(uri, null);

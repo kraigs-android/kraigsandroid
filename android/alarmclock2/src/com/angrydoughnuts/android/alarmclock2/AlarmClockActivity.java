@@ -192,10 +192,6 @@ public class AlarmClockActivity extends Activity {
           public void onClick(View view) {
             TimePicker time_pick = new TimePicker();
             time_pick.setListener(new_alarm);
-            // TODO: input values
-            //Bundle b = new Bundle();
-            //b.putLong("time", System.currentTimeMillis());
-            // time_pick.setArguments(b);
             time_pick.show(getFragmentManager(), "new_alarm");
           }
         });
