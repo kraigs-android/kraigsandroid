@@ -50,6 +50,7 @@ import android.widget.Toast;
 
 import java.lang.Runnable;
 import java.util.Calendar;
+import java.util.LinkedList;
 
 public class AlarmClockActivity extends Activity {
   private final Handler handler = new Handler();
@@ -227,7 +228,37 @@ public class AlarmClockActivity extends Activity {
       options.show(getFragmentManager(), "default_alarm_options");
       return true;
     case R.id.delete_all:
-      // TODO
+      new DialogFragment() {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+          return new AlertDialog.Builder(getContext())
+            .setTitle("Confirm Delete All")
+            .setMessage("Are you sure you want to delete all alarms?")
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton(
+                "OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                      LinkedList<Long> ids = new LinkedList<Long>();
+                      Cursor c = getContentResolver().query(
+                          AlarmClockProvider.ALARMS_URI,
+                          new String[] { AlarmClockProvider.AlarmEntry._ID },
+                          AlarmClockProvider.AlarmEntry.ENABLED + " == 1",
+                          null, null);
+                      while (c.moveToNext())
+                        ids.add(c.getLong(c.getColumnIndex(
+                            AlarmClockProvider.AlarmEntry._ID)));
+                      c.close();
+                      getContext().getContentResolver().delete(
+                          AlarmClockProvider.ALARMS_URI, null, null);
+                      for (long id : ids)
+                        AlarmNotificationService.removeAlarmTrigger(
+                            getContext(), id);
+                    }
+                  }).create();
+        }
+      }.show(getFragmentManager(), "confirm_delete_all");
+
       return true;
     default:
       return super.onOptionsItemSelected(item);

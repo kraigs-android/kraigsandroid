@@ -162,6 +162,11 @@ public final class AlarmClockProvider extends ContentProvider {
     int count;
 
     switch (matcher.match(uri)) {
+    case ALARMS:
+      count = db.delete(AlarmEntry.TABLE_NAME, null, null);
+      count += db.delete(SettingsEntry.TABLE_NAME, null, null);
+      getContext().getContentResolver().notifyChange(uri, null);
+      return count;
     case ALARM_ID:
       alarmid = ContentUris.parseId(uri);
       count = db.delete(
