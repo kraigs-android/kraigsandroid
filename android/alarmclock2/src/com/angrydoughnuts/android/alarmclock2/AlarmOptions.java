@@ -163,19 +163,26 @@ public class AlarmOptions extends DialogFragment {
     }
 
     final Button edit_tone = (Button)v.findViewById(R.id.edit_tone);
+    final MediaPicker.Listener tone_listener = new MediaPicker.Listener() {
+        public void onMediaPick(Uri uri, String title) {
+          ContentValues val = new ContentValues();
+          val.put(AlarmClockProvider.SettingsEntry.TONE_URL, uri.toString());
+          val.put(AlarmClockProvider.SettingsEntry.TONE_NAME, title);
+            if (getContext().getContentResolver().update(
+                    settings, val, null, null) < 1)
+              getContext().getContentResolver().insert(settings, val);
+
+          edit_tone.setText(title + " " + uri.toString());
+        }
+      };
     edit_tone.setText(s.tone_name + " " + s.tone_url.toString());
     edit_tone.setOnClickListener(
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
             MediaPicker media_pick = new MediaPicker();
-            // media_pick.setListener(xxx);
-            // Bundle b = new Bundle();
-            // b.putInt(xxx, 0);
-            // media_pick.setArguments(b);
+            media_pick.setListener(tone_listener);
             media_pick.show(getFragmentManager(), "edit_tone");
-            // TODO
-            //edit_tone.setText(s.tone_name + " " + s.tone_url.toString());
           }
         });
 
@@ -328,8 +335,11 @@ public class AlarmOptions extends DialogFragment {
         .findFragmentByTag("edit_alarm");
       RepeatEditor r = (RepeatEditor)getFragmentManager()
         .findFragmentByTag("edit_repeat");
+      MediaPicker m = (MediaPicker)getFragmentManager()
+        .findFragmentByTag("edit_tone");
       if (t != null) t.setListener(time_listener);
       if (r != null) r.setListener(repeat_listener);
+      if (m != null) m.setListener(tone_listener);
     }
 
     return new AlertDialog.Builder(getContext())
