@@ -162,8 +162,22 @@ public class AlarmOptions extends DialogFragment {
       edit_label.setVisibility(View.GONE);
     }
 
-    final TextView edit_tone = (TextView)v.findViewById(R.id.edit_tone);
+    final Button edit_tone = (Button)v.findViewById(R.id.edit_tone);
     edit_tone.setText(s.tone_name + " " + s.tone_url.toString());
+    edit_tone.setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            MediaPicker media_pick = new MediaPicker();
+            // media_pick.setListener(xxx);
+            // Bundle b = new Bundle();
+            // b.putInt(xxx, 0);
+            // media_pick.setArguments(b);
+            media_pick.show(getFragmentManager(), "edit_tone");
+            // TODO
+            //edit_tone.setText(s.tone_name + " " + s.tone_url.toString());
+          }
+        });
 
     final TextView snooze_status = (TextView)v.findViewById(R.id.snooze_status);
     snooze_status.setText("Snooze: " + s.snooze);
