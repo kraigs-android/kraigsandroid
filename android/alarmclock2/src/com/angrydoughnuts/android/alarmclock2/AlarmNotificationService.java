@@ -27,6 +27,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -34,6 +36,7 @@ import android.text.format.DateFormat;
 import android.util.ArrayMap;
 import android.util.Log;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -134,6 +137,9 @@ public class AlarmNotificationService extends Service {
             activeAlarms.alarmids.size() + ")");
     Log.i(TAG, "Releasing wake lock");
     activeAlarms.wakelock.release();
+    activeAlarms.player.stop();
+    activeAlarms.player.release();
+    activeAlarms.player = null;
     activeAlarms = null;
   }
 
@@ -157,6 +163,7 @@ public class AlarmNotificationService extends Service {
     if (activeAlarms == null) {
       activeAlarms = new ActiveAlarms();
       activeAlarms.wakelock = w;
+      activeAlarms.player = startSound(settings);
     } else {
       Log.i(TAG, "Already wake-locked, releasing extra lock");
       w.release();
@@ -176,8 +183,6 @@ public class AlarmNotificationService extends Service {
       .setPriority(Notification.PRIORITY_MAX)
       .setVisibility(Notification.VISIBILITY_PUBLIC)
       .setOngoing(true)
-      // TODO replace this with a media player.
-      .setDefaults(Notification.DEFAULT_SOUND)
       .setLights(Color.WHITE, 1000, 1000)
       .setVibrate(settings.vibrate ? new long[] {1000, 1000} : null)
       .build();
@@ -314,6 +319,22 @@ public class AlarmNotificationService extends Service {
         AlarmManager.RTC, wake.getTimeInMillis(), tick);
   }
 
+  private MediaPlayer startSound(AlarmOptions.OptionalSettings settings) {
+    final MediaPlayer player = new MediaPlayer();
+    player.setAudioStreamType(AudioManager.STREAM_ALARM);
+    player.setLooping(true);
+    try {
+      player.setDataSource(getApplicationContext(), settings.tone_url);
+      player.prepare();
+    } catch (IOException e) {
+      // TODO handle failure to default sound.
+      // TODO handle failure failure fallback to ringtone player.
+    }
+    player.start();
+    // TODO implement fade.
+    return player;
+  }
+
   private static final String TAG =
     AlarmNotificationService.class.getSimpleName();
   // Commands
@@ -331,6 +352,7 @@ public class AlarmNotificationService extends Service {
   private static class ActiveAlarms {
     public PowerManager.WakeLock wakelock = null;
     public HashSet<Long> alarmids = new HashSet<Long>();
+    public MediaPlayer player = null;
   }
 
   public static class AlarmTriggerReceiver extends BroadcastReceiver {
