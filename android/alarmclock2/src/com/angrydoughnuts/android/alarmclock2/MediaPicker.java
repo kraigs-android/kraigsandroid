@@ -34,6 +34,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.ListView;
+import android.widget.TabHost;
 import android.widget.TextView;
 
 public class MediaPicker extends DialogFragment {
@@ -55,57 +56,33 @@ public class MediaPicker extends DialogFragment {
       title = savedInstanceState.getString("title");
     }
 
-    final View v =
-      ((LayoutInflater)getContext().getSystemService(
-          Context.LAYOUT_INFLATER_SERVICE)).inflate(
-              R.layout.media_picker, null);
-
-    final ResourceCursorAdapter adapter = new ResourceCursorAdapter(
-        getContext(), R.layout.media_picker_item, null, 0) {
-        @Override
-        public void bindView(View v, Context context, Cursor c) {
-          TextView t = (TextView)v;
-          t.setText(c.getString(c.getColumnIndex(MediaColumns.TITLE)));
-        }
-      };
-
-    ListView list = (ListView)v;
-    list.setAdapter(adapter);
-    list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View v, int x, long id) {
-          TextView t = (TextView)v;
-          uri = ContentUris.withAppendedId(Audio.Media.INTERNAL_CONTENT_URI, id);
-          title = t.getText().toString();
-        }
-      });
-
-    final Loader<Cursor> loader = getLoaderManager().initLoader(
-        0, null, new LoaderManager.LoaderCallbacks<Cursor>() {
-            @Override
-            public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-              return new CursorLoader(
-                  getContext(), Audio.Media.INTERNAL_CONTENT_URI,
-                  null, null, null, null);
-            }
-            @Override
-            public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-              adapter.changeCursor(data);
-            }
-            @Override
-            public void onLoaderReset(Loader<Cursor> loader) {
-              adapter.changeCursor(null);
-            }
-          });
+    final TabHost t = (TabHost)((LayoutInflater)getContext().getSystemService(
+                        Context.LAYOUT_INFLATER_SERVICE)).inflate(
+                            R.layout.media_picker, null);
+    t.setup();
+    t.addTab(t.newTabSpec("external").setIndicator("external").setContent(
+                 new TabHost.TabContentFactory() {
+                   @Override
+                     public View createTabContent(String tag) {
+                     return buildMediaList(Audio.Media.EXTERNAL_CONTENT_URI);
+                   }
+                 }));
+    t.addTab(t.newTabSpec("internal").setIndicator("internal").setContent(
+                 new TabHost.TabContentFactory() {
+                   @Override
+                     public View createTabContent(String tag) {
+                     return buildMediaList(Audio.Media.INTERNAL_CONTENT_URI);
+                   }
+                 }));
 
     return new AlertDialog.Builder(getContext())
       .setTitle("Media picker")
-      .setView(v)
+      .setView(t)
       .setNegativeButton("Cancel", null)
       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
-            if (listener != null)
+            if (listener != null && uri != null && title != null)
               listener.onMediaPick(uri, title);
           }
         }).create();
@@ -116,5 +93,46 @@ public class MediaPicker extends DialogFragment {
     super.onSaveInstanceState(outState);
     if (uri != null) outState.putParcelable("uri", uri);
     if (title != null) outState.putString("title", title);
+  }
+
+  private View buildMediaList(final Uri query) {
+    final ResourceCursorAdapter adapter = new ResourceCursorAdapter(
+        getContext(), R.layout.media_picker_item, null, 0) {
+        @Override
+        public void bindView(View v, Context context, Cursor c) {
+          TextView t = (TextView)v;
+          t.setText(c.getString(c.getColumnIndex(MediaColumns.TITLE)));
+        }
+      };
+
+    final ListView list = new ListView(getContext());
+    list.setId(View.generateViewId());
+    list.setAdapter(adapter);
+    list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View v, int x, long id) {
+          TextView t = (TextView)v;
+          uri = ContentUris.withAppendedId(query, id);
+          title = t.getText().toString();
+        }
+      });
+
+    final Loader<Cursor> loader = getLoaderManager().initLoader(
+        list.getId(), null, new LoaderManager.LoaderCallbacks<Cursor>() {
+            @Override
+            public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+              return new CursorLoader(
+                  getContext(), query, null, null, null, null);
+            }
+            @Override
+            public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+              adapter.changeCursor(data);
+            }
+            @Override
+            public void onLoaderReset(Loader<Cursor> loader) {
+              adapter.changeCursor(null);
+            }
+          });
+    return list;
   }
 }
