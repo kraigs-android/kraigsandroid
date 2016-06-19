@@ -31,12 +31,15 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.IBinder;
+import android.os.Handler;
+import android.os.Message;
 import android.os.PowerManager;
 import android.text.format.DateFormat;
 import android.util.ArrayMap;
 import android.util.Log;
 
 import java.io.IOException;
+import java.lang.Math;
 import java.util.HashSet;
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -132,14 +135,7 @@ public class AlarmNotificationService extends Service {
     if (activeAlarms == null)
       return;
 
-    if (!activeAlarms.alarmids.isEmpty())
-      Log.w(TAG, "Releasing wake lock with active alarms! (" +
-            activeAlarms.alarmids.size() + ")");
-    Log.i(TAG, "Releasing wake lock");
-    activeAlarms.wakelock.release();
-    activeAlarms.player.stop();
-    activeAlarms.player.release();
-    activeAlarms.player = null;
+    activeAlarms.release();
     activeAlarms = null;
   }
 
@@ -161,9 +157,7 @@ public class AlarmNotificationService extends Service {
       Log.e(TAG, "No wake lock present for TRIGGER_ALARM_NOTIFICATION");
 
     if (activeAlarms == null) {
-      activeAlarms = new ActiveAlarms();
-      activeAlarms.wakelock = w;
-      activeAlarms.player = startSound(settings);
+      activeAlarms = new ActiveAlarms(getApplicationContext(), w, settings);
     } else {
       Log.i(TAG, "Already wake-locked, releasing extra lock");
       w.release();
@@ -319,22 +313,6 @@ public class AlarmNotificationService extends Service {
         AlarmManager.RTC, wake.getTimeInMillis(), tick);
   }
 
-  private MediaPlayer startSound(AlarmOptions.OptionalSettings settings) {
-    final MediaPlayer player = new MediaPlayer();
-    player.setAudioStreamType(AudioManager.STREAM_ALARM);
-    player.setLooping(true);
-    try {
-      player.setDataSource(getApplicationContext(), settings.tone_url);
-      player.prepare();
-    } catch (IOException e) {
-      // TODO handle failure to default sound.
-      // TODO handle failure failure fallback to ringtone player.
-    }
-    player.start();
-    // TODO implement fade.
-    return player;
-  }
-
   private static final String TAG =
     AlarmNotificationService.class.getSimpleName();
   // Commands
@@ -350,9 +328,84 @@ public class AlarmNotificationService extends Service {
   private static final int NEXT_ALARM_NOTIFICATION_ID = 69;
 
   private static class ActiveAlarms {
-    public PowerManager.WakeLock wakelock = null;
-    public HashSet<Long> alarmids = new HashSet<Long>();
-    public MediaPlayer player = null;
+    public static final int TRIGGER_INC = 1;
+    public static final int RESET_VOLUME = 2;
+
+    private PowerManager.WakeLock wakelock = null;
+    private HashSet<Long> alarmids = new HashSet<Long>();
+    private MediaPlayer player = null;
+    private Handler fade = null;
+
+    public ActiveAlarms(Context c, PowerManager.WakeLock w,
+                        final AlarmOptions.OptionalSettings s) {
+      final AudioManager a = (AudioManager)c.getSystemService(
+          Context.AUDIO_SERVICE);
+      final int init_volume = a.getStreamVolume(AudioManager.STREAM_ALARM);
+      a.setStreamVolume(AudioManager.STREAM_ALARM,
+                        a.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
+
+      wakelock = w;
+      player = new MediaPlayer();
+      fade = new Handler() {
+          @Override
+          public void handleMessage(Message m) {
+            switch (m.what) {
+            case TRIGGER_INC:
+              int inc = (s.volume_ending - s.volume_starting) / s.volume_time;
+              int next = Math.min(s.volume_ending, m.arg1 + inc);
+              float norm = (float)((Math.pow(5, next/100.0)-1)/4);
+              Log.i(TAG, "Incriminating volume to " + norm);
+              player.setVolume(norm, norm);
+              if (next < s.volume_ending) {
+                Message m2 = new Message();
+                m2.what = TRIGGER_INC;
+                m2.arg1 = next;
+                sendMessageDelayed(m2, 1000);
+              }
+              break;
+            case RESET_VOLUME:
+              a.setStreamVolume(AudioManager.STREAM_ALARM, init_volume, 0);
+              break;
+            }
+          }
+        };
+
+      player.setAudioStreamType(AudioManager.STREAM_ALARM);
+      player.setLooping(true);
+      final float start = s.volume_starting/(float)100.0;
+      player.setVolume(start, start);
+      Log.i(TAG, "Starting volume: " + start);
+      try {
+        player.setDataSource(c, s.tone_url);
+        player.prepare();
+      } catch (IOException e) {
+        // TODO handle failure to default sound.
+        // TODO handle failure failure fallback to ringtone player.
+      }
+      player.start();
+
+      Message m = new Message();
+      m.what = TRIGGER_INC;
+      m.arg1 = s.volume_starting;
+      fade.sendMessage(m);
+    }
+
+    public void release() {
+      if (!alarmids.isEmpty())
+        Log.w(TAG, "Releasing wake lock with active alarms! (" +
+              alarmids.size() + ")");
+      Log.i(TAG, "Releasing wake lock");
+      wakelock.release();
+      wakelock = null;
+
+      fade.sendEmptyMessage(ActiveAlarms.RESET_VOLUME);
+      fade.removeMessages(ActiveAlarms.TRIGGER_INC);
+      fade = null;
+
+      player.stop();
+      player.release();
+      player = null;
+    }
   }
 
   public static class AlarmTriggerReceiver extends BroadcastReceiver {
