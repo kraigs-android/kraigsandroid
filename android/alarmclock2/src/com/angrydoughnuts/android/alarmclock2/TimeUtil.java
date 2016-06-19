@@ -22,17 +22,18 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class TimeUtil {
-  public static Calendar nextOccurrence(int secondsPastMidnight) {
-    return nextOccurrence(Calendar.getInstance(), secondsPastMidnight);
+  public static Calendar nextOccurrence(int secondsPastMidnight, int repeats) {
+    return nextOccurrence(Calendar.getInstance(), secondsPastMidnight, repeats);
   }
 
   public static Calendar nextOccurrence(
-      int secondsPastMidnight, long nextSnooze) {
+      int secondsPastMidnight, int repeats, long nextSnooze) {
     return nextOccurrence(
-        Calendar.getInstance(), secondsPastMidnight, nextSnooze);
+        Calendar.getInstance(), secondsPastMidnight, nextSnooze, repeats);
   }
 
-  public static Calendar nextOccurrence(Calendar now, int secondsPastMidnight) {
+  public static Calendar nextOccurrence(
+      Calendar now, int secondsPastMidnight, int repeats) {
     Calendar then = (Calendar)now.clone();
     then.set(Calendar.HOUR_OF_DAY, 0);
     then.set(Calendar.MINUTE, 0);
@@ -41,12 +42,14 @@ public class TimeUtil {
     then.add(Calendar.SECOND, secondsPastMidnight);
     if (then.before(now))
       then.add(Calendar.DATE, 1);
+    while (repeats > 0 && !dayIsRepeat(then.get(Calendar.DAY_OF_WEEK), repeats))
+      then.add(Calendar.DATE, 1);
     return then;
   }
 
   public static Calendar nextOccurrence(
-      Calendar now, int secondsPastMidnight, long nextSnooze) {
-    Calendar next = nextOccurrence(now, secondsPastMidnight);
+      Calendar now, int secondsPastMidnight, long nextSnooze, int repeats) {
+    Calendar next = nextOccurrence(now, secondsPastMidnight, repeats);
     if (nextSnooze > now.getTimeInMillis()) {
       Calendar snooze = Calendar.getInstance();
       snooze.setTimeInMillis(nextSnooze);
@@ -54,6 +57,26 @@ public class TimeUtil {
         return snooze;
     }
     return next;
+  }
+
+  private static boolean dayIsRepeat(int calendarDow, int repeats) {
+    switch (calendarDow) {
+      case Calendar.SUNDAY:
+        return (1 & repeats) != 0;
+      case Calendar.MONDAY:
+        return (2 & repeats) != 0;
+      case Calendar.TUESDAY:
+        return (4 & repeats) != 0;
+      case Calendar.WEDNESDAY:
+        return (8 & repeats) != 0;
+      case Calendar.THURSDAY:
+        return (16 & repeats) != 0;
+      case Calendar.FRIDAY:
+        return (32 & repeats) != 0;
+      case Calendar.SATURDAY:
+        return (64 & repeats) != 0;
+    }
+    return true;
   }
 
   public static Calendar nextMinute() {
@@ -91,17 +114,19 @@ public class TimeUtil {
 
   public static String until(Calendar from, Calendar to) {
     long minutes = (to.getTimeInMillis() - from.getTimeInMillis()) / 1000 / 60;
+    long days = minutes / 1440;
+    minutes -= (days * 1440);
     long hours = minutes / 60;
     minutes -= (hours * 60);
 
+    String s = "";
+    if (days > 0)
+      s += String.format("%d %s ", days, (days > 1) ? "days" : "day");
     if (hours > 0)
-      return String.format(
-          "%d %s %d %s",
-          hours, (hours > 1) ? "hours" : "hour",
-          minutes, (minutes > 1) ? "minutes" : "minute");
-    else
-      return String.format(
-          "%d %s", minutes, (minutes > 1) ? "minutes" : "minute");
+      s += String.format("%d %s ", hours, (hours > 1) ? "hours" : "hour");
+    if (minutes > 0)
+      s += String.format("%d %s", minutes, (minutes > 1) ? "minutes" : "minute");
+    return s;
   }
 
   public static String format(Context context, Calendar c) {

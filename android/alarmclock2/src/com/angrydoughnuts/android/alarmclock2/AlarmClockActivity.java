@@ -75,12 +75,14 @@ public class AlarmClockActivity extends Activity {
         public void bindView(View v, Context context, Cursor c) {
           final int secondsPastMidnight = c.getInt(
               c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
-          final long nextSnooze = c.getLong(
-              c.getColumnIndex(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE));
           final int enabled = c.getInt(
               c.getColumnIndex(AlarmClockProvider.AlarmEntry.ENABLED));
+          final int repeats = c.getInt(
+              c.getColumnIndex(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
+          final long nextSnooze = c.getLong(
+              c.getColumnIndex(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE));
           final Calendar next =
-            TimeUtil.nextOccurrence(secondsPastMidnight, nextSnooze);
+            TimeUtil.nextOccurrence(secondsPastMidnight, repeats, nextSnooze);
 
           ((TextView)v.findViewById(R.id.debug_text))
             .setText(TimeUtil.formatLong(getApplicationContext(), next));
@@ -111,13 +113,16 @@ public class AlarmClockActivity extends Activity {
           } else {
             Cursor c = getContentResolver().query(
                 ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
-                new String[] { AlarmClockProvider.AlarmEntry.TIME },
+                new String[] { AlarmClockProvider.AlarmEntry.TIME,
+                               AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
                 null, null, null);
             c.moveToFirst();
             int secondsPastMidnight =
               c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
+            int repeats =
+              c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
             c.close();
-            Calendar alarm = TimeUtil.nextOccurrence(secondsPastMidnight);
+            Calendar alarm = TimeUtil.nextOccurrence(secondsPastMidnight, repeats);
             AlarmNotificationService.scheduleAlarmTrigger(
                 getApplicationContext(), id, alarm.getTimeInMillis());
           }
@@ -145,6 +150,7 @@ public class AlarmClockActivity extends Activity {
                     AlarmClockProvider.AlarmEntry._ID,
                     AlarmClockProvider.AlarmEntry.TIME,
                     AlarmClockProvider.AlarmEntry.ENABLED,
+                    AlarmClockProvider.AlarmEntry.DAY_OF_WEEK,
                     AlarmClockProvider.AlarmEntry.NEXT_SNOOZE },
                   null, null, AlarmClockProvider.AlarmEntry.TIME + " ASC");
             }

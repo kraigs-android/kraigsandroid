@@ -53,7 +53,7 @@ public class AlarmNotificationService extends Service {
 
     // Inserted entry is ENABLED by default with no options.  Schedule the
     // first occurrence.
-    Calendar ts = TimeUtil.nextOccurrence(secondsPastMidnight);
+    Calendar ts = TimeUtil.nextOccurrence(secondsPastMidnight, 0);
     scheduleAlarmTrigger(c, alarmid, ts.getTimeInMillis());
 
     return alarmid;
@@ -269,6 +269,7 @@ public class AlarmNotificationService extends Service {
     final Cursor c = getContentResolver().query(
         AlarmClockProvider.ALARMS_URI,
         new String[] { AlarmClockProvider.AlarmEntry.TIME,
+                       AlarmClockProvider.AlarmEntry.DAY_OF_WEEK,
                        AlarmClockProvider.AlarmEntry.NEXT_SNOOZE },
         AlarmClockProvider.AlarmEntry.ENABLED + " == 1",
         null, null);
@@ -287,7 +288,8 @@ public class AlarmNotificationService extends Service {
       Calendar n = TimeUtil.nextOccurrence(
           now,
           c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME)),
-          c.getLong(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE)));
+          c.getLong(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE)),
+          c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK)));
       if (next == null || n.before(next))
         next = n;
     }

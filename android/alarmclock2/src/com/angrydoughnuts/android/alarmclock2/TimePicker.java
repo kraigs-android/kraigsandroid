@@ -39,12 +39,14 @@ import java.util.Calendar;
 public class TimePicker extends DialogFragment {
   public static final String TIME = "time";
   public static final String TITLE = "title";
+  public static final String REPEATS = "repeats";
   public static interface OnTimePickListener {
     abstract void onTimePick(int secondsPastMidnight);
   }
 
   private int hour;
   private int minute;
+  private int repeats;
   private OnTimePickListener listener = null;
   public void setListener(OnTimePickListener l) { listener = l; }
 
@@ -54,6 +56,7 @@ public class TimePicker extends DialogFragment {
     final Calendar now = Calendar.getInstance();
     hour = now.get(Calendar.HOUR_OF_DAY);
     minute = now.get(Calendar.MINUTE);
+    repeats = 0;
 
     String title = "";
     if (getArguments() != null) {
@@ -63,11 +66,13 @@ public class TimePicker extends DialogFragment {
         minute = secondsPastMidnight / 60 - hour * 60;
       }
       title = getArguments().getString(TITLE, "");
+      repeats = getArguments().getInt(REPEATS, 0);
     }
 
     if (savedInstanceState != null) {
       hour = savedInstanceState.getInt("hour");
       minute = savedInstanceState.getInt("minute");
+      repeats = savedInstanceState.getInt("repeats");
     }
 
     final View v =
@@ -233,6 +238,7 @@ public class TimePicker extends DialogFragment {
     super.onSaveInstanceState(outState);
     outState.putInt("hour", hour);
     outState.putInt("minute", minute);
+    outState.putInt("repeats", repeats);
   }
 
   private int toSeconds() {
@@ -240,7 +246,7 @@ public class TimePicker extends DialogFragment {
   }
 
   private Calendar next() {
-    return TimeUtil.nextOccurrence(toSeconds());
+    return TimeUtil.nextOccurrence(toSeconds(), repeats);
   }
 
   private String time() {

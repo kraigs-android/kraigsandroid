@@ -72,7 +72,9 @@ public class AlarmOptions extends DialogFragment {
           getContext().getContentResolver().update(
               uri, val, null, null);
 
-          final Calendar next = TimeUtil.nextOccurrence(t);
+          final Calendar next = TimeUtil.nextOccurrence(
+              t, AlarmSettings.getRepeat(getContext(), id),
+              AlarmSettings.getNextSnooze(getContext(), id));
           if (alarm.enabled) {
             AlarmNotificationService.removeAlarmTrigger(
                 getContext(), id);
@@ -84,17 +86,19 @@ public class AlarmOptions extends DialogFragment {
         }
       };
     edit_time.setText(
-        TimeUtil.formatLong(getContext(), TimeUtil.nextOccurrence(alarm.time)));
+        TimeUtil.formatLong(getContext(), TimeUtil.nextOccurrence(alarm.time, alarm.repeat)));
     edit_time.setOnClickListener(
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
             int time = AlarmSettings.getTime(getContext(), id);
+            int repeats = AlarmSettings.getRepeat(getContext(), id);
             TimePicker time_pick = new TimePicker();
             time_pick.setListener(time_listener);
             Bundle b = new Bundle();
             b.putInt(TimePicker.TIME, time);
             b.putString(TimePicker.TITLE, "Edit time");
+            b.putInt(TimePicker.REPEATS, repeats);
             time_pick.setArguments(b);
             time_pick.show(getFragmentManager(), "edit_alarm");
           }
@@ -109,7 +113,15 @@ public class AlarmOptions extends DialogFragment {
           val.put(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK, repeats);
           getContext().getContentResolver().update(uri, val, null, null);
           edit_repeat.setText("" + repeats);
-          // TODO: updated triggers
+          final Calendar next = TimeUtil.nextOccurrence(
+              AlarmSettings.getTime(getContext(), id), repeats,
+              AlarmSettings.getNextSnooze(getContext(), id));
+          if (alarm.enabled) {
+            AlarmNotificationService.removeAlarmTrigger(
+                getContext(), id);
+            AlarmNotificationService.scheduleAlarmTrigger(
+                getContext(), id, next.getTimeInMillis());
+          }
         }
       };
     edit_repeat.setText("" + alarm.repeat);
@@ -396,6 +408,7 @@ public class AlarmOptions extends DialogFragment {
     public final boolean enabled;
     public final String label;
     public final int repeat;
+    public final long next_snooze;
 
     static public AlarmSettings get(Context context, long id) {
       AlarmSettings s = null;
@@ -405,7 +418,8 @@ public class AlarmOptions extends DialogFragment {
             AlarmClockProvider.AlarmEntry.TIME,
             AlarmClockProvider.AlarmEntry.ENABLED,
             AlarmClockProvider.AlarmEntry.NAME,
-            AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
+            AlarmClockProvider.AlarmEntry.DAY_OF_WEEK,
+            AlarmClockProvider.AlarmEntry.NEXT_SNOOZE },
           null, null, null);
       if (c.moveToFirst())
         s = new AlarmSettings(c);
@@ -438,11 +452,24 @@ public class AlarmOptions extends DialogFragment {
       return repeat;
     }
 
+    public static long getNextSnooze(Context context, long id) {
+      Cursor c = context.getContentResolver().query(
+          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
+          new String[] { AlarmClockProvider.AlarmEntry.NEXT_SNOOZE },
+          null, null, null);
+      c.moveToFirst();
+      long next_snooze = c.getInt(c.getColumnIndex(
+          AlarmClockProvider.AlarmEntry.NEXT_SNOOZE));
+      c.close();
+      return next_snooze;
+    }
+
     private AlarmSettings() {
       time = 0;
       enabled = false;
       label = "Not found";
       repeat = 0;
+      next_snooze = 0;
     }
 
     private AlarmSettings(Cursor c) {
@@ -452,6 +479,8 @@ public class AlarmOptions extends DialogFragment {
       label = c.getString(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NAME));
       repeat = c.getInt(c.getColumnIndex(
           AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
+      next_snooze = c.getLong(c.getColumnIndex(
+          AlarmClockProvider.AlarmEntry.NEXT_SNOOZE));
     }
   }
 
