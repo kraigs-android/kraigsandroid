@@ -381,6 +381,7 @@ public class AlarmNotificationService extends Service {
       } catch (IOException e) {
         // TODO handle failure to default sound.
         // TODO handle failure failure fallback to ringtone player.
+        // TODO make sure fall-back works when sd read permission is disabled.
       }
       player.start();
 

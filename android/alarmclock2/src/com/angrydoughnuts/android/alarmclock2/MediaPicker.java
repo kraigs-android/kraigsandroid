@@ -15,6 +15,7 @@
 
 package com.angrydoughnuts.android.alarmclock2;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -24,9 +25,11 @@ import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Loader;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Process;
 import android.provider.MediaStore.Audio;
 import android.provider.MediaStore.MediaColumns;
 import android.view.LayoutInflater;
@@ -60,13 +63,18 @@ public class MediaPicker extends DialogFragment {
                         Context.LAYOUT_INFLATER_SERVICE)).inflate(
                             R.layout.media_picker, null);
     t.setup();
-    t.addTab(t.newTabSpec("external").setIndicator("external").setContent(
-                 new TabHost.TabContentFactory() {
-                   @Override
+    if (getContext().checkPermission(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Process.myPid(), Process.myUid()) ==
+        PackageManager.PERMISSION_GRANTED) {
+      t.addTab(t.newTabSpec("external").setIndicator("external").setContent(
+                   new TabHost.TabContentFactory() {
+                     @Override
                      public View createTabContent(String tag) {
-                     return buildMediaList(Audio.Media.EXTERNAL_CONTENT_URI);
-                   }
-                 }));
+                       return buildMediaList(Audio.Media.EXTERNAL_CONTENT_URI);
+                     }
+                   }));
+    }
     t.addTab(t.newTabSpec("internal").setIndicator("internal").setContent(
                  new TabHost.TabContentFactory() {
                    @Override

@@ -15,6 +15,7 @@
 
 package com.angrydoughnuts.android.alarmclock2;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -22,9 +23,11 @@ import android.content.Context;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Process;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -46,6 +49,13 @@ public class AlarmOptions extends DialogFragment {
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     super.onCreateDialog(savedInstanceState);
+
+    {
+      String p = Manifest.permission.READ_EXTERNAL_STORAGE;
+      if (getContext().checkPermission(p, Process.myPid(), Process.myUid()) !=
+          PackageManager.PERMISSION_GRANTED)
+        requestPermissions(new String[] { p }, 0);
+    }
 
     final long id = getArguments().getLong(
         AlarmNotificationService.ALARM_ID, -1);
