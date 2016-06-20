@@ -67,11 +67,24 @@ public class MediaPicker extends DialogFragment {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Process.myPid(), Process.myUid()) ==
         PackageManager.PERMISSION_GRANTED) {
+      t.addTab(t.newTabSpec("artists").setIndicator("artists").setContent(
+                   new TabHost.TabContentFactory() {
+                     @Override
+                     public View createTabContent(String tag) {
+                       return buildMediaList(
+                           Audio.Artists.EXTERNAL_CONTENT_URI,
+                           Audio.ArtistColumns.ARTIST,
+                           Audio.Artists.DEFAULT_SORT_ORDER);
+                     }
+                   }));
       t.addTab(t.newTabSpec("external").setIndicator("external").setContent(
                    new TabHost.TabContentFactory() {
                      @Override
                      public View createTabContent(String tag) {
-                       return buildMediaList(Audio.Media.EXTERNAL_CONTENT_URI);
+                       return buildMediaList(
+                           Audio.Media.EXTERNAL_CONTENT_URI,
+                           MediaColumns.TITLE,
+                           Audio.Media.DEFAULT_SORT_ORDER);
                      }
                    }));
     }
@@ -79,7 +92,10 @@ public class MediaPicker extends DialogFragment {
                  new TabHost.TabContentFactory() {
                    @Override
                      public View createTabContent(String tag) {
-                     return buildMediaList(Audio.Media.INTERNAL_CONTENT_URI);
+                     return buildMediaList(
+                         Audio.Media.INTERNAL_CONTENT_URI,
+                         MediaColumns.TITLE,
+                         Audio.Media.DEFAULT_SORT_ORDER);
                    }
                  }));
 
@@ -103,13 +119,14 @@ public class MediaPicker extends DialogFragment {
     if (title != null) outState.putString("title", title);
   }
 
-  private View buildMediaList(final Uri query) {
+  private View buildMediaList(final Uri query, final String display,
+                              final String sort) {
     final ResourceCursorAdapter adapter = new ResourceCursorAdapter(
         getContext(), R.layout.media_picker_item, null, 0) {
         @Override
         public void bindView(View v, Context context, Cursor c) {
           TextView t = (TextView)v;
-          t.setText(c.getString(c.getColumnIndex(MediaColumns.TITLE)));
+          t.setText(c.getString(c.getColumnIndex(display)));
         }
       };
 
@@ -120,6 +137,7 @@ public class MediaPicker extends DialogFragment {
         @Override
         public void onItemClick(AdapterView<?> parent, View v, int x, long id) {
           TextView t = (TextView)v;
+          // TODO: this assumes leaf-level media.  Handle artists, albums, etc
           uri = ContentUris.withAppendedId(query, id);
           title = t.getText().toString();
         }
@@ -130,7 +148,7 @@ public class MediaPicker extends DialogFragment {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
               return new CursorLoader(
-                  getContext(), query, null, null, null, null);
+                  getContext(), query, null, null, null, sort);
             }
             @Override
             public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
