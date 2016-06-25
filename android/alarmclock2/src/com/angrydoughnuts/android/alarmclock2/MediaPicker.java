@@ -32,13 +32,16 @@ import android.os.Bundle;
 import android.os.Process;
 import android.provider.MediaStore.Audio;
 import android.provider.MediaStore.MediaColumns;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
+import android.widget.ViewAnimator;
 
 public class MediaPicker extends DialogFragment {
   public static interface Listener {
@@ -71,10 +74,13 @@ public class MediaPicker extends DialogFragment {
                    new TabHost.TabContentFactory() {
                      @Override
                      public View createTabContent(String tag) {
+                       return buildFlipper();
+                       /*
                        return buildMediaList(
                            Audio.Artists.EXTERNAL_CONTENT_URI,
                            Audio.ArtistColumns.ARTIST,
                            Audio.Artists.DEFAULT_SORT_ORDER);
+                       */
                      }
                    }));
       t.addTab(t.newTabSpec("external").setIndicator("external").setContent(
@@ -84,7 +90,18 @@ public class MediaPicker extends DialogFragment {
                        return buildMediaList(
                            Audio.Media.EXTERNAL_CONTENT_URI,
                            MediaColumns.TITLE,
-                           Audio.Media.DEFAULT_SORT_ORDER);
+                           null,
+                           Audio.Media.DEFAULT_SORT_ORDER,
+                           null,
+                           new AdapterView.OnItemClickListener() {
+                             @Override
+                             public void onItemClick(AdapterView<?> parent, View v, int x, long id) {
+                               TextView t = (TextView)v;
+                               // TODO: this assumes leaf-level media.  Handle artists, albums, etc
+                               uri = ContentUris.withAppendedId(Audio.Media.EXTERNAL_CONTENT_URI, id);
+                               title = t.getText().toString();
+                             }
+                           });
                      }
                    }));
     }
@@ -95,7 +112,18 @@ public class MediaPicker extends DialogFragment {
                      return buildMediaList(
                          Audio.Media.INTERNAL_CONTENT_URI,
                          MediaColumns.TITLE,
-                         Audio.Media.DEFAULT_SORT_ORDER);
+                         null,
+                         Audio.Media.DEFAULT_SORT_ORDER,
+                         null,
+                         new AdapterView.OnItemClickListener() {
+                           @Override
+                           public void onItemClick(AdapterView<?> parent, View v, int x, long id) {
+                             TextView t = (TextView)v;
+                             // TODO: this assumes leaf-level media.  Handle artists, albums, etc
+                             uri = ContentUris.withAppendedId(Audio.Media.INTERNAL_CONTENT_URI, id);
+                             title = t.getText().toString();
+                           }
+                         });
                    }
                  }));
 
@@ -119,8 +147,64 @@ public class MediaPicker extends DialogFragment {
     if (title != null) outState.putString("title", title);
   }
 
+  private View buildFlipper() {
+    final ViewAnimator flip = new ViewAnimator(getContext());
+    flip.setInAnimation(getContext(), R.anim.slide_in_right);
+    flip.setOutAnimation(getContext(), R.anim.slide_out_left);
+    flip.addView(buildMediaList(
+                  Audio.Artists.EXTERNAL_CONTENT_URI,
+                  Audio.ArtistColumns.ARTIST,
+                  null,
+                  Audio.Artists.DEFAULT_SORT_ORDER,
+                  null,
+                  new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View v, int x, long id) {
+                      flip.addView(buildMediaList(
+                                       Audio.Artists.Albums.getContentUri(Audio.Artists.EXTERNAL_CONTENT_URI.getPathSegments().get(0) /* "external" */, id),
+                                       Audio.Albums.ALBUM,
+                                       null,
+                                       Audio.Albums.DEFAULT_SORT_ORDER,
+                                       flip,
+                                       new AdapterView.OnItemClickListener() {
+                                         @Override
+                                         public void onItemClick(AdapterView<?> parent, View v, int x, long id) {
+                                           flip.addView(buildMediaList(
+                                                            Audio.Media.EXTERNAL_CONTENT_URI,
+                                                            MediaColumns.TITLE,
+                                                            Audio.AudioColumns.ALBUM_ID + " == " + id,
+                                                            Audio.AudioColumns.TRACK,
+                                                            flip,
+                                                            new AdapterView.OnItemClickListener() {
+                                                              @Override
+                                                              public void onItemClick(AdapterView<?> parent, View v, int x, long id) {
+                                                                TextView t = (TextView)v;
+                                                                uri = ContentUris.withAppendedId(Audio.Media.EXTERNAL_CONTENT_URI, id);
+                                                                title = t.getText().toString();
+}
+                                                            }), -1, new ViewGroup.LayoutParams(
+                                                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                                                ViewGroup.LayoutParams.MATCH_PARENT));
+                                           flip.showNext();
+                                         }
+                                       })
+                                   , -1,
+                                new ViewGroup.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT));
+                      flip.showNext();
+                    }
+                  }) , -1,
+              new ViewGroup.LayoutParams(
+                  ViewGroup.LayoutParams.MATCH_PARENT,
+                  ViewGroup.LayoutParams.MATCH_PARENT));
+    return flip;
+  }
+
   private View buildMediaList(final Uri query, final String display,
-                              final String sort) {
+                              final String where, final String sort,
+                              final ViewAnimator flip,
+                              AdapterView.OnItemClickListener click) {
     final ResourceCursorAdapter adapter = new ResourceCursorAdapter(
         getContext(), R.layout.media_picker_item, null, 0) {
         @Override
@@ -133,22 +217,32 @@ public class MediaPicker extends DialogFragment {
     final ListView list = new ListView(getContext());
     list.setId(View.generateViewId());
     list.setAdapter(adapter);
-    list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View v, int x, long id) {
-          TextView t = (TextView)v;
-          // TODO: this assumes leaf-level media.  Handle artists, albums, etc
-          uri = ContentUris.withAppendedId(query, id);
-          title = t.getText().toString();
-        }
-      });
+    list.setOnItemClickListener(click);
+    if (flip != null) {
+      list.setOnKeyListener(new View.OnKeyListener() {
+          @Override
+          public boolean onKey(View v, int keyCode, KeyEvent event) {
+            if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
+              flip.setInAnimation(getContext(), R.anim.slide_in_left);
+              flip.setOutAnimation(getContext(), R.anim.slide_out_right);
+              flip.showPrevious();
+              flip.removeView(list);
+              flip.setInAnimation(getContext(), R.anim.slide_in_right);
+              flip.setOutAnimation(getContext(), R.anim.slide_out_left);
+              return true;
+            } else {
+              return false;
+            }
+          }
+        });
+    }
 
     final Loader<Cursor> loader = getLoaderManager().initLoader(
         list.getId(), null, new LoaderManager.LoaderCallbacks<Cursor>() {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
               return new CursorLoader(
-                  getContext(), query, null, null, null, sort);
+                  getContext(), query, null, where, null, sort);
             }
             @Override
             public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
