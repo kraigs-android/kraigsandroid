@@ -27,6 +27,7 @@ import android.content.DialogInterface;
 import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Process;
@@ -43,6 +44,8 @@ import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.ViewAnimator;
 
+import java.io.IOException;
+
 public class MediaPicker extends DialogFragment {
   public static interface Listener {
     abstract void onMediaPick(Uri uri, String title);
@@ -51,6 +54,7 @@ public class MediaPicker extends DialogFragment {
   private Uri uri = null;
   private String title = null;
   private Listener listener = null;
+  private MediaPlayer player = null;
   public void setListener(Listener l) { listener = l; }
 
   @Override
@@ -94,6 +98,10 @@ public class MediaPicker extends DialogFragment {
               }
             }));
 
+    // TODO: is this check necessary?
+    if (player == null)
+      player = new MediaPlayer();
+
     return new AlertDialog.Builder(getContext())
       .setTitle("Media picker")
       .setView(t)
@@ -114,6 +122,14 @@ public class MediaPicker extends DialogFragment {
     if (title != null) outState.putString("title", title);
   }
 
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+    if (player.isPlaying())
+      player.stop();
+    player.release();
+    player = null;
+  }
 
   private AdapterView.OnItemClickListener newListener(final Uri base) {
     return new AdapterView.OnItemClickListener() {
@@ -122,6 +138,17 @@ public class MediaPicker extends DialogFragment {
         TextView t = (TextView)v;
         uri = ContentUris.withAppendedId(base, id);
         title = t.getText().toString();
+        TextView selected = (TextView)getDialog().findViewById(R.id.selected);;
+        selected.setText("Selected: " + title);
+
+        player.reset();
+        try {
+          player.setDataSource(getContext(), uri);
+          player.prepare();
+        } catch (IOException e) {
+          // TODO handle
+        }
+        player.start();
       }
     };
   }
