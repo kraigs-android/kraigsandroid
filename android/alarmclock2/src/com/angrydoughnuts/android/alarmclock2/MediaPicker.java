@@ -127,6 +127,7 @@ public class MediaPicker extends DialogFragment {
     super.onDestroy();
     if (player.isPlaying())
       player.stop();
+    player.reset();
     player.release();
     player = null;
   }

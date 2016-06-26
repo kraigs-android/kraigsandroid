@@ -404,6 +404,7 @@ public class AlarmNotificationService extends Service {
       fade = null;
 
       player.stop();
+      player.reset();
       player.release();
       player = null;
     }
