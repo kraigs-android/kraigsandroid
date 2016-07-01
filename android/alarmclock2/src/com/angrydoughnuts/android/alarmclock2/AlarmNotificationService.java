@@ -354,7 +354,7 @@ public class AlarmNotificationService extends Service {
               int inc = (s.volume_ending - s.volume_starting) / s.volume_time;
               int next = Math.min(s.volume_ending, m.arg1 + inc);
               float norm = (float)((Math.pow(5, next/100.0)-1)/4);
-              Log.i(TAG, "Incriminating volume to " + norm);
+              Log.i(TAG, "Incrementing volume to " + norm);
               player.setVolume(norm, norm);
               if (next < s.volume_ending) {
                 Message m2 = new Message();
