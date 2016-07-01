@@ -54,10 +54,10 @@ public class AlarmNotificationActivity extends Activity {
           }
         });
 
-    ((Button)findViewById(R.id.dismiss_alarm)).setOnClickListener(
-        new View.OnClickListener() {
+    ((Slider)findViewById(R.id.dismiss_alarm)).setListener(
+        new Slider.Listener() {
           @Override
-          public void onClick(View view) {
+          public void onComplete() {
             AlarmNotificationService.dismissAllAlarms(getApplicationContext());
             finish();
           }

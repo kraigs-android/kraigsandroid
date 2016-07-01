@@ -14,8 +14,7 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
 
-  <Button
-      android:text="Dismiss"
+  <com.angrydoughnuts.android.alarmclock2.Slider
       android:id="@+id/dismiss_alarm"
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
