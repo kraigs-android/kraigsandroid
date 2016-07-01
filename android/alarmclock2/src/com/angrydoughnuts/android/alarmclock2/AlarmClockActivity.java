@@ -29,6 +29,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.ServiceConnection;
+import android.content.pm.ApplicationInfo;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
@@ -43,6 +44,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
@@ -177,19 +179,23 @@ public class AlarmClockActivity extends Activity {
         }
       };
 
-    ((Button)findViewById(R.id.test_alarm)).setOnClickListener(
-        new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-            final Calendar c = Calendar.getInstance();
-            final int secondsPastMidnight = 5 +
-              c.get(Calendar.HOUR_OF_DAY) * 3600 +
-              c.get(Calendar.MINUTE) * 60 +
-              c.get(Calendar.SECOND);
-            AlarmNotificationService.newAlarm(
-                getApplicationContext(), secondsPastMidnight);
-          }
-        });
+    if ((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+      findViewById(R.id.test_alarm).setOnClickListener(
+          new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+              final Calendar c = Calendar.getInstance();
+              final int secondsPastMidnight = 5 +
+                c.get(Calendar.HOUR_OF_DAY) * 3600 +
+                c.get(Calendar.MINUTE) * 60 +
+                c.get(Calendar.SECOND);
+              AlarmNotificationService.newAlarm(
+                  getApplicationContext(), secondsPastMidnight);
+            }
+          });
+    } else {
+      findViewById(R.id.test_alarm).setVisibility(View.GONE);
+    }
 
     // Listener can not be serialized in time picker, so it must be explicitly
     // set each time.
@@ -199,7 +205,7 @@ public class AlarmClockActivity extends Activity {
       if (t != null)
         t.setListener(new_alarm);
     }
-    ((Button)findViewById(R.id.new_alarm)).setOnClickListener(
+    findViewById(R.id.new_alarm).setOnClickListener(
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {

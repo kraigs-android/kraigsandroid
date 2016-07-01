@@ -8,16 +8,33 @@
       android:layout_weight="1"
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
-
-  <Button
-      android:text="Test Alarm"
-      android:id="@+id/test_alarm"
+  <LinearLayout
+      android:orientation="horizontal"
+      android:gravity="center"
+      android:layout_marginBottom="10dp"
       android:layout_width="fill_parent"
-      android:layout_height="wrap_content" />
-
-  <Button
-      android:text="New Alarm..."
-      android:id="@+id/new_alarm"
-      android:layout_width="fill_parent"
-      android:layout_height="wrap_content" />
+      android:layout_height="wrap_content">
+    <ImageView
+        android:id="@+id/test_alarm"
+        android:src="@drawable/ic_launcher"
+        android:background="@drawable/circle_btn"
+        android:clickable="true"
+        android:gravity="center"
+        android:padding="6dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <ImageView
+        android:id="@+id/new_alarm"
+        android:src="@drawable/ic_launcher"
+        android:background="@drawable/circle_btn"
+        android:clickable="true"
+        android:gravity="center"
+        android:padding="6dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+  </LinearLayout>
 </LinearLayout>
