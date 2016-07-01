@@ -34,6 +34,7 @@ import android.os.IBinder;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
+import android.provider.Settings;
 import android.text.format.DateFormat;
 import android.util.ArrayMap;
 import android.util.Log;
@@ -389,15 +390,24 @@ public class AlarmNotificationService extends Service {
       final float start = s.volume_starting/(float)100.0;
       player.setVolume(start, start);
       Log.i(TAG, "Starting volume: " + start);
+
       try {
         player.setDataSource(c, s.tone_url);
-        player.prepare();
       } catch (IOException e) {
-        // TODO handle failure to default sound.
-        // TODO handle failure failure fallback to ringtone player.
-        // TODO make sure fall-back works when sd read permission is disabled.
+        Log.e(TAG, "Failed loading tone: " + e.toString());
+        try {
+          player.setDataSource(c, Settings.System.DEFAULT_NOTIFICATION_URI);
+        } catch (IOException e2) {
+          Log.e(TAG, "Failed loading backup tone: " + e2.toString());
+        }
       }
-      player.start();
+
+      try {
+        player.prepare();
+        player.start();
+      } catch (IOException | IllegalStateException e) {
+        Log.e(TAG, "prepare failed: " + e.toString());
+      }
 
       Message m = new Message();
       m.what = TRIGGER_INC;
@@ -418,7 +428,8 @@ public class AlarmNotificationService extends Service {
       handler.removeMessages(ActiveAlarms.TRIGGER_INC);
       handler = null;
 
-      player.stop();
+      if (player.isPlaying())
+        player.stop();
       player.reset();
       player.release();
       player = null;
