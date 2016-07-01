@@ -16,6 +16,10 @@
 package com.angrydoughnuts.android.alarmclock2;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,6 +28,8 @@ import android.view.WindowManager;
 import android.widget.Button;
 
 public class AlarmNotificationActivity extends Activity {
+  public static final String TIMEOUT = "timeout";
+
   private static final String TAG =
     AlarmNotificationActivity.class.getSimpleName();
 
@@ -67,9 +73,24 @@ public class AlarmNotificationActivity extends Activity {
   @Override
   protected void onNewIntent(Intent i) {
     super.onNewIntent(i);
-
     final long alarmid = i.getLongExtra(AlarmNotificationService.ALARM_ID, -1);
-    if (alarmid != -1) {
+
+    if (i.hasExtra(TIMEOUT)) {
+      new DialogFragment() {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+          return new AlertDialog.Builder(getContext())
+            .setMessage("timeout")
+            .setPositiveButton("OK", null)
+            .create();
+        }
+        @Override
+        public void onDismiss(DialogInterface d) {
+          super.onDismiss(d);
+          finish();
+        }
+      }.show(getFragmentManager(), "timeout");
+    } else if (alarmid != -1) {
       Log.i(TAG, "Another alarm notification intent " + alarmid);
     }
   }

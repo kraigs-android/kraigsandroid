@@ -334,9 +334,10 @@ public class AlarmNotificationService extends Service {
     private PowerManager.WakeLock wakelock = null;
     private HashSet<Long> alarmids = new HashSet<Long>();
     private MediaPlayer player = null;
-    private Handler fade = null;
+    private Handler handler = null;
+    private Runnable timeout = null;
 
-    public ActiveAlarms(Context c, PowerManager.WakeLock w,
+    public ActiveAlarms(final Context c, PowerManager.WakeLock w,
                         final AlarmOptions.OptionalSettings s) {
       final AudioManager a = (AudioManager)c.getSystemService(
           Context.AUDIO_SERVICE);
@@ -346,7 +347,7 @@ public class AlarmNotificationService extends Service {
 
       wakelock = w;
       player = new MediaPlayer();
-      fade = new Handler() {
+      handler = new Handler() {
           @Override
           public void handleMessage(Message m) {
             switch (m.what) {
@@ -369,6 +370,19 @@ public class AlarmNotificationService extends Service {
             }
           }
         };
+      timeout = new Runnable() {
+          @Override
+          public void run() {
+            Log.w(TAG, "Alarm timeout");
+            AlarmNotificationService.dismissAllAlarms(c);
+            Intent timeout = new Intent(c, AlarmNotificationActivity.class)
+              .putExtra(AlarmNotificationActivity.TIMEOUT, true)
+              .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            c.startActivity(timeout);
+
+          }
+        };
+      handler.postDelayed(timeout, 10 * 60 * 1000);
 
       player.setAudioStreamType(AudioManager.STREAM_ALARM);
       player.setLooping(true);
@@ -388,7 +402,7 @@ public class AlarmNotificationService extends Service {
       Message m = new Message();
       m.what = TRIGGER_INC;
       m.arg1 = s.volume_starting;
-      fade.sendMessage(m);
+      handler.sendMessage(m);
     }
 
     public void release() {
@@ -399,9 +413,10 @@ public class AlarmNotificationService extends Service {
       wakelock.release();
       wakelock = null;
 
-      fade.sendEmptyMessage(ActiveAlarms.RESET_VOLUME);
-      fade.removeMessages(ActiveAlarms.TRIGGER_INC);
-      fade = null;
+      handler.removeCallbacks(timeout);
+      handler.sendEmptyMessage(ActiveAlarms.RESET_VOLUME);
+      handler.removeMessages(ActiveAlarms.TRIGGER_INC);
+      handler = null;
 
       player.stop();
       player.reset();
