@@ -77,6 +77,8 @@ public class AlarmClockActivity extends Activity {
               c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
           final int enabled = c.getInt(
               c.getColumnIndex(AlarmClockProvider.AlarmEntry.ENABLED));
+          final String label = c.getString(
+              c.getColumnIndex(AlarmClockProvider.AlarmEntry.NAME));
           final int repeats = c.getInt(
               c.getColumnIndex(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
           final long nextSnooze = c.getLong(
@@ -84,10 +86,13 @@ public class AlarmClockActivity extends Activity {
           final Calendar next =
             TimeUtil.nextOccurrence(secondsPastMidnight, repeats, nextSnooze);
 
-          ((TextView)v.findViewById(R.id.debug_text))
+          ((TextView)v.findViewById(R.id.time))
             .setText(TimeUtil.formatLong(getApplicationContext(), next));
           ((TextView)v.findViewById(R.id.countdown))
             .setText(TimeUtil.until(next));
+          ((TextView)v.findViewById(R.id.label)).setText(label);
+          ((TextView)v.findViewById(R.id.repeats))
+            .setText(TimeUtil.repeatString(repeats));
           ((CheckBox)v.findViewById(R.id.enabled))
             .setChecked(enabled != 0);
         }
@@ -150,6 +155,7 @@ public class AlarmClockActivity extends Activity {
                     AlarmClockProvider.AlarmEntry._ID,
                     AlarmClockProvider.AlarmEntry.TIME,
                     AlarmClockProvider.AlarmEntry.ENABLED,
+                    AlarmClockProvider.AlarmEntry.NAME,
                     AlarmClockProvider.AlarmEntry.DAY_OF_WEEK,
                     AlarmClockProvider.AlarmEntry.NEXT_SNOOZE },
                   null, null, AlarmClockProvider.AlarmEntry.TIME + " ASC");

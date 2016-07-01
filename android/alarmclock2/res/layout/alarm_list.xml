@@ -5,6 +5,7 @@
               android:layout_height="fill_parent">
   <ListView
       android:id="@+id/alarm_list"
+      android:layout_weight="1"
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
 

@@ -79,6 +79,37 @@ public class TimeUtil {
     return true;
   }
 
+  private static final int EVERYDAY = 1 | 2 | 4 | 8 | 16 | 32 | 64;
+  private static final int WEEKDAYS = 2 | 4 | 8 | 16 | 32;
+  private static final int WEEKENDS = 1 | 64;
+  public static String repeatString(int repeats) {
+    if (repeats <= 0)
+      return "";
+    else if (repeats == EVERYDAY)
+      return "Everyday";
+    else if (repeats == WEEKDAYS)
+      return "Weekdays";
+    else if (repeats == WEEKENDS)
+      return "Weekends";
+
+    String s = "";
+    if ((1 & repeats) != 0)
+      s += "Su ";
+    if ((2 & repeats) != 0)
+      s += "M ";
+    if ((4 & repeats) != 0)
+      s += "Tu ";
+    if ((8 & repeats) != 0)
+      s += "W ";
+    if ((16 & repeats) != 0)
+      s += "Th ";
+    if ((32 & repeats) != 0)
+      s += "F ";
+    if ((64 & repeats) != 0)
+      s += "Sa ";
+    return s;
+  }
+
   public static Calendar nextMinute() {
     return nextMinute(Calendar.getInstance());
   }
