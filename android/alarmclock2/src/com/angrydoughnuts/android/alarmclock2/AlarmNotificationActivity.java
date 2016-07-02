@@ -124,6 +124,14 @@ public class AlarmNotificationActivity extends Activity {
       }.show(getFragmentManager(), "timeout");
     } else if (alarmid != -1) {
       Log.i(TAG, "Another alarm notification intent " + alarmid);
+      TextView t = (TextView)findViewById(R.id.alarm_label);
+      String label = AlarmOptions.AlarmSettings.getLabel(this, alarmid);
+      if (!label.isEmpty()) {
+        if (t.getText().length() == 0)
+          t.setText(label);
+        else
+          t.setText(t.getText() + ", " + label);
+      }
     }
   }
 
