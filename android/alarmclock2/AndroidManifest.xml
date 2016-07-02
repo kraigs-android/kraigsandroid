@@ -36,6 +36,7 @@
         android:exported="false" />
     <activity
         android:name=".AlarmNotificationActivity"
+        android:screenOrientation="portrait"
         android:launchMode="singleInstance"
         android:taskAffinity=""
         android:excludeFromRecents="true" />
