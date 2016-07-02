@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class AlarmNotificationActivity extends Activity {
   public static final String TIMEOUT = "timeout";
@@ -33,9 +34,11 @@ public class AlarmNotificationActivity extends Activity {
   private static final String TAG =
     AlarmNotificationActivity.class.getSimpleName();
 
+  private int snooze;
+
   @Override
-  public void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
+  public void onCreate(Bundle state) {
+    super.onCreate(state);
     setContentView(R.layout.notification);
     // Make sure this window always shows over the lock screen.
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
@@ -46,16 +49,42 @@ public class AlarmNotificationActivity extends Activity {
       Log.i(TAG, "Alarm notification intent " + alarmid);
     }
 
-    ((Button)findViewById(R.id.snooze_alarm)).setOnClickListener(
+    if (state != null && state.containsKey("snooze")) {
+      snooze = state.getInt("snooze");
+    } else {
+      snooze = AlarmOptions.OptionalSettings.get(this, alarmid).snooze;
+    }
+
+    final TextView snooze_text = (TextView)findViewById(R.id.snooze_text);
+    snooze_text.setText(snooze + " minutes");
+
+    findViewById(R.id.snooze_minus_five).setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            snooze -= 5;
+            if (snooze <= 0) snooze = 5;
+            snooze_text.setText(snooze + " minutes");
+          }
+        });
+
+    findViewById(R.id.snooze_plus_five).setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
+            snooze += 5;
+            if (snooze >= 60) snooze = 60;
+            snooze_text.setText(snooze + " minutes");
+          }
+        });
+
+    findViewById(R.id.snooze_alarm).setOnClickListener(
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
             AlarmNotificationService.snoozeAllAlarms(
                 getApplicationContext(),
-                TimeUtil.nextMinute(
-                    AlarmOptions.OptionalSettings.get(
-                        getApplicationContext(), alarmid).snooze)
-                .getTimeInMillis());
+                TimeUtil.nextMinute(snooze).getTimeInMillis());
             finish();
           }
         });
@@ -93,5 +122,11 @@ public class AlarmNotificationActivity extends Activity {
     } else if (alarmid != -1) {
       Log.i(TAG, "Another alarm notification intent " + alarmid);
     }
+  }
+
+  @Override
+  public void onSaveInstanceState(Bundle outState) {
+    super.onSaveInstanceState(outState);
+    outState.putInt("snooze", snooze);
   }
 }
