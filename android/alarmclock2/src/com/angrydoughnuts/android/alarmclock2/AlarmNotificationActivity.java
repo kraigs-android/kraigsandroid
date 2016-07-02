@@ -58,6 +58,9 @@ public class AlarmNotificationActivity extends Activity {
     final TextView snooze_text = (TextView)findViewById(R.id.snooze_text);
     snooze_text.setText(snooze + " minutes");
 
+    ((TextView)findViewById(R.id.alarm_label))
+      .setText(AlarmOptions.AlarmSettings.getLabel(this, alarmid));
+
     findViewById(R.id.snooze_minus_five).setOnClickListener(
         new View.OnClickListener() {
           @Override

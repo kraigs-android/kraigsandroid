@@ -437,7 +437,7 @@ public class AlarmOptions extends DialogFragment {
     }
   }
 
-  static private class AlarmSettings {
+  static public class AlarmSettings {
     public final int time;
     public final boolean enabled;
     public final String label;
@@ -472,6 +472,18 @@ public class AlarmOptions extends DialogFragment {
       int time = c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
       c.close();
       return time;
+    }
+
+    public static String getLabel(Context context, long id) {
+      Cursor c = context.getContentResolver().query(
+          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
+          new String[] { AlarmClockProvider.AlarmEntry.NAME },
+          null, null, null);
+      c.moveToFirst();
+      String label = c.getString(c.getColumnIndex(
+          AlarmClockProvider.AlarmEntry.NAME));
+      c.close();
+      return label;
     }
 
     public static int getRepeat(Context context, long id) {
