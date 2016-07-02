@@ -3,15 +3,66 @@
               android:orientation="vertical"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent">
-  <TextView
+  <LinearLayout
+      android:orientation="horizontal"
+      android:layout_weight="1"
       android:layout_width="fill_parent"
-      android:layout_height="wrap_content"
-      android:text="Alarm notification"/>
+      android:layout_height="wrap_content">
+    <Button
+        style="@android:style/TextAppearance.Large"
+        android:text="-5"
+        android:id="@+id/snooze_minus_five"
+        android:layout_weight="1"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent" />
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent">
+      <TextView
+          style="@android:style/TextAppearance.Large"
+          android:text="SNOOZE"
+          android:layout_gravity="center"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content" />
+      <TextView
+          style="@android:style/TextAppearance.Large"
+          android:text="xxx Minutes"
+          android:layout_gravity="center"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content" />
+    </LinearLayout>
+    <Button
+        style="@android:style/TextAppearance.Large"
+        android:text="+5"
+        android:id="@+id/snooze_plus_five"
+        android:layout_weight="1"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent" />
+  </LinearLayout>
+
+  <TextClock
+      android:textSize="84sp"
+      android:gravity="center"
+      android:singleLine="true"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
 
   <Button
+      style="@android:style/TextAppearance.Large"
       android:text="Snooze"
       android:id="@+id/snooze_alarm"
+      android:layout_weight="1"
       android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
+
+  <TextView
+      style="@android:style/TextAppearance.Large"
+      android:text="LABEL"
+      android:layout_weight="1"
+      android:layout_width="wrap_content"
       android:layout_height="wrap_content" />
 
   <com.angrydoughnuts.android.alarmclock2.Slider
