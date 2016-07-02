@@ -9,9 +9,9 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content">
     <Button
-        style="@android:style/TextAppearance.Large"
-        android:text="-5"
         android:id="@+id/snooze_minus_five"
+        android:text="-5"
+        android:textSize="36sp"
         android:layout_weight="1"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent" />
@@ -35,9 +35,9 @@
           android:layout_height="wrap_content" />
     </LinearLayout>
     <Button
-        style="@android:style/TextAppearance.Large"
-        android:text="+5"
         android:id="@+id/snooze_plus_five"
+        android:text="+5"
+        android:textSize="36sp"
         android:layout_weight="1"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent" />
@@ -51,16 +51,16 @@
       android:layout_height="wrap_content" />
 
   <Button
-      style="@android:style/TextAppearance.Large"
-      android:text="Snooze"
       android:id="@+id/snooze_alarm"
+      android:text="Snooze"
+      android:textSize="36sp"
       android:layout_weight="1"
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
 
   <TextView
-      style="@android:style/TextAppearance.Large"
       android:id="@+id/alarm_label"
+      android:textSize="36sp"
       android:layout_weight="1"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content" />
