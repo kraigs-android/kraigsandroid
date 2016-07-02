@@ -172,7 +172,7 @@ public class AlarmNotificationService extends Service {
       new Notification.Builder(this)
       .setContentTitle("Alarming...")
       .setContentText("Second line...")
-      .setSmallIcon(R.drawable.ic_alarm)
+      .setSmallIcon(R.drawable.ic_alarm_on)
       .setContentIntent(PendingIntent.getActivity(this, 0, notify, 0))
       .setCategory(Notification.CATEGORY_ALARM)
       .setPriority(Notification.PRIORITY_MAX)
