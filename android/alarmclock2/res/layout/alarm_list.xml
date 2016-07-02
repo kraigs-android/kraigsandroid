@@ -14,21 +14,19 @@
       android:layout_marginBottom="10dp"
       android:layout_width="fill_parent"
       android:layout_height="wrap_content">
-    <ImageView
+    <ImageButton
         android:id="@+id/test_alarm"
         android:src="@drawable/ic_alarm"
         android:background="@drawable/circle_btn"
-        android:clickable="true"
         android:padding="12dp"
         android:layout_marginLeft="32dp"
         android:layout_marginRight="32dp"
         android:layout_height="64dp"
         android:layout_width="64dp" />
-    <ImageView
+    <ImageButton
         android:id="@+id/new_alarm"
         android:src="@drawable/ic_add"
         android:background="@drawable/circle_btn"
-        android:clickable="true"
         android:padding="12dp"
         android:layout_marginLeft="32dp"
         android:layout_marginRight="32dp"

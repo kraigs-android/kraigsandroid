@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android">
   <TextView
+      style="@android:style/TextAppearance.Large"
       android:id="@+id/slider_text"
-      android:text="TEXT"
+      android:text="DISMISS"
       android:alpha="0.5"
       android:background="@android:color/black"
       android:gravity="center"
@@ -11,7 +12,7 @@
   <ImageView
       android:id="@+id/slider_button"
       android:src="@drawable/ic_forward"
-      android:background="@drawable/slide"
+      android:background="@drawable/rect_btn"
       android:paddingLeft="12dp"
       android:paddingRight="12dp"
       android:paddingTop="6dp"

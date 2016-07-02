@@ -13,6 +13,7 @@
         android:text="-5"
         android:textSize="36sp"
         android:layout_weight="1"
+        android:background="@drawable/rect_btn"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent" />
     <LinearLayout
@@ -39,6 +40,7 @@
         android:text="+5"
         android:textSize="36sp"
         android:layout_weight="1"
+        android:background="@drawable/rect_btn"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent" />
   </LinearLayout>
@@ -55,6 +57,7 @@
       android:text="Snooze"
       android:textSize="36sp"
       android:layout_weight="1"
+      android:background="@drawable/rect_btn"
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
 
