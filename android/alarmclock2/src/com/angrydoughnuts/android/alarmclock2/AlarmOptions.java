@@ -19,6 +19,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -33,8 +34,11 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -59,286 +63,15 @@ public class AlarmOptions extends DialogFragment {
 
     final long id = getArguments().getLong(
         AlarmNotificationService.ALARM_ID, -1);
-    final Uri uri = ContentUris.withAppendedId(
-        AlarmClockProvider.ALARMS_URI, id);
-    final Uri settings = ContentUris.withAppendedId(
-        AlarmClockProvider.SETTINGS_URI, id);
+    final boolean defaults = id == AlarmNotificationService.DEFAULTS_ALARM_ID;
 
-    final AlarmSettings alarm = AlarmSettings.get(getContext(), id);
-    final OptionalSettings s = OptionalSettings.get(getContext(), id);
-
-    final View v =
-      ((LayoutInflater)getContext().getSystemService(
-          Context.LAYOUT_INFLATER_SERVICE)).inflate(
-              R.layout.alarm_options, null);
-
-    final Button edit_time = (Button)v.findViewById(R.id.edit_time);
-    final TimePicker.OnTimePickListener time_listener =
-      new TimePicker.OnTimePickListener() {
-        @Override
-        public void onTimePick(int t) {
-          ContentValues val = new ContentValues();
-          val.put(AlarmClockProvider.AlarmEntry.TIME, t);
-          getContext().getContentResolver().update(
-              uri, val, null, null);
-
-          final Calendar next = TimeUtil.nextOccurrence(
-              t, AlarmSettings.getRepeat(getContext(), id),
-              AlarmSettings.getNextSnooze(getContext(), id));
-          if (alarm.enabled) {
-            AlarmNotificationService.removeAlarmTrigger(
-                getContext(), id);
-            AlarmNotificationService.scheduleAlarmTrigger(
-                getContext(), id, next.getTimeInMillis());
-          }
-
-          edit_time.setText(TimeUtil.formatLong(getContext(), next));
-        }
-      };
-    edit_time.setText(
-        TimeUtil.formatLong(getContext(), TimeUtil.nextOccurrence(alarm.time, alarm.repeat)));
-    edit_time.setOnClickListener(
-        new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-            int time = AlarmSettings.getTime(getContext(), id);
-            int repeats = AlarmSettings.getRepeat(getContext(), id);
-            TimePicker time_pick = new TimePicker();
-            time_pick.setListener(time_listener);
-            Bundle b = new Bundle();
-            b.putInt(TimePicker.TIME, time);
-            b.putString(TimePicker.TITLE, "Edit time");
-            b.putInt(TimePicker.REPEATS, repeats);
-            time_pick.setArguments(b);
-            time_pick.show(getFragmentManager(), "edit_alarm");
-          }
-        });
-
-    final Button edit_repeat = (Button)v.findViewById(R.id.edit_repeat);
-    final RepeatEditor.OnPickListener repeat_listener =
-      new RepeatEditor.OnPickListener() {
-        @Override
-        public void onPick(int repeats) {
-          ContentValues val = new ContentValues();
-          val.put(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK, repeats);
-          getContext().getContentResolver().update(uri, val, null, null);
-          edit_repeat.setText("" + repeats);
-          final Calendar next = TimeUtil.nextOccurrence(
-              AlarmSettings.getTime(getContext(), id), repeats,
-              AlarmSettings.getNextSnooze(getContext(), id));
-          if (alarm.enabled) {
-            AlarmNotificationService.removeAlarmTrigger(
-                getContext(), id);
-            AlarmNotificationService.scheduleAlarmTrigger(
-                getContext(), id, next.getTimeInMillis());
-          }
-        }
-      };
-    edit_repeat.setText("" + alarm.repeat);
-    edit_repeat.setOnClickListener(
-        new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-            int repeat = AlarmSettings.getRepeat(getContext(), id);
-            RepeatEditor edit = new RepeatEditor();
-            Bundle b = new Bundle();
-            b.putInt(RepeatEditor.BITMASK, repeat);
-            edit.setArguments(b);
-            edit.setListener(repeat_listener);
-            edit.show(getFragmentManager(), "edit_repeat");
-          }
-        });
-
-    final EditText edit_label = (EditText)v.findViewById(R.id.edit_label);
-    edit_label.setText(alarm.label);
-    edit_label.setSelection(alarm.label.length());
-    edit_label.addTextChangedListener(new TextWatcher() {
-        @Override
-        public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
-        @Override
-        public void onTextChanged(CharSequence s, int st, int b, int c) {}
-        @Override
-        public void afterTextChanged(Editable s) {
-          final String name = s.toString();
-          ContentValues val = new ContentValues();
-          val.put(AlarmClockProvider.AlarmEntry.NAME, name);
-          getContext().getContentResolver().update(uri, val, null, null);
-        }
-        });
-
-    if (settings.equals(default_settings)) {
-      edit_time.setVisibility(View.GONE);
-      edit_repeat.setVisibility(View.GONE);
-      edit_label.setVisibility(View.GONE);
-    }
-
-    final Button edit_tone = (Button)v.findViewById(R.id.edit_tone);
-    final MediaPicker.Listener tone_listener = new MediaPicker.Listener() {
-        public void onMediaPick(Uri uri, String title) {
-          ContentValues val = new ContentValues();
-          val.put(AlarmClockProvider.SettingsEntry.TONE_URL, uri.toString());
-          val.put(AlarmClockProvider.SettingsEntry.TONE_NAME, title);
-            if (getContext().getContentResolver().update(
-                    settings, val, null, null) < 1)
-              getContext().getContentResolver().insert(settings, val);
-
-          edit_tone.setText(title + " " + uri.toString());
-        }
-      };
-    edit_tone.setText(s.tone_name + " " + s.tone_url.toString());
-    edit_tone.setOnClickListener(
-        new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-            MediaPicker media_pick = new MediaPicker();
-            media_pick.setListener(tone_listener);
-            media_pick.show(getFragmentManager(), "edit_tone");
-          }
-        });
-
-    final TextView snooze_status = (TextView)v.findViewById(R.id.snooze_status);
-    snooze_status.setText("Snooze: " + s.snooze);
-
-    final SeekBar edit_snooze = (SeekBar)v.findViewById(R.id.edit_snooze);
-    edit_snooze.setMax(11);
-    edit_snooze.setProgress((s.snooze - 5) / 5);
-    edit_snooze.setOnSeekBarChangeListener(
-        new SeekBar.OnSeekBarChangeListener() {
-          @Override
-          public void onProgressChanged(SeekBar s, int progress, boolean user) {
-            final int snooze = progress * 5 + 5;
-            snooze_status.setText("Snooze: " + snooze);
-          }
-          @Override
-          public void onStartTrackingTouch(SeekBar s) {}
-          @Override
-          public void onStopTrackingTouch(SeekBar s) {
-            final int snooze = s.getProgress() * 5 + 5;
-            ContentValues val = new ContentValues();
-            val.put(AlarmClockProvider.SettingsEntry.SNOOZE, snooze);
-            if (getContext().getContentResolver().update(
-                    settings, val, null, null) < 1)
-              getContext().getContentResolver().insert(settings, val);
-          }
-        });
-
-    final Button edit_vibrate = (Button)v.findViewById(R.id.edit_vibrate);
-    edit_vibrate.setText("vibrate " + s.vibrate);
-    edit_vibrate.setOnClickListener(
-        new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-            // TODO change this to a toggle button and use the toggle state
-            // rather than a db lookup.
-            boolean vibrate = !OptionalSettings.get(getContext(), id).vibrate;
-            ContentValues val = new ContentValues();
-            val.put(AlarmClockProvider.SettingsEntry.VIBRATE, vibrate);
-            if (getContext().getContentResolver().update(
-                    settings, val, null, null) < 1)
-              getContext().getContentResolver().insert(settings, val);
-            edit_vibrate.setText("vibrate " + vibrate);
-          }
-        });
-
-    final TextView volume_status = (TextView)v.findViewById(R.id.volume_status);
-    volume_status.setText("volume " + s.volume_starting + " to " + s.volume_ending + " over " + s.volume_time);
-
-    final SeekBar edit_volume_starting = (SeekBar)v.findViewById(
-        R.id.edit_volume_starting);
-    edit_volume_starting.setMax(20);
-    edit_volume_starting.setProgress(s.volume_starting / 5);
-
-    final SeekBar edit_volume_ending = (SeekBar)v.findViewById(
-        R.id.edit_volume_ending);
-    edit_volume_ending.setMax(20);
-    edit_volume_ending.setProgress(s.volume_ending / 5);
-
-    final SeekBar edit_volume_time = (SeekBar)v.findViewById(
-        R.id.edit_volume_time);
-    edit_volume_time.setMax(12);
-    edit_volume_time.setProgress(s.volume_time / 5);
-
-    edit_volume_starting.setOnSeekBarChangeListener(
-        new SeekBar.OnSeekBarChangeListener() {
-          @Override
-          public void onProgressChanged(SeekBar s, int progress, boolean user) {
-            final int volume_starting = edit_volume_starting.getProgress() * 5;
-            final int volume_ending = edit_volume_ending.getProgress() * 5;
-            final int volume_time = edit_volume_time.getProgress() * 5;
-            if (user && volume_ending < volume_starting) {
-              edit_volume_ending.setProgress(volume_starting / 5);
-              volume_status.setText("volume " + volume_starting + " to " + volume_starting + " over " + volume_time);
-            } else {
-            volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
-            }
-          }
-          @Override
-          public void onStartTrackingTouch(SeekBar s) {}
-          @Override
-          public void onStopTrackingTouch(SeekBar s) {
-            ContentValues val = new ContentValues();
-            val.put(AlarmClockProvider.SettingsEntry.VOLUME_STARTING,
-                    edit_volume_starting.getProgress() * 5);
-            val.put(AlarmClockProvider.SettingsEntry.VOLUME_ENDING,
-                    edit_volume_ending.getProgress() * 5);
-            if (getContext().getContentResolver().update(
-                    settings, val, null, null) < 1)
-              getContext().getContentResolver().insert(settings, val);
-          }
-        });
-
-    edit_volume_ending.setOnSeekBarChangeListener(
-        new SeekBar.OnSeekBarChangeListener() {
-          @Override
-          public void onProgressChanged(SeekBar s, int progress, boolean user) {
-            final int volume_starting = edit_volume_starting.getProgress() * 5;
-            final int volume_ending = edit_volume_ending.getProgress() * 5;
-            final int volume_time = edit_volume_time.getProgress() * 5;
-            if (user && volume_ending < volume_starting) {
-              edit_volume_starting.setProgress(volume_ending / 5);
-              volume_status.setText("volume " + volume_ending + " to " + volume_ending + " over " + volume_time);
-            } else {
-            volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
-            }
-
-          }
-          @Override
-          public void onStartTrackingTouch(SeekBar s) {}
-          @Override
-          public void onStopTrackingTouch(SeekBar s) {
-            ContentValues val = new ContentValues();
-            val.put(AlarmClockProvider.SettingsEntry.VOLUME_STARTING,
-                    edit_volume_starting.getProgress() * 5);
-            val.put(AlarmClockProvider.SettingsEntry.VOLUME_ENDING,
-                    edit_volume_ending.getProgress() * 5);
-            if (getContext().getContentResolver().update(
-                    settings, val, null, null) < 1)
-              getContext().getContentResolver().insert(settings, val);
-          }
-        });
-
-    edit_volume_time.setOnSeekBarChangeListener(
-        new SeekBar.OnSeekBarChangeListener() {
-          @Override
-          public void onProgressChanged(SeekBar s, int progress, boolean user) {
-            final int volume_starting = edit_volume_starting.getProgress() * 5;
-            final int volume_ending = edit_volume_ending.getProgress() * 5;
-            final int volume_time = edit_volume_time.getProgress() * 5;
-            volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
-          }
-          @Override
-          public void onStartTrackingTouch(SeekBar s) {}
-          @Override
-          public void onStopTrackingTouch(SeekBar s) {
-            ContentValues val = new ContentValues();
-            val.put(AlarmClockProvider.SettingsEntry.VOLUME_TIME,
-                    s.getProgress() * 5);
-            if (getContext().getContentResolver().update(
-                    settings, val, null, null) < 1)
-              getContext().getContentResolver().insert(settings, val);
-          }
-        });
-
+    final OptionsViews views = new OptionsViews(
+        getContext(), getFragmentManager(), id);
+    final BaseAdapter adapter = defaults ?
+      new DefaultOptionsAdapter(views) :
+      new StandardOptionsAdapter(views);
+    final ListView v = new ListView(getContext());
+    v.setAdapter(adapter);
 
     if (savedInstanceState != null) {
       TimePicker t = (TimePicker)getFragmentManager()
@@ -347,18 +80,17 @@ public class AlarmOptions extends DialogFragment {
         .findFragmentByTag("edit_repeat");
       MediaPicker m = (MediaPicker)getFragmentManager()
         .findFragmentByTag("edit_tone");
-      if (t != null) t.setListener(time_listener);
-      if (r != null) r.setListener(repeat_listener);
-      if (m != null) m.setListener(tone_listener);
+      if (t != null) t.setListener(views.time_listener);
+      if (r != null) r.setListener(views.repeat_listener);
+      if (m != null) m.setListener(views.tone_listener);
     }
 
     return new AlertDialog.Builder(getContext())
-      .setTitle(settings.equals(default_settings) ?
-                "Default Alarm Options" : "Alarm Options")
+      .setTitle(defaults ? "Default Alarm Options" : "Alarm Options")
       .setView(v)
       .setPositiveButton("Done", null)
-      .setNeutralButton(!settings.equals(default_settings) ?
-                        "Delete" : null, new DialogInterface.OnClickListener() {
+      .setNeutralButton(!defaults ? "Delete" : null,
+        new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
             new DialogFragment() {
@@ -607,6 +339,369 @@ public class AlarmOptions extends DialogFragment {
           AlarmClockProvider.SettingsEntry.VOLUME_ENDING));
       volume_time = c.getInt(c.getColumnIndex(
           AlarmClockProvider.SettingsEntry.VOLUME_TIME));
+    }
+  }
+
+  private static class StandardOptionsAdapter extends BaseAdapter {
+    private enum Views {
+      EDIT_TIME,
+      EDIT_REPEAT,
+      EDIT_LABEL,
+      EDIT_TONE,
+      EDIT_SNOOZE,
+      EDIT_VIBRATE,
+      EDIT_VOLUME,
+    }
+
+    private final OptionsViews v;
+    public StandardOptionsAdapter(OptionsViews views) { v = views; }
+
+    @Override
+    public long getItemId(int position) { return position; }
+    @Override
+    public int getItemViewType(int position) { return position; }
+    @Override
+    public int getCount() { return Views.values().length; }
+    @Override
+    public int getViewTypeCount() { return Views.values().length; }
+    @Override
+    public Object getItem(int position) { return null; }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+      if (convertView != null)
+        return convertView;
+
+      switch(Views.values()[position]) {
+        case EDIT_TIME: return v.edit_time;
+        case EDIT_REPEAT: return v.edit_repeat;
+        case EDIT_LABEL: return v.edit_label;
+        case EDIT_TONE: return v.edit_tone;
+        case EDIT_SNOOZE: return v.snooze_layout;
+        case EDIT_VIBRATE: return v.edit_vibrate;
+        case EDIT_VOLUME: return v.volume_layout;
+      }
+      return null;
+    }
+  }
+
+  private static class DefaultOptionsAdapter extends BaseAdapter {
+    private enum Views {
+      EDIT_TONE,
+      EDIT_SNOOZE,
+      EDIT_VIBRATE,
+      EDIT_VOLUME,
+    }
+
+    private final OptionsViews v;
+    public DefaultOptionsAdapter(OptionsViews views) { v = views; }
+
+    @Override
+    public long getItemId(int position) { return position; }
+    @Override
+    public int getItemViewType(int position) { return position; }
+    @Override
+    public int getCount() { return Views.values().length; }
+    @Override
+    public int getViewTypeCount() { return Views.values().length; }
+    @Override
+    public Object getItem(int position) { return null; }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+      if (convertView != null)
+        return convertView;
+
+      switch(Views.values()[position]) {
+        case EDIT_TONE: return v.edit_tone;
+        case EDIT_SNOOZE: return v.snooze_layout;
+        case EDIT_VIBRATE: return v.edit_vibrate;
+        case EDIT_VOLUME: return v.volume_layout;
+      }
+      return null;
+    }
+  }
+
+  private static class OptionsViews {
+    public final Button edit_time;
+    public final TimePicker.OnTimePickListener time_listener;
+    public final Button edit_repeat;
+    public final RepeatEditor.OnPickListener repeat_listener;
+    public final EditText edit_label;
+    public final Button edit_tone;
+    public final MediaPicker.Listener tone_listener;
+    public final LinearLayout snooze_layout;
+    public final Button edit_vibrate;
+    public final LinearLayout volume_layout;
+
+    public OptionsViews(
+        final Context c, final FragmentManager fm, final long id) {
+      final Uri uri = ContentUris.withAppendedId(
+          AlarmClockProvider.ALARMS_URI, id);
+      final Uri settings = ContentUris.withAppendedId(
+          AlarmClockProvider.SETTINGS_URI, id);
+
+      final AlarmSettings alarm = AlarmSettings.get(c, id);
+      final OptionalSettings s = OptionalSettings.get(c, id);
+
+      edit_time = new Button(c);
+      time_listener = new TimePicker.OnTimePickListener() {
+          @Override
+          public void onTimePick(int t) {
+            ContentValues val = new ContentValues();
+            val.put(AlarmClockProvider.AlarmEntry.TIME, t);
+            c.getContentResolver().update(uri, val, null, null);
+
+            final Calendar next = TimeUtil.nextOccurrence(
+                t, AlarmSettings.getRepeat(c, id),
+                AlarmSettings.getNextSnooze(c, id));
+            if (alarm.enabled) {
+              AlarmNotificationService.removeAlarmTrigger(c, id);
+              AlarmNotificationService.scheduleAlarmTrigger(
+                  c, id, next.getTimeInMillis());
+            }
+
+            edit_time.setText(TimeUtil.formatLong(c, next));
+          }
+        };
+      edit_time.setText(TimeUtil.formatLong(c, TimeUtil.nextOccurrence(alarm.time, alarm.repeat)));
+      edit_time.setOnClickListener(
+          new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+              int time = AlarmSettings.getTime(c, id);
+              int repeats = AlarmSettings.getRepeat(c, id);
+              TimePicker time_pick = new TimePicker();
+              time_pick.setListener(time_listener);
+              Bundle b = new Bundle();
+              b.putInt(TimePicker.TIME, time);
+              b.putString(TimePicker.TITLE, "Edit time");
+              b.putInt(TimePicker.REPEATS, repeats);
+              time_pick.setArguments(b);
+              time_pick.show(fm, "edit_alarm");
+            }
+          });
+
+      edit_repeat = new Button(c);
+      repeat_listener = new RepeatEditor.OnPickListener() {
+          @Override
+          public void onPick(int repeats) {
+            ContentValues val = new ContentValues();
+            val.put(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK, repeats);
+            c.getContentResolver().update(uri, val, null, null);
+            edit_repeat.setText("" + repeats);
+            final Calendar next = TimeUtil.nextOccurrence(
+                AlarmSettings.getTime(c, id), repeats,
+                AlarmSettings.getNextSnooze(c, id));
+            if (alarm.enabled) {
+              AlarmNotificationService.removeAlarmTrigger(c, id);
+              AlarmNotificationService.scheduleAlarmTrigger(
+                  c, id, next.getTimeInMillis());
+            }
+          }
+        };
+      edit_repeat.setText("" + alarm.repeat);
+      edit_repeat.setOnClickListener(
+          new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+              int repeat = AlarmSettings.getRepeat(c, id);
+              RepeatEditor edit = new RepeatEditor();
+              Bundle b = new Bundle();
+              b.putInt(RepeatEditor.BITMASK, repeat);
+              edit.setArguments(b);
+              edit.setListener(repeat_listener);
+              edit.show(fm, "edit_repeat");
+            }
+          });
+
+      // TODO: this doesn't show the keyboard if there isn't another edit view
+      // from the xml layout...
+      edit_label = new EditText(c);
+      edit_label.setText(alarm.label);
+      edit_label.setSelection(alarm.label.length());
+      edit_label.setHint("Label");
+      edit_label.setSingleLine(true);
+      edit_label.addTextChangedListener(new TextWatcher() {
+          @Override
+          public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
+          @Override
+          public void onTextChanged(CharSequence s, int st, int b, int c) {}
+          @Override
+          public void afterTextChanged(Editable s) {
+            final String name = s.toString();
+            ContentValues val = new ContentValues();
+            val.put(AlarmClockProvider.AlarmEntry.NAME, name);
+            c.getContentResolver().update(uri, val, null, null);
+          }
+        });
+
+      edit_tone = new Button(c);
+      tone_listener = new MediaPicker.Listener() {
+          public void onMediaPick(Uri uri, String title) {
+            ContentValues val = new ContentValues();
+            val.put(AlarmClockProvider.SettingsEntry.TONE_URL, uri.toString());
+            val.put(AlarmClockProvider.SettingsEntry.TONE_NAME, title);
+            if (c.getContentResolver().update(settings, val, null, null) < 1)
+              c.getContentResolver().insert(settings, val);
+
+            edit_tone.setText(title + " " + uri.toString());
+          }
+        };
+      edit_tone.setText(s.tone_name + " " + s.tone_url.toString());
+      edit_tone.setOnClickListener(
+          new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+              MediaPicker media_pick = new MediaPicker();
+              media_pick.setListener(tone_listener);
+              media_pick.show(fm, "edit_tone");
+            }
+          });
+
+      final TextView snooze_status = new TextView(c);
+      snooze_status.setText("Snooze: " + s.snooze);
+      final SeekBar edit_snooze = new SeekBar(c);
+      edit_snooze.setMax(11);
+      edit_snooze.setProgress((s.snooze - 5) / 5);
+      edit_snooze.setOnSeekBarChangeListener(
+          new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar s, int progress, boolean user) {
+              final int snooze = progress * 5 + 5;
+              snooze_status.setText("Snooze: " + snooze);
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar s) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar s) {
+              final int snooze = s.getProgress() * 5 + 5;
+              ContentValues val = new ContentValues();
+              val.put(AlarmClockProvider.SettingsEntry.SNOOZE, snooze);
+              if (c.getContentResolver().update(settings, val, null, null) < 1)
+                c.getContentResolver().insert(settings, val);
+            }
+          });
+      snooze_layout = new LinearLayout(c);
+      snooze_layout.setOrientation(LinearLayout.VERTICAL);
+      snooze_layout.addView(snooze_status);
+      snooze_layout.addView(edit_snooze);
+
+      edit_vibrate = new Button(c);
+      edit_vibrate.setText("vibrate " + s.vibrate);
+      edit_vibrate.setOnClickListener(
+          new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+              // TODO change this to a toggle button and use the toggle state
+              // rather than a db lookup.
+              boolean vibrate = !OptionalSettings.get(c, id).vibrate;
+              ContentValues val = new ContentValues();
+              val.put(AlarmClockProvider.SettingsEntry.VIBRATE, vibrate);
+              if (c.getContentResolver().update(settings, val, null, null) < 1)
+                c.getContentResolver().insert(settings, val);
+              edit_vibrate.setText("vibrate " + vibrate);
+            }
+          });
+
+      final TextView volume_status = new TextView(c);
+      volume_status.setText("volume " + s.volume_starting + " to " + s.volume_ending + " over " + s.volume_time);
+
+      final SeekBar edit_volume_starting = new SeekBar(c);
+      edit_volume_starting.setMax(20);
+      edit_volume_starting.setProgress(s.volume_starting / 5);
+
+      final SeekBar edit_volume_ending = new SeekBar(c);
+      edit_volume_ending.setMax(20);
+      edit_volume_ending.setProgress(s.volume_ending / 5);
+
+      final SeekBar edit_volume_time = new SeekBar(c);
+      edit_volume_time.setMax(12);
+      edit_volume_time.setProgress(s.volume_time / 5);
+
+      edit_volume_starting.setOnSeekBarChangeListener(
+          new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar s, int progress, boolean user) {
+              final int volume_starting = edit_volume_starting.getProgress() * 5;
+              final int volume_ending = edit_volume_ending.getProgress() * 5;
+              final int volume_time = edit_volume_time.getProgress() * 5;
+              if (user && volume_ending < volume_starting) {
+                edit_volume_ending.setProgress(volume_starting / 5);
+                volume_status.setText("volume " + volume_starting + " to " + volume_starting + " over " + volume_time);
+              } else {
+                volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
+              }
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar s) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar s) {
+              ContentValues val = new ContentValues();
+              val.put(AlarmClockProvider.SettingsEntry.VOLUME_STARTING,
+                      edit_volume_starting.getProgress() * 5);
+              val.put(AlarmClockProvider.SettingsEntry.VOLUME_ENDING,
+                      edit_volume_ending.getProgress() * 5);
+              if (c.getContentResolver().update(settings, val, null, null) < 1)
+                c.getContentResolver().insert(settings, val);
+            }
+          });
+
+      edit_volume_ending.setOnSeekBarChangeListener(
+          new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar s, int progress, boolean user) {
+              final int volume_starting = edit_volume_starting.getProgress() * 5;
+              final int volume_ending = edit_volume_ending.getProgress() * 5;
+              final int volume_time = edit_volume_time.getProgress() * 5;
+              if (user && volume_ending < volume_starting) {
+                edit_volume_starting.setProgress(volume_ending / 5);
+                volume_status.setText("volume " + volume_ending + " to " + volume_ending + " over " + volume_time);
+              } else {
+                volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
+              }
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar s) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar s) {
+              ContentValues val = new ContentValues();
+              val.put(AlarmClockProvider.SettingsEntry.VOLUME_STARTING,
+                      edit_volume_starting.getProgress() * 5);
+              val.put(AlarmClockProvider.SettingsEntry.VOLUME_ENDING,
+                      edit_volume_ending.getProgress() * 5);
+              if (c.getContentResolver().update(settings, val, null, null) < 1)
+                c.getContentResolver().insert(settings, val);
+            }
+          });
+
+      edit_volume_time.setOnSeekBarChangeListener(
+          new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar s, int progress, boolean user) {
+              final int volume_starting = edit_volume_starting.getProgress() * 5;
+              final int volume_ending = edit_volume_ending.getProgress() * 5;
+              final int volume_time = edit_volume_time.getProgress() * 5;
+              volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar s) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar s) {
+              ContentValues val = new ContentValues();
+              val.put(AlarmClockProvider.SettingsEntry.VOLUME_TIME,
+                      s.getProgress() * 5);
+              if (c.getContentResolver().update(settings, val, null, null) < 1)
+                c.getContentResolver().insert(settings, val);
+            }
+          });
+
+      volume_layout = new LinearLayout(c);
+      volume_layout.setOrientation(LinearLayout.VERTICAL);
+      volume_layout.addView(volume_status);
+      volume_layout.addView(edit_volume_starting);
+      volume_layout.addView(edit_volume_ending);
+      volume_layout.addView(edit_volume_time);
     }
   }
 }
