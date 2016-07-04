@@ -165,12 +165,23 @@ public class AlarmNotificationService extends Service {
     }
     activeAlarms.alarmids.add(alarmid);
 
+    String labels = "";
+    for (long id : activeAlarms.alarmids) {
+      String label = AlarmOptions.AlarmSettings.getLabel(getApplicationContext(), id);
+      if (!label.isEmpty()) {
+        if (labels.isEmpty())
+          labels = label;
+        else
+          labels += ", " + label;
+      }
+    }
+
     Intent notify = new Intent(this, AlarmNotificationActivity.class)
       .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
     final Notification notification =
       new Notification.Builder(this)
-      .setContentTitle("Alarming...")
+      .setContentTitle(labels.isEmpty() ? "Alarm Klock" : labels)
       .setContentText("Second line...")
       .setSmallIcon(R.drawable.ic_alarm_on)
       .setContentIntent(PendingIntent.getActivity(this, 0, notify, 0))
@@ -269,6 +280,7 @@ public class AlarmNotificationService extends Service {
     final Cursor c = getContentResolver().query(
         AlarmClockProvider.ALARMS_URI,
         new String[] { AlarmClockProvider.AlarmEntry.TIME,
+                       AlarmClockProvider.AlarmEntry.NAME,
                        AlarmClockProvider.AlarmEntry.DAY_OF_WEEK,
                        AlarmClockProvider.AlarmEntry.NEXT_SNOOZE },
         AlarmClockProvider.AlarmEntry.ENABLED + " == 1",
@@ -284,21 +296,24 @@ public class AlarmNotificationService extends Service {
 
     final Calendar now = Calendar.getInstance();
     Calendar next = null;
+    String next_label = "";
     while (c.moveToNext()) {
       Calendar n = TimeUtil.nextOccurrence(
           now,
           c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME)),
           c.getLong(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE)),
           c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK)));
-      if (next == null || n.before(next))
+      if (next == null || n.before(next)) {
         next = n;
+        next_label = c.getString(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NAME));
+      }
     }
     c.close();
 
     manager.notify(
         NEXT_ALARM_NOTIFICATION_ID,
         new Notification.Builder(this)
-        .setContentTitle("Next Alarm...")
+        .setContentTitle(next_label.isEmpty() ? "Alarm Klock" : next_label)
         .setContentText(TimeUtil.formatLong(this, next) + " in " + TimeUtil.until(next))
         .setSmallIcon(R.drawable.ic_alarm)
         .setCategory(Notification.CATEGORY_STATUS)
