@@ -38,6 +38,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SeekBar;
@@ -71,6 +72,7 @@ public class AlarmOptions extends DialogFragment {
       new DefaultOptionsAdapter(views) :
       new StandardOptionsAdapter(views);
     final ListView v = new ListView(getContext());
+    v.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
     v.setAdapter(adapter);
 
     if (savedInstanceState != null) {
@@ -423,12 +425,12 @@ public class AlarmOptions extends DialogFragment {
   }
 
   private static class OptionsViews {
-    public final Button edit_time;
+    public final View edit_time;
     public final TimePicker.OnTimePickListener time_listener;
-    public final Button edit_repeat;
+    public final View edit_repeat;
     public final RepeatEditor.OnPickListener repeat_listener;
-    public final EditText edit_label;
-    public final Button edit_tone;
+    public final View edit_label;
+    public final View edit_tone;
     public final MediaPicker.Listener tone_listener;
     public final LinearLayout snooze_layout;
     public final Button edit_vibrate;
@@ -444,7 +446,7 @@ public class AlarmOptions extends DialogFragment {
       final AlarmSettings alarm = AlarmSettings.get(c, id);
       final OptionalSettings s = OptionalSettings.get(c, id);
 
-      edit_time = new Button(c);
+      edit_time = newItem(c);
       time_listener = new TimePicker.OnTimePickListener() {
           @Override
           public void onTimePick(int t) {
@@ -461,10 +463,11 @@ public class AlarmOptions extends DialogFragment {
                   c, id, next.getTimeInMillis());
             }
 
-            edit_time.setText(TimeUtil.formatLong(c, next));
+            setText(edit_time, TimeUtil.formatLong(c, next));
           }
         };
-      edit_time.setText(TimeUtil.formatLong(c, TimeUtil.nextOccurrence(alarm.time, alarm.repeat)));
+      setImage(edit_time, R.drawable.ic_alarm);
+      setText(edit_time, TimeUtil.formatLong(c, TimeUtil.nextOccurrence(alarm.time, alarm.repeat)));
       edit_time.setOnClickListener(
           new View.OnClickListener() {
             @Override
@@ -482,14 +485,14 @@ public class AlarmOptions extends DialogFragment {
             }
           });
 
-      edit_repeat = new Button(c);
+      edit_repeat = newItem(c);
       repeat_listener = new RepeatEditor.OnPickListener() {
           @Override
           public void onPick(int repeats) {
             ContentValues val = new ContentValues();
             val.put(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK, repeats);
             c.getContentResolver().update(uri, val, null, null);
-            edit_repeat.setText("" + repeats);
+            setText(edit_repeat, repeats == 0 ? "No repeats" : TimeUtil.repeatString(repeats));
             final Calendar next = TimeUtil.nextOccurrence(
                 AlarmSettings.getTime(c, id), repeats,
                 AlarmSettings.getNextSnooze(c, id));
@@ -500,7 +503,8 @@ public class AlarmOptions extends DialogFragment {
             }
           }
         };
-      edit_repeat.setText("" + alarm.repeat);
+      setImage(edit_repeat, R.drawable.ic_today);
+      setText(edit_repeat, alarm.repeat == 0 ? "No repeats" : TimeUtil.repeatString(alarm.repeat));
       edit_repeat.setOnClickListener(
           new View.OnClickListener() {
             @Override
@@ -517,12 +521,8 @@ public class AlarmOptions extends DialogFragment {
 
       // TODO: this doesn't show the keyboard if there isn't another edit view
       // from the xml layout...
-      edit_label = new EditText(c);
-      edit_label.setText(alarm.label);
-      edit_label.setSelection(alarm.label.length());
-      edit_label.setHint("Label");
-      edit_label.setSingleLine(true);
-      edit_label.addTextChangedListener(new TextWatcher() {
+      edit_label = newItem(c);
+      final TextWatcher label_change = new TextWatcher() {
           @Override
           public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
           @Override
@@ -534,9 +534,11 @@ public class AlarmOptions extends DialogFragment {
             val.put(AlarmClockProvider.AlarmEntry.NAME, name);
             c.getContentResolver().update(uri, val, null, null);
           }
-        });
+        };
+      setImage(edit_label, R.drawable.ic_label_outline);
+      setEdit(edit_label, alarm.label, "Label", label_change);
 
-      edit_tone = new Button(c);
+      edit_tone = newItem(c);
       tone_listener = new MediaPicker.Listener() {
           public void onMediaPick(Uri uri, String title) {
             ContentValues val = new ContentValues();
@@ -545,10 +547,11 @@ public class AlarmOptions extends DialogFragment {
             if (c.getContentResolver().update(settings, val, null, null) < 1)
               c.getContentResolver().insert(settings, val);
 
-            edit_tone.setText(title + " " + uri.toString());
+            setText(edit_tone, title);
           }
         };
-      edit_tone.setText(s.tone_name + " " + s.tone_url.toString());
+      setImage(edit_tone, R.drawable.ic_music_note);
+      setText(edit_tone, s.tone_name);
       edit_tone.setOnClickListener(
           new View.OnClickListener() {
             @Override
@@ -702,6 +705,31 @@ public class AlarmOptions extends DialogFragment {
       volume_layout.addView(edit_volume_starting);
       volume_layout.addView(edit_volume_ending);
       volume_layout.addView(edit_volume_time);
+    }
+
+    private View newItem(Context c) {
+      return
+        ((LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+        .inflate(R.layout.settings_item, null);
+    }
+
+    private void setImage(View v, int id) {
+      ((ImageView)v.findViewById(R.id.setting_icon)).setImageResource(id);
+    }
+
+    private void setText(View v, String s) {
+      TextView t = (TextView)v.findViewById(R.id.setting_text);
+      t.setVisibility(View.VISIBLE);
+      t.setText(s);
+    }
+
+    private void setEdit(View v, String s, String hint, TextWatcher w) {
+      EditText t = (EditText)v.findViewById(R.id.setting_edit);
+      t.setVisibility(View.VISIBLE);
+      t.setText(s);
+      t.setSelection(s.length());
+      t.setHint(hint);
+      t.addTextChangedListener(w);
     }
   }
 }
