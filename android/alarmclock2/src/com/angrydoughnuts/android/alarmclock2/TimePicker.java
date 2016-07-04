@@ -180,7 +180,7 @@ public class TimePicker extends DialogFragment {
         }
       });
 
-    ((Button)v.findViewById(R.id.hour_plus_one)).setOnClickListener(
+    v.findViewById(R.id.hour_plus_one).setOnClickListener(
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
@@ -191,7 +191,7 @@ public class TimePicker extends DialogFragment {
             t.setText(until());
           }
         });
-    ((Button)v.findViewById(R.id.hour_minus_one)).setOnClickListener(
+    v.findViewById(R.id.hour_minus_one).setOnClickListener(
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
@@ -204,7 +204,7 @@ public class TimePicker extends DialogFragment {
             t.setText(until());
           }
         });
-    ((Button)v.findViewById(R.id.minute_plus_five)).setOnClickListener(
+    v.findViewById(R.id.minute_plus_five).setOnClickListener(
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
@@ -214,7 +214,7 @@ public class TimePicker extends DialogFragment {
             t.setText(until());
           }
         });
-    ((Button)v.findViewById(R.id.minute_minus_five)).setOnClickListener(
+    v.findViewById(R.id.minute_minus_five).setOnClickListener(
         new View.OnClickListener() {
           @Override
           public void onClick(View view) {
