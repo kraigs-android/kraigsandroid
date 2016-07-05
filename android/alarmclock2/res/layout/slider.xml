@@ -11,7 +11,7 @@
       android:layout_width="fill_parent"
       android:layout_height="fill_parent" />
   <ImageView
-      android:id="@+id/slider_button"
+      android:id="@+id/slider_slide"
       android:src="@drawable/ic_forward"
       android:background="@drawable/rect_btn"
       android:paddingLeft="12dp"

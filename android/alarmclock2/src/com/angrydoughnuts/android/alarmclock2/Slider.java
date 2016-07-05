@@ -20,15 +20,12 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 
 public class Slider extends FrameLayout {
-  final private View slide;
+  private final View slide;
   private boolean tracking = false;
   private Listener listener;
   public void setListener(Listener l) { listener = l; }
@@ -50,7 +47,7 @@ public class Slider extends FrameLayout {
 
     ((LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
       .inflate(R.layout.slider, this, true);
-    slide = findViewById(R.id.slider_button);
+    slide = findViewById(R.id.slider_slide);
   }
 
   @Override
