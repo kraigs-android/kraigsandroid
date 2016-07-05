@@ -458,9 +458,7 @@ public class AlarmOptions extends DialogFragment {
             ContentValues val = new ContentValues();
             val.put(AlarmClockProvider.SettingsEntry.TONE_URL, uri.toString());
             val.put(AlarmClockProvider.SettingsEntry.TONE_NAME, title);
-            if (c.getContentResolver().update(settings, val, null, null) < 1)
-              c.getContentResolver().insert(settings, val);
-
+            c.getContentResolver().update(settings, val, null, null);
             setText(edit_tone, title);
           }
         };
@@ -498,8 +496,7 @@ public class AlarmOptions extends DialogFragment {
               final int snooze = s.getProgress() * 5 + 5;
               ContentValues val = new ContentValues();
               val.put(AlarmClockProvider.SettingsEntry.SNOOZE, snooze);
-              if (c.getContentResolver().update(settings, val, null, null) < 1)
-                c.getContentResolver().insert(settings, val);
+              c.getContentResolver().update(settings, val, null, null);
             }
           });
 
@@ -517,8 +514,7 @@ public class AlarmOptions extends DialogFragment {
                 ((Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE)).vibrate(100);
               ContentValues val = new ContentValues();
               val.put(AlarmClockProvider.SettingsEntry.VIBRATE, checked);
-              if (c.getContentResolver().update(settings, val, null, null) < 1)
-                c.getContentResolver().insert(settings, val);
+              c.getContentResolver().update(settings, val, null, null);
             }
           });
 
@@ -560,8 +556,7 @@ public class AlarmOptions extends DialogFragment {
                       edit_volume_starting.getProgress() * 5);
               val.put(AlarmClockProvider.SettingsEntry.VOLUME_ENDING,
                       edit_volume_ending.getProgress() * 5);
-              if (c.getContentResolver().update(settings, val, null, null) < 1)
-                c.getContentResolver().insert(settings, val);
+              c.getContentResolver().update(settings, val, null, null);
             }
           });
 
@@ -588,8 +583,7 @@ public class AlarmOptions extends DialogFragment {
                       edit_volume_starting.getProgress() * 5);
               val.put(AlarmClockProvider.SettingsEntry.VOLUME_ENDING,
                       edit_volume_ending.getProgress() * 5);
-              if (c.getContentResolver().update(settings, val, null, null) < 1)
-                c.getContentResolver().insert(settings, val);
+              c.getContentResolver().update(settings, val, null, null);
             }
           });
 
@@ -609,8 +603,7 @@ public class AlarmOptions extends DialogFragment {
               ContentValues val = new ContentValues();
               val.put(AlarmClockProvider.SettingsEntry.VOLUME_TIME,
                       s.getProgress() * 5);
-              if (c.getContentResolver().update(settings, val, null, null) < 1)
-                c.getContentResolver().insert(settings, val);
+              c.getContentResolver().update(settings, val, null, null);
             }
           });
 

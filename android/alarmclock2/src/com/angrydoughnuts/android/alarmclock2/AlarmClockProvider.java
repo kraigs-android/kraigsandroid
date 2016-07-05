@@ -91,27 +91,22 @@ public final class AlarmClockProvider extends ContentProvider {
       } else {
         values.put(SettingsEntry.ALARM_ID, alarmid);
       }
+      final AlarmOptions.OptionalSettings s =
+        AlarmOptions.OptionalSettings.get(getContext(), alarmid);
       if (!values.containsKey(SettingsEntry.TONE_URL))
-        values.put(SettingsEntry.TONE_URL,
-                   AlarmOptions.OptionalSettings.TONE_URL_DEFAULT.toString());
+        values.put(SettingsEntry.TONE_URL, s.tone_url.toString());
       if (!values.containsKey(SettingsEntry.TONE_NAME))
-        values.put(SettingsEntry.TONE_NAME,
-                   AlarmOptions.OptionalSettings.TONE_NAME_DEFAULT);
+        values.put(SettingsEntry.TONE_NAME, s.tone_name);
       if (!values.containsKey(SettingsEntry.SNOOZE))
-        values.put(SettingsEntry.SNOOZE,
-                   AlarmOptions.OptionalSettings.SNOOZE_DEFAULT);
+        values.put(SettingsEntry.SNOOZE, s.snooze);
       if (!values.containsKey(SettingsEntry.VIBRATE))
-        values.put(SettingsEntry.VIBRATE,
-                   AlarmOptions.OptionalSettings.VIBRATE_DEFAULT);
+        values.put(SettingsEntry.VIBRATE, s.vibrate);
       if (!values.containsKey(SettingsEntry.VOLUME_STARTING))
-        values.put(SettingsEntry.VOLUME_STARTING,
-                   AlarmOptions.OptionalSettings.VOLUME_STARTING_DEFAULT);
+        values.put(SettingsEntry.VOLUME_STARTING, s.volume_starting);
       if (!values.containsKey(SettingsEntry.VOLUME_ENDING))
-        values.put(SettingsEntry.VOLUME_ENDING,
-                   AlarmOptions.OptionalSettings.VOLUME_ENDING_DEFAULT);
+        values.put(SettingsEntry.VOLUME_ENDING, s.volume_ending);
       if (!values.containsKey(SettingsEntry.VOLUME_TIME))
-        values.put(SettingsEntry.VOLUME_TIME,
-                   AlarmOptions.OptionalSettings.VOLUME_TIME_DEFAULT);
+        values.put(SettingsEntry.VOLUME_TIME, s.volume_time);
 
       db.insertOrThrow(SettingsEntry.TABLE_NAME, null, values);
       getContext().getContentResolver().notifyChange(uri, null);
@@ -148,9 +143,10 @@ public final class AlarmClockProvider extends ContentProvider {
       count = db.update(
           SettingsEntry.TABLE_NAME, values,
           SettingsEntry.ALARM_ID + " == " + alarmid, null);
-      if (count > 0)
-        getContext().getContentResolver().notifyChange(uri, null);
-      return count;
+      if (count == 0)
+        insert(uri, values);
+      getContext().getContentResolver().notifyChange(uri, null);
+      return 1;
     default:
       throw new IllegalArgumentException("Unknown URI " + uri);
     }
