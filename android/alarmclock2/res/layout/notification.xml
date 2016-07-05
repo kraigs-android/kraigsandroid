@@ -8,6 +8,7 @@
       android:layout_weight="1"
       android:layout_width="fill_parent"
       android:layout_height="wrap_content">
+    <!-- TODO: string) -->
     <Button
         android:id="@+id/snooze_minus_five"
         android:text="-5"
@@ -22,6 +23,7 @@
         android:gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent">
+      <!-- TODO: string) -->
       <TextView
           style="@android:style/TextAppearance.Large"
           android:text="SNOOZE"
@@ -35,6 +37,7 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content" />
     </LinearLayout>
+    <!-- TODO: string) -->
     <Button
         android:id="@+id/snooze_plus_five"
         android:text="+5"
@@ -52,6 +55,7 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
 
+  <!-- TODO: string (or icon?) -->
   <Button
       android:id="@+id/snooze_alarm"
       android:text="Snooze"

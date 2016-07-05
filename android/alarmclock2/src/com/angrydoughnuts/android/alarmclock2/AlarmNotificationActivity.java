@@ -25,7 +25,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.TextView;
 
 public class AlarmNotificationActivity extends Activity {
@@ -45,10 +44,12 @@ public class AlarmNotificationActivity extends Activity {
 
     final long alarmid =
       getIntent().getLongExtra(AlarmNotificationService.ALARM_ID, -1);
-    if (alarmid != -1) {
+    if (alarmid == -1)
+      Log.e(TAG, "Did't get an alarm id!");
+    else
       Log.i(TAG, "Alarm notification intent " + alarmid);
-    }
 
+    // Pull snooze from saved state or options database.
     if (state != null && state.containsKey("snooze")) {
       snooze = state.getInt("snooze");
     } else {
@@ -56,6 +57,7 @@ public class AlarmNotificationActivity extends Activity {
     }
 
     final TextView snooze_text = (TextView)findViewById(R.id.snooze_text);
+    // TODO: string
     snooze_text.setText(snooze + " minutes");
 
     ((TextView)findViewById(R.id.alarm_label))
@@ -67,6 +69,7 @@ public class AlarmNotificationActivity extends Activity {
           public void onClick(View view) {
             snooze -= 5;
             if (snooze <= 0) snooze = 5;
+            // TODO: string
             snooze_text.setText(snooze + " minutes");
           }
         });
@@ -77,6 +80,7 @@ public class AlarmNotificationActivity extends Activity {
           public void onClick(View view) {
             snooze += 5;
             if (snooze >= 60) snooze = 60;
+            // TODO: string
             snooze_text.setText(snooze + " minutes");
           }
         });
@@ -104,15 +108,19 @@ public class AlarmNotificationActivity extends Activity {
 
   @Override
   protected void onNewIntent(Intent i) {
+    // The notification service can get us here for one of two reasons:
     super.onNewIntent(i);
     final long alarmid = i.getLongExtra(AlarmNotificationService.ALARM_ID, -1);
 
+    // A firing alarm has run long enough to trigger a timeout.
     if (i.hasExtra(TIMEOUT)) {
       new DialogFragment() {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
           return new AlertDialog.Builder(getContext())
+            // TODO: string
             .setMessage("timeout")
+            // TODO: string
             .setPositiveButton("OK", null)
             .create();
         }
@@ -122,6 +130,7 @@ public class AlarmNotificationActivity extends Activity {
           finish();
         }
       }.show(getFragmentManager(), "timeout");
+    // Another alarm triggered before the current one one has been dismissed.
     } else if (alarmid != -1) {
       Log.i(TAG, "Another alarm notification intent " + alarmid);
       TextView t = (TextView)findViewById(R.id.alarm_label);
@@ -132,6 +141,8 @@ public class AlarmNotificationActivity extends Activity {
         else
           t.setText(t.getText() + ", " + label);
       }
+    } else {
+      Log.e(TAG, "Unhandled intent!");
     }
   }
 
