@@ -33,32 +33,21 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.lang.NumberFormatException;
+// import java.lang.NumberFormatException;
 import java.util.Calendar;
 
 public class TimePicker extends DialogFragment {
-  public static final String TIME = "time";
-  public static final String TITLE = "title";
-  public static final String REPEATS = "repeats";
-  public static interface OnTimePickListener {
-    abstract void onTimePick(int secondsPastMidnight);
-  }
-
-  private int hour;
-  private int minute;
-  private int repeats;
-  private OnTimePickListener listener = null;
-  public void setListener(OnTimePickListener l) { listener = l; }
-
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     super.onCreateDialog(savedInstanceState);
+    // Default state in now with no repeats.
     final Calendar now = Calendar.getInstance();
     hour = now.get(Calendar.HOUR_OF_DAY);
     minute = now.get(Calendar.MINUTE);
-    repeats = 0;
+    repeat = 0;
 
     String title = "";
+    // Override defaults with user-specified state.
     if (getArguments() != null) {
       int secondsPastMidnight = getArguments().getInt(TIME, -1);
       if (secondsPastMidnight >= 0) {
@@ -66,13 +55,14 @@ public class TimePicker extends DialogFragment {
         minute = secondsPastMidnight / 60 - hour * 60;
       }
       title = getArguments().getString(TITLE, "");
-      repeats = getArguments().getInt(REPEATS, 0);
+      repeat = getArguments().getInt(REPEAT, 0);
     }
 
+    // Override all state with previous state.
     if (savedInstanceState != null) {
       hour = savedInstanceState.getInt("hour");
       minute = savedInstanceState.getInt("minute");
-      repeats = savedInstanceState.getInt("repeats");
+      repeat = savedInstanceState.getInt("repeat");
     }
 
     final View v =
@@ -80,23 +70,29 @@ public class TimePicker extends DialogFragment {
           Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.time_picker, null);
 
     final AlertDialog d = new AlertDialog.Builder(getContext())
+      // TODO: string
       .setTitle(title.isEmpty() ? "New Alarm" : title)
       .setView(v)
+      // TODO: string
       .setNegativeButton("Cancel", null)
+      // TODO: string
       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
             if (listener != null)
-              listener.onTimePick(toSeconds());
+              listener.onTimePick(seconds());
           }
         })
       .create();
+
+    // Force the soft keyboard to display for faster input.
     d.getWindow().setSoftInputMode(
         WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 
     final TextView t = (TextView)v.findViewById(R.id.picker_countdown);
     t.setText(until());
 
+    // Setup an AM/PM button, but only for locales that use it.
     final Button am_pm = (Button)v.findViewById(R.id.picker_am_pm);
     if (DateFormat.is24HourFormat(getContext())) {
       am_pm.setVisibility(View.GONE);
@@ -116,7 +112,7 @@ public class TimePicker extends DialogFragment {
         });
     }
 
-
+    // The edit field should be fully selected and focused at creation time.
     final EditText e = (EditText)v.findViewById(R.id.picker_time_entry);
     e.setText(time());
     e.addTextChangedListener(new TextWatcher() {
@@ -126,15 +122,21 @@ public class TimePicker extends DialogFragment {
         public void onTextChanged(CharSequence s, int st, int b, int c) {}
         @Override
         public void afterTextChanged(Editable s) {
+          // Disable the 'OK' button until we have valid input.
           d.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
 
+          // Strip out colons and leading zeros.
           String hhmm =
             s.toString().replaceAll(":", "").replaceFirst("^0+(?!$)", "");
           int new_hour;
           int new_minute;
+          // Both 12 and 24 hour formats require at least 3 digits in a valid
+          // time.
           if (hhmm.length() < 3)
             return;
           try {
+            // Try to parse the last two digits as minutes and the remaining
+            // leading digits as hour.
             new_hour = Integer.parseInt(hhmm.substring(0, hhmm.length() - 2));
             new_minute = Integer.parseInt(hhmm.substring(
                 hhmm.length() - 2, hhmm.length()));
@@ -142,32 +144,40 @@ public class TimePicker extends DialogFragment {
             return;
           }
 
+          // Validate the hour field.  We internally represent using 24 hour
+          // time, so 12 hour input must also be converted during validation.
           if (DateFormat.is24HourFormat(getContext())) {
             if (new_hour < 0 || new_hour > 23)
               return;
           } else {
             if (new_hour < 1 || new_hour > 12)
               return;
+            // Note that 12 midnight is represented as 0 in 24 hour time.
             if (new_hour == 12)
               new_hour = 0;
+            // If the previous valid our was PM, add 12 to represent PM for the
+            // new value.
             if (hour > 11)
               new_hour += 12;
           }
+          // Validate the minute field.
           if (new_minute < 0 || new_minute > 59)
             return;
 
           hour = new_hour;
           minute = new_minute;
 
+          // Simply calling setText here will trigger an infinite loop.
+          // Temporarily remove our self as a listener while updating text.
           e.removeTextChangedListener(this);
-          e.setText(time());
-          e.setSelection(e.getText().length());
+          refresh(e, t, am_pm);
           e.addTextChangedListener(this);
-          am_pm.setText(ampm());
-          t.setText(until());
+          // Re-enable the OK button now that we have valid input.
           d.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
         }
       });
+    // Simulate clicking 'OK' when the done key is pressed on the keyboard
+    // (but only of 'OK' is enabled with valid input).
     e.setOnEditorActionListener(new TextView.OnEditorActionListener() {
         @Override
         public boolean onEditorAction(TextView v, int action, KeyEvent e) {
@@ -185,10 +195,7 @@ public class TimePicker extends DialogFragment {
           @Override
           public void onClick(View view) {
             hour = (hour + 1) % 24;
-            am_pm.setText(ampm());
-            e.setText(time());
-            e.setSelection(e.getText().length());
-            t.setText(until());
+            refresh(e, t, am_pm);
           }
         });
     v.findViewById(R.id.hour_minus_one).setOnClickListener(
@@ -198,10 +205,7 @@ public class TimePicker extends DialogFragment {
             hour = (hour - 1) % 24;
             if (hour < 0)
               hour += 24;
-            am_pm.setText(ampm());
-            e.setText(time());
-            e.setSelection(e.getText().length());
-            t.setText(until());
+            refresh(e, t, am_pm);
           }
         });
     v.findViewById(R.id.minute_plus_five).setOnClickListener(
@@ -209,9 +213,7 @@ public class TimePicker extends DialogFragment {
           @Override
           public void onClick(View view) {
             minute = (minute / 5 * 5 + 5) % 60;
-            e.setText(time());
-            e.setSelection(e.getText().length());
-            t.setText(until());
+            refresh(e, t, am_pm);
           }
         });
     v.findViewById(R.id.minute_minus_five).setOnClickListener(
@@ -224,13 +226,25 @@ public class TimePicker extends DialogFragment {
             if (new_minute < 0)
               new_minute += 60;
             minute = new_minute;
-            e.setText(time());
-            e.setSelection(e.getText().length());
-            t.setText(until());
+            refresh(e, t, am_pm);
           }
         });
 
     return d;
+  }
+
+  private int seconds() { return hour * 3600 + minute * 60; }
+  private Calendar next() { return TimeUtil.nextOccurrence(seconds(), repeat); }
+  private String time() { return TimeUtil.format(getContext(), next()); }
+  private String until() { return TimeUtil.until(next()); }
+  // TODO: string
+  private String ampm() { return (hour < 12) ? "AM" : "PM"; }
+
+  private void refresh(EditText time, TextView countdown, Button am_pm) {
+    time.setText(time());
+    time.setSelection(time.getText().length());
+    countdown.setText(until());
+    am_pm.setText(ampm());
   }
 
   @Override
@@ -238,26 +252,20 @@ public class TimePicker extends DialogFragment {
     super.onSaveInstanceState(outState);
     outState.putInt("hour", hour);
     outState.putInt("minute", minute);
-    outState.putInt("repeats", repeats);
+    outState.putInt("repeat", repeat);
   }
 
-  private int toSeconds() {
-    return hour * 3600 + minute * 60;
-  }
+  private int hour;
+  private int minute;
+  private int repeat;
+  private OnTimePickListener listener = null;
+  public void setListener(OnTimePickListener l) { listener = l; }
 
-  private Calendar next() {
-    return TimeUtil.nextOccurrence(toSeconds(), repeats);
-  }
-
-  private String time() {
-    return TimeUtil.format(getContext(), next());
-  }
-
-  private String until() {
-    return TimeUtil.until(next());
-  }
-
-  private String ampm() {
-    return (hour < 12) ? "AM" : "PM";
+  // Input parameters
+  public static final String TIME = "time";
+  public static final String TITLE = "title";
+  public static final String REPEAT = "repeat";
+  public static interface OnTimePickListener {
+    abstract void onTimePick(int secondsPastMidnight);
   }
 }

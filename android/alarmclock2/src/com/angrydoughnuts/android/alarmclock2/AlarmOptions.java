@@ -218,7 +218,7 @@ public class AlarmOptions extends DialogFragment {
               Bundle b = new Bundle();
               b.putInt(TimePicker.TIME, a.time);
               b.putString(TimePicker.TITLE, "Edit time");
-              b.putInt(TimePicker.REPEATS, a.repeat);
+              b.putInt(TimePicker.REPEAT, a.repeat);
               time_pick.setArguments(b);
               time_pick.show(fm, "edit_alarm");
             }
