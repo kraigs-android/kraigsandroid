@@ -165,179 +165,6 @@ public class AlarmOptions extends DialogFragment {
     }
   }
 
-  static public class AlarmSettings {
-    public final int time;
-    public final boolean enabled;
-    public final String label;
-    public final int repeat;
-    public final long next_snooze;
-
-    static public AlarmSettings get(Context context, long id) {
-      AlarmSettings s = null;
-      final Cursor c = context.getContentResolver().query(
-          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
-          new String[] {
-            AlarmClockProvider.AlarmEntry.TIME,
-            AlarmClockProvider.AlarmEntry.ENABLED,
-            AlarmClockProvider.AlarmEntry.NAME,
-            AlarmClockProvider.AlarmEntry.DAY_OF_WEEK,
-            AlarmClockProvider.AlarmEntry.NEXT_SNOOZE },
-          null, null, null);
-      if (c.moveToFirst())
-        s = new AlarmSettings(c);
-      else
-        s = new AlarmSettings();
-      c.close();
-      return s;
-    }
-
-    public static int getTime(Context context, long id) {
-      Cursor c = context.getContentResolver().query(
-          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
-          new String[] { AlarmClockProvider.AlarmEntry.TIME },
-          null, null, null);
-      c.moveToFirst();
-      int time = c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
-      c.close();
-      return time;
-    }
-
-    public static String getLabel(Context context, long id) {
-      Cursor c = context.getContentResolver().query(
-          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
-          new String[] { AlarmClockProvider.AlarmEntry.NAME },
-          null, null, null);
-      c.moveToFirst();
-      String label = c.getString(c.getColumnIndex(
-          AlarmClockProvider.AlarmEntry.NAME));
-      c.close();
-      return label;
-    }
-
-    public static int getRepeat(Context context, long id) {
-      Cursor c = context.getContentResolver().query(
-          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
-          new String[] { AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
-          null, null, null);
-      c.moveToFirst();
-      int repeat = c.getInt(c.getColumnIndex(
-          AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
-      c.close();
-      return repeat;
-    }
-
-    public static long getNextSnooze(Context context, long id) {
-      Cursor c = context.getContentResolver().query(
-          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
-          new String[] { AlarmClockProvider.AlarmEntry.NEXT_SNOOZE },
-          null, null, null);
-      c.moveToFirst();
-      long next_snooze = c.getInt(c.getColumnIndex(
-          AlarmClockProvider.AlarmEntry.NEXT_SNOOZE));
-      c.close();
-      return next_snooze;
-    }
-
-    private AlarmSettings() {
-      time = 0;
-      enabled = false;
-      label = "Not found";
-      repeat = 0;
-      next_snooze = 0;
-    }
-
-    private AlarmSettings(Cursor c) {
-      time = c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
-      enabled = c.getInt(c.getColumnIndex(
-          AlarmClockProvider.AlarmEntry.ENABLED)) != 0;
-      label = c.getString(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NAME));
-      repeat = c.getInt(c.getColumnIndex(
-          AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
-      next_snooze = c.getLong(c.getColumnIndex(
-          AlarmClockProvider.AlarmEntry.NEXT_SNOOZE));
-    }
-  }
-
-  static public class OptionalSettings {
-    public final Uri tone_url;
-    public final String tone_name;
-    public final int snooze;
-    public final boolean vibrate;
-    public final int volume_starting;
-    public final int volume_ending;
-    public final int volume_time;
-
-    static public final Uri TONE_URL_DEFAULT =
-      Settings.System.DEFAULT_NOTIFICATION_URI;
-    static public final String TONE_NAME_DEFAULT = "System default";
-    static public final int SNOOZE_DEFAULT = 10;
-    static public final boolean VIBRATE_DEFAULT = false;
-    static public final int VOLUME_STARTING_DEFAULT = 0;
-    static public final int VOLUME_ENDING_DEFAULT = 100;
-    static public final int VOLUME_TIME_DEFAULT = 20;
-
-    public static OptionalSettings get(Context context, long id) {
-      OptionalSettings s = null;
-      Cursor c = query(context, id);
-      if (c.moveToFirst())
-        s = new OptionalSettings(c);
-      c.close();
-
-      if (s == null) {
-        c = query(context, AlarmNotificationService.DEFAULTS_ALARM_ID);
-        if (c.moveToFirst())
-          s = new OptionalSettings(c);
-        c.close();
-      }
-
-      if (s != null)
-        return s;
-      else
-        return new OptionalSettings();
-    }
-
-    static private Cursor query(Context context, long id) {
-      return context.getContentResolver().query(
-          ContentUris.withAppendedId(AlarmClockProvider.SETTINGS_URI, id),
-          new String[] {
-            AlarmClockProvider.SettingsEntry.TONE_URL,
-            AlarmClockProvider.SettingsEntry.TONE_NAME,
-            AlarmClockProvider.SettingsEntry.SNOOZE,
-            AlarmClockProvider.SettingsEntry.VIBRATE,
-            AlarmClockProvider.SettingsEntry.VOLUME_STARTING,
-            AlarmClockProvider.SettingsEntry.VOLUME_ENDING,
-            AlarmClockProvider.SettingsEntry.VOLUME_TIME },
-          null, null, null);
-    }
-
-    private OptionalSettings() {
-      tone_url = TONE_URL_DEFAULT;
-      tone_name = TONE_NAME_DEFAULT;
-      snooze = SNOOZE_DEFAULT;
-      vibrate = VIBRATE_DEFAULT;
-      volume_starting = VOLUME_STARTING_DEFAULT;
-      volume_ending = VOLUME_ENDING_DEFAULT;
-      volume_time = VOLUME_TIME_DEFAULT;
-    }
-
-    private OptionalSettings(Cursor c) {
-      tone_url = Uri.parse(c.getString(c.getColumnIndex(
-          AlarmClockProvider.SettingsEntry.TONE_URL)));
-      tone_name = c.getString(c.getColumnIndex(
-          AlarmClockProvider.SettingsEntry.TONE_NAME));
-      snooze = c.getInt(c.getColumnIndex(
-          AlarmClockProvider.SettingsEntry.SNOOZE));
-      vibrate = c.getInt(c.getColumnIndex(
-          AlarmClockProvider.SettingsEntry.VIBRATE)) != 0;
-      volume_starting = c.getInt(c.getColumnIndex(
-          AlarmClockProvider.SettingsEntry.VOLUME_STARTING));
-      volume_ending = c.getInt(c.getColumnIndex(
-          AlarmClockProvider.SettingsEntry.VOLUME_ENDING));
-      volume_time = c.getInt(c.getColumnIndex(
-          AlarmClockProvider.SettingsEntry.VOLUME_TIME));
-    }
-  }
-
   private static class OptionsView extends LinearLayout {
     public final TimePicker.OnTimePickListener time_listener;
     public final RepeatEditor.OnPickListener repeat_listener;
@@ -355,8 +182,8 @@ public class AlarmOptions extends DialogFragment {
       final boolean defaults = id == AlarmNotificationService.DEFAULTS_ALARM_ID;
 
 
-      final AlarmSettings alarm = AlarmSettings.get(c, id);
-      final OptionalSettings s = OptionalSettings.get(c, id);
+      final DbUtil.Alarm alarm = DbUtil.Alarm.get(c, id);
+      final DbUtil.Settings s = DbUtil.Settings.get(c, id);
 
       final ViewGroup edit_time = newItem(c);
       if (!defaults) addView(edit_time);
@@ -367,9 +194,9 @@ public class AlarmOptions extends DialogFragment {
             val.put(AlarmClockProvider.AlarmEntry.TIME, t);
             c.getContentResolver().update(uri, val, null, null);
 
-            final Calendar next = TimeUtil.nextOccurrence(
-                t, AlarmSettings.getRepeat(c, id),
-                AlarmSettings.getNextSnooze(c, id));
+            final DbUtil.Alarm a = DbUtil.Alarm.get(c, id);
+            final Calendar next =
+              TimeUtil.nextOccurrence(t, a.repeat, a.next_snooze);
             if (alarm.enabled) {
               AlarmNotificationService.removeAlarmTrigger(c, id);
               AlarmNotificationService.scheduleAlarmTrigger(
@@ -385,14 +212,13 @@ public class AlarmOptions extends DialogFragment {
           new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-              int time = AlarmSettings.getTime(c, id);
-              int repeats = AlarmSettings.getRepeat(c, id);
+              DbUtil.Alarm a = DbUtil.Alarm.get(c, id);
               TimePicker time_pick = new TimePicker();
               time_pick.setListener(time_listener);
               Bundle b = new Bundle();
-              b.putInt(TimePicker.TIME, time);
+              b.putInt(TimePicker.TIME, a.time);
               b.putString(TimePicker.TITLE, "Edit time");
-              b.putInt(TimePicker.REPEATS, repeats);
+              b.putInt(TimePicker.REPEATS, a.repeat);
               time_pick.setArguments(b);
               time_pick.show(fm, "edit_alarm");
             }
@@ -402,14 +228,14 @@ public class AlarmOptions extends DialogFragment {
       if (!defaults) addView(edit_repeat);
       repeat_listener = new RepeatEditor.OnPickListener() {
           @Override
-          public void onPick(int repeats) {
+          public void onPick(int repeat) {
             ContentValues val = new ContentValues();
-            val.put(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK, repeats);
+            val.put(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK, repeat);
             c.getContentResolver().update(uri, val, null, null);
-            setText(edit_repeat, repeats == 0 ? "No repeats" : TimeUtil.repeatString(repeats));
-            final Calendar next = TimeUtil.nextOccurrence(
-                AlarmSettings.getTime(c, id), repeats,
-                AlarmSettings.getNextSnooze(c, id));
+            setText(edit_repeat, repeat == 0 ? "No repeats" : TimeUtil.repeatString(repeat));
+            final DbUtil.Alarm a = DbUtil.Alarm.get(c, id);
+            final Calendar next =
+              TimeUtil.nextOccurrence(a.time, repeat, a.next_snooze);
             if (alarm.enabled) {
               AlarmNotificationService.removeAlarmTrigger(c, id);
               AlarmNotificationService.scheduleAlarmTrigger(
@@ -423,10 +249,9 @@ public class AlarmOptions extends DialogFragment {
           new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-              int repeat = AlarmSettings.getRepeat(c, id);
               RepeatEditor edit = new RepeatEditor();
               Bundle b = new Bundle();
-              b.putInt(RepeatEditor.BITMASK, repeat);
+              b.putInt(RepeatEditor.BITMASK, DbUtil.Alarm.get(c, id).repeat);
               edit.setArguments(b);
               edit.setListener(repeat_listener);
               edit.show(fm, "edit_repeat");

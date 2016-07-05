@@ -91,8 +91,7 @@ public final class AlarmClockProvider extends ContentProvider {
       } else {
         values.put(SettingsEntry.ALARM_ID, alarmid);
       }
-      final AlarmOptions.OptionalSettings defaults =
-        AlarmOptions.OptionalSettings.get(getContext(), AlarmNotificationService.DEFAULTS_ALARM_ID);
+      final DbUtil.Settings defaults = DbUtil.Settings.get(getContext(), AlarmNotificationService.DEFAULTS_ALARM_ID);
       if (!values.containsKey(SettingsEntry.TONE_URL))
         values.put(SettingsEntry.TONE_URL, defaults.tone_url.toString());
       if (!values.containsKey(SettingsEntry.TONE_NAME))

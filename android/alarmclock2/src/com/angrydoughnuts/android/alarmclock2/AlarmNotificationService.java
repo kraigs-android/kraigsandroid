@@ -145,8 +145,8 @@ public class AlarmNotificationService extends Service {
 
   private void handleTriggerAlarm(Intent i) {
     final long alarmid = i.getLongExtra(ALARM_ID, -1);
-    final AlarmOptions.OptionalSettings settings =
-      AlarmOptions.OptionalSettings.get(getApplicationContext(), alarmid);
+    final DbUtil.Settings settings =
+      DbUtil.Settings.get(getApplicationContext(), alarmid);
 
     PowerManager.WakeLock w = null;
     if (i.hasExtra(AlarmTriggerReceiver.WAKELOCK_ID)) {
@@ -167,7 +167,7 @@ public class AlarmNotificationService extends Service {
 
     String labels = "";
     for (long id : activeAlarms.alarmids) {
-      String label = AlarmOptions.AlarmSettings.getLabel(getApplicationContext(), id);
+      String label = DbUtil.Alarm.get(getApplicationContext(), id).label;
       if (!label.isEmpty()) {
         if (labels.isEmpty())
           labels = label;
@@ -209,10 +209,10 @@ public class AlarmNotificationService extends Service {
     }
 
     for (long alarmid : activeAlarms.alarmids) {
-      final int repeat = AlarmOptions.AlarmSettings.getRepeat(this, alarmid);
+      final DbUtil.Alarm a = DbUtil.Alarm.get(this, alarmid);
       ContentValues v = new ContentValues();
       v.put(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE, 0);
-      if (repeat == 0)
+      if (a.repeat == 0)
         v.put(AlarmClockProvider.AlarmEntry.ENABLED, false);
       int r = getContentResolver().update(
           ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, alarmid),
@@ -220,10 +220,9 @@ public class AlarmNotificationService extends Service {
       if (r < 1) {
         Log.e(TAG, "Failed to disable " + alarmid);
       }
-      if (repeat != 0) {
-        final long nextUTC = TimeUtil.nextOccurrence(
-            AlarmOptions.AlarmSettings.getTime(this, alarmid), repeat, 0)
-          .getTimeInMillis();
+      if (a.repeat != 0) {
+        final long nextUTC =
+          TimeUtil.nextOccurrence(a.time, a.repeat, 0).getTimeInMillis();
         AlarmNotificationService.scheduleAlarmTrigger(this, alarmid, nextUTC);
       }
     }
@@ -362,7 +361,7 @@ public class AlarmNotificationService extends Service {
     private Runnable timeout = null;
 
     public ActiveAlarms(final Context c, PowerManager.WakeLock w,
-                        final AlarmOptions.OptionalSettings s) {
+                        final DbUtil.Settings s) {
       final AudioManager a = (AudioManager)c.getSystemService(
           Context.AUDIO_SERVICE);
       final int init_volume = a.getStreamVolume(AudioManager.STREAM_ALARM);

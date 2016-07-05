@@ -52,14 +52,14 @@ public class AlarmNotificationActivity extends Activity {
     if (state != null && state.containsKey("snooze")) {
       snooze = state.getInt("snooze");
     } else {
-      snooze = AlarmOptions.OptionalSettings.get(this, alarmid).snooze;
+      snooze = DbUtil.Settings.get(this, alarmid).snooze;
     }
 
     final TextView snooze_text = (TextView)findViewById(R.id.snooze_text);
     snooze_text.setText(snooze + " minutes");
 
     ((TextView)findViewById(R.id.alarm_label))
-      .setText(AlarmOptions.AlarmSettings.getLabel(this, alarmid));
+      .setText(DbUtil.Alarm.get(this, alarmid).label);
 
     findViewById(R.id.snooze_minus_five).setOnClickListener(
         new View.OnClickListener() {
@@ -125,7 +125,7 @@ public class AlarmNotificationActivity extends Activity {
     } else if (alarmid != -1) {
       Log.i(TAG, "Another alarm notification intent " + alarmid);
       TextView t = (TextView)findViewById(R.id.alarm_label);
-      String label = AlarmOptions.AlarmSettings.getLabel(this, alarmid);
+      String label = DbUtil.Alarm.get(this, alarmid).label;
       if (!label.isEmpty()) {
         if (t.getText().length() == 0)
           t.setText(label);
