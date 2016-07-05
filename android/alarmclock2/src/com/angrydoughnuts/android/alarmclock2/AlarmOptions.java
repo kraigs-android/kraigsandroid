@@ -32,6 +32,7 @@ import android.os.Process;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -354,7 +355,7 @@ public class AlarmOptions extends DialogFragment {
       final AlarmSettings alarm = AlarmSettings.get(c, id);
       final OptionalSettings s = OptionalSettings.get(c, id);
 
-      final View edit_time = newItem(c);
+      final ViewGroup edit_time = newItem(c);
       if (!defaults) addView(edit_time);
       time_listener = new TimePicker.OnTimePickListener() {
           @Override
@@ -394,7 +395,7 @@ public class AlarmOptions extends DialogFragment {
             }
           });
 
-      final View edit_repeat = newItem(c);
+      final ViewGroup edit_repeat = newItem(c);
       if (!defaults) addView(edit_repeat);
       repeat_listener = new RepeatEditor.OnPickListener() {
           @Override
@@ -429,7 +430,7 @@ public class AlarmOptions extends DialogFragment {
             }
           });
 
-      final View edit_label = newItem(c);
+      final ViewGroup edit_label = newItem(c);
       if (!defaults) addView(edit_label);
       final TextWatcher label_change = new TextWatcher() {
           @Override
@@ -447,7 +448,7 @@ public class AlarmOptions extends DialogFragment {
       setImage(edit_label, R.drawable.ic_label_outline);
       setEdit(edit_label, alarm.label, "Label", label_change);
 
-      final View edit_tone = newItem(c);
+      final ViewGroup edit_tone = newItem(c);
       addView(edit_tone);
       tone_listener = new MediaPicker.Listener() {
           public void onMediaPick(Uri uri, String title) {
@@ -472,17 +473,20 @@ public class AlarmOptions extends DialogFragment {
             }
           });
 
-      final TextView snooze_status = new TextView(c);
-      snooze_status.setText("Snooze: " + s.snooze);
-      final SeekBar edit_snooze = new SeekBar(c);
-      edit_snooze.setMax(11);
-      edit_snooze.setProgress((s.snooze - 5) / 5);
-      edit_snooze.setOnSeekBarChangeListener(
+      final ViewGroup edit_snooze = newItem(c);
+      addView(edit_snooze);
+      setImage(edit_snooze, R.drawable.ic_snooze);
+      setText(edit_snooze, "" + s.snooze);
+      final SeekBar snooze_bar = new SeekBar(c);
+      setView(edit_snooze, snooze_bar);
+      snooze_bar.setMax(11);
+      snooze_bar.setProgress((s.snooze - 5) / 5);
+      snooze_bar.setOnSeekBarChangeListener(
           new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar s, int progress, boolean user) {
               final int snooze = progress * 5 + 5;
-              snooze_status.setText("Snooze: " + snooze);
+              setText(edit_snooze, "" + snooze);
             }
             @Override
             public void onStartTrackingTouch(SeekBar s) {}
@@ -495,11 +499,6 @@ public class AlarmOptions extends DialogFragment {
                 c.getContentResolver().insert(settings, val);
             }
           });
-      final LinearLayout snooze_layout = new LinearLayout(c);
-      snooze_layout.setOrientation(LinearLayout.VERTICAL);
-      snooze_layout.addView(snooze_status);
-      snooze_layout.addView(edit_snooze);
-      addView(snooze_layout);
 
       final Button edit_vibrate = new Button(c);
       addView(edit_vibrate);
@@ -620,20 +619,27 @@ public class AlarmOptions extends DialogFragment {
       addView(volume_layout);
     }
 
-    private View newItem(Context c) {
-      return
+    private ViewGroup newItem(Context c) {
+      return (ViewGroup)
         ((LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
         .inflate(R.layout.settings_item, null);
     }
 
-    private void setImage(View v, int id) {
+    private void setImage(ViewGroup v, int id) {
       ((ImageView)v.findViewById(R.id.setting_icon)).setImageResource(id);
     }
 
-    private void setText(View v, String s) {
+    private void setText(ViewGroup v, String s) {
       TextView t = (TextView)v.findViewById(R.id.setting_text);
       t.setVisibility(View.VISIBLE);
       t.setText(s);
+    }
+
+    private void setView(ViewGroup g, View v) {
+      LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
+          LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 1.0f);
+      p.gravity = Gravity.CENTER;
+      g.addView(v, -1, p);
     }
 
     private void setEdit(View v, String s, String hint, TextWatcher w) {
