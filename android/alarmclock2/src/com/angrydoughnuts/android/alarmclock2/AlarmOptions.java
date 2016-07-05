@@ -47,10 +47,6 @@ import android.widget.TextView;
 import java.util.Calendar;
 
 public class AlarmOptions extends DialogFragment {
-  private static final Uri default_settings = ContentUris.withAppendedId(
-      AlarmClockProvider.SETTINGS_URI,
-      AlarmNotificationService.DEFAULTS_ALARM_ID);
-
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     super.onCreateDialog(savedInstanceState);
@@ -66,14 +62,8 @@ public class AlarmOptions extends DialogFragment {
         AlarmNotificationService.ALARM_ID, -1);
     final boolean defaults = id == AlarmNotificationService.DEFAULTS_ALARM_ID;
 
-    final OptionsViews views = new OptionsViews(
+    final OptionsView v = new OptionsView(
         getContext(), getFragmentManager(), id);
-    final BaseAdapter adapter = defaults ?
-      new DefaultOptionsAdapter(views) :
-      new StandardOptionsAdapter(views);
-    final ListView v = new ListView(getContext());
-    v.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
-    v.setAdapter(adapter);
 
     if (savedInstanceState != null) {
       TimePicker t = (TimePicker)getFragmentManager()
@@ -82,9 +72,9 @@ public class AlarmOptions extends DialogFragment {
         .findFragmentByTag("edit_repeat");
       MediaPicker m = (MediaPicker)getFragmentManager()
         .findFragmentByTag("edit_tone");
-      if (t != null) t.setListener(views.time_listener);
-      if (r != null) r.setListener(views.repeat_listener);
-      if (m != null) m.setListener(views.tone_listener);
+      if (t != null) t.setListener(v.time_listener);
+      if (r != null) r.setListener(v.repeat_listener);
+      if (m != null) m.setListener(v.tone_listener);
     }
 
     return new AlertDialog.Builder(getContext())
@@ -344,109 +334,28 @@ public class AlarmOptions extends DialogFragment {
     }
   }
 
-  private static class StandardOptionsAdapter extends BaseAdapter {
-    private enum Views {
-      EDIT_TIME,
-      EDIT_REPEAT,
-      EDIT_LABEL,
-      EDIT_TONE,
-      EDIT_SNOOZE,
-      EDIT_VIBRATE,
-      EDIT_VOLUME,
-    }
-
-    private final OptionsViews v;
-    public StandardOptionsAdapter(OptionsViews views) { v = views; }
-
-    @Override
-    public long getItemId(int position) { return position; }
-    @Override
-    public int getItemViewType(int position) { return position; }
-    @Override
-    public int getCount() { return Views.values().length; }
-    @Override
-    public int getViewTypeCount() { return Views.values().length; }
-    @Override
-    public Object getItem(int position) { return null; }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-      if (convertView != null)
-        return convertView;
-
-      switch(Views.values()[position]) {
-        case EDIT_TIME: return v.edit_time;
-        case EDIT_REPEAT: return v.edit_repeat;
-        case EDIT_LABEL: return v.edit_label;
-        case EDIT_TONE: return v.edit_tone;
-        case EDIT_SNOOZE: return v.snooze_layout;
-        case EDIT_VIBRATE: return v.edit_vibrate;
-        case EDIT_VOLUME: return v.volume_layout;
-      }
-      return null;
-    }
-  }
-
-  private static class DefaultOptionsAdapter extends BaseAdapter {
-    private enum Views {
-      EDIT_TONE,
-      EDIT_SNOOZE,
-      EDIT_VIBRATE,
-      EDIT_VOLUME,
-    }
-
-    private final OptionsViews v;
-    public DefaultOptionsAdapter(OptionsViews views) { v = views; }
-
-    @Override
-    public long getItemId(int position) { return position; }
-    @Override
-    public int getItemViewType(int position) { return position; }
-    @Override
-    public int getCount() { return Views.values().length; }
-    @Override
-    public int getViewTypeCount() { return Views.values().length; }
-    @Override
-    public Object getItem(int position) { return null; }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-      if (convertView != null)
-        return convertView;
-
-      switch(Views.values()[position]) {
-        case EDIT_TONE: return v.edit_tone;
-        case EDIT_SNOOZE: return v.snooze_layout;
-        case EDIT_VIBRATE: return v.edit_vibrate;
-        case EDIT_VOLUME: return v.volume_layout;
-      }
-      return null;
-    }
-  }
-
-  private static class OptionsViews {
-    public final View edit_time;
+  private static class OptionsView extends LinearLayout {
     public final TimePicker.OnTimePickListener time_listener;
-    public final View edit_repeat;
     public final RepeatEditor.OnPickListener repeat_listener;
-    public final View edit_label;
-    public final View edit_tone;
     public final MediaPicker.Listener tone_listener;
-    public final LinearLayout snooze_layout;
-    public final Button edit_vibrate;
-    public final LinearLayout volume_layout;
 
-    public OptionsViews(
+    public OptionsView(
         final Context c, final FragmentManager fm, final long id) {
+      super(c);
+      setOrientation(LinearLayout.VERTICAL);
+
       final Uri uri = ContentUris.withAppendedId(
           AlarmClockProvider.ALARMS_URI, id);
       final Uri settings = ContentUris.withAppendedId(
           AlarmClockProvider.SETTINGS_URI, id);
+      final boolean defaults = id == AlarmNotificationService.DEFAULTS_ALARM_ID;
+
 
       final AlarmSettings alarm = AlarmSettings.get(c, id);
       final OptionalSettings s = OptionalSettings.get(c, id);
 
-      edit_time = newItem(c);
+      final View edit_time = newItem(c);
+      if (!defaults) addView(edit_time);
       time_listener = new TimePicker.OnTimePickListener() {
           @Override
           public void onTimePick(int t) {
@@ -485,7 +394,8 @@ public class AlarmOptions extends DialogFragment {
             }
           });
 
-      edit_repeat = newItem(c);
+      final View edit_repeat = newItem(c);
+      if (!defaults) addView(edit_repeat);
       repeat_listener = new RepeatEditor.OnPickListener() {
           @Override
           public void onPick(int repeats) {
@@ -519,9 +429,8 @@ public class AlarmOptions extends DialogFragment {
             }
           });
 
-      // TODO: this doesn't show the keyboard if there isn't another edit view
-      // from the xml layout...
-      edit_label = newItem(c);
+      final View edit_label = newItem(c);
+      if (!defaults) addView(edit_label);
       final TextWatcher label_change = new TextWatcher() {
           @Override
           public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
@@ -538,7 +447,8 @@ public class AlarmOptions extends DialogFragment {
       setImage(edit_label, R.drawable.ic_label_outline);
       setEdit(edit_label, alarm.label, "Label", label_change);
 
-      edit_tone = newItem(c);
+      final View edit_tone = newItem(c);
+      addView(edit_tone);
       tone_listener = new MediaPicker.Listener() {
           public void onMediaPick(Uri uri, String title) {
             ContentValues val = new ContentValues();
@@ -585,12 +495,14 @@ public class AlarmOptions extends DialogFragment {
                 c.getContentResolver().insert(settings, val);
             }
           });
-      snooze_layout = new LinearLayout(c);
+      final LinearLayout snooze_layout = new LinearLayout(c);
       snooze_layout.setOrientation(LinearLayout.VERTICAL);
       snooze_layout.addView(snooze_status);
       snooze_layout.addView(edit_snooze);
+      addView(snooze_layout);
 
-      edit_vibrate = new Button(c);
+      final Button edit_vibrate = new Button(c);
+      addView(edit_vibrate);
       edit_vibrate.setText("vibrate " + s.vibrate);
       edit_vibrate.setOnClickListener(
           new View.OnClickListener() {
@@ -699,12 +611,13 @@ public class AlarmOptions extends DialogFragment {
             }
           });
 
-      volume_layout = new LinearLayout(c);
+      final LinearLayout volume_layout = new LinearLayout(c);
       volume_layout.setOrientation(LinearLayout.VERTICAL);
       volume_layout.addView(volume_status);
       volume_layout.addView(edit_volume_starting);
       volume_layout.addView(edit_volume_ending);
       volume_layout.addView(edit_volume_time);
+      addView(volume_layout);
     }
 
     private View newItem(Context c) {
