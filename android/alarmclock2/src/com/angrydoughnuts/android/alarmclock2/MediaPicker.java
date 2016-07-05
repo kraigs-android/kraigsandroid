@@ -33,6 +33,7 @@ import android.os.Bundle;
 import android.os.Process;
 import android.provider.MediaStore.Audio;
 import android.provider.MediaStore.MediaColumns;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,16 +48,6 @@ import android.widget.ViewAnimator;
 import java.io.IOException;
 
 public class MediaPicker extends DialogFragment {
-  public static interface Listener {
-    abstract void onMediaPick(Uri uri, String title);
-  }
-
-  private Uri uri = null;
-  private String title = null;
-  private Listener listener = null;
-  private MediaPlayer player = null;
-  public void setListener(Listener l) { listener = l; }
-
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     super.onCreateDialog(savedInstanceState);
@@ -66,21 +57,25 @@ public class MediaPicker extends DialogFragment {
       title = savedInstanceState.getString("title");
     }
 
+    final boolean has_external = PackageManager.PERMISSION_GRANTED ==
+      getContext().checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE,
+                                   Process.myPid(), Process.myUid());
+
     final TabHost t = (TabHost)((LayoutInflater)getContext().getSystemService(
                         Context.LAYOUT_INFLATER_SERVICE)).inflate(
                             R.layout.media_picker, null);
     t.setup();
-    final boolean has_external = PackageManager.PERMISSION_GRANTED ==
-      getContext().checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE,
-                                   Process.myPid(), Process.myUid());
+
     if (has_external) {
       t.addTab(
+          // TODO: string
           t.newTabSpec("artists").setIndicator("artists").setContent(
               new TabHost.TabContentFactory() {
                 @Override
                 public View createTabContent(String tag) { return newFlip(); }
               }));
       t.addTab(
+          // TODO: string
           t.newTabSpec("external").setIndicator("external").setContent(
               new TabHost.TabContentFactory() {
                 @Override
@@ -90,6 +85,7 @@ public class MediaPicker extends DialogFragment {
               }));
     }
     t.addTab(
+        // TODO: string
         t.newTabSpec("internal").setIndicator("internal").setContent(
             new TabHost.TabContentFactory() {
               @Override
@@ -98,14 +94,20 @@ public class MediaPicker extends DialogFragment {
               }
             }));
 
-    // TODO: is this check necessary?
+    if (title != null)
+      // TODO: string
+      ((TextView)t.findViewById(R.id.selected)).setText("Selected: " + title);
+
     if (player == null)
       player = new MediaPlayer();
 
     return new AlertDialog.Builder(getContext())
+      // TODO: string
       .setTitle("Media picker")
       .setView(t)
+      // TODO: string
       .setNegativeButton("Cancel", null)
+      // TODO: string
       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
@@ -139,15 +141,16 @@ public class MediaPicker extends DialogFragment {
         TextView t = (TextView)v;
         uri = ContentUris.withAppendedId(base, id);
         title = t.getText().toString();
-        TextView selected = (TextView)getDialog().findViewById(R.id.selected);;
-        selected.setText("Selected: " + title);
+        // TODO: string
+        ((TextView)getDialog().findViewById(R.id.selected))
+          .setText("Selected: " + title);
 
         player.reset();
         try {
           player.setDataSource(getContext(), uri);
           player.prepare();
         } catch (IOException e) {
-          // TODO handle
+          Log.e(TAG, "Failed to set data " + e);
         }
         player.start();
       }
@@ -187,9 +190,8 @@ public class MediaPicker extends DialogFragment {
     return flip;
   }
 
-  private View newList(final Uri q) {
+  private View newList(Uri q) {
     return newList(new MediaQuery(q), newListener(q));
-
   }
 
   private View newList(
@@ -288,4 +290,16 @@ public class MediaPicker extends DialogFragment {
       display = MediaColumns.TITLE;
     }
   }
+
+  private static final String TAG = MediaPicker.class.getSimpleName();
+
+  public static interface Listener {
+    abstract void onMediaPick(Uri uri, String title);
+  }
+
+  private Uri uri = null;
+  private String title = null;
+  private Listener listener = null;
+  private MediaPlayer player = null;
+  public void setListener(Listener l) { listener = l; }
 }
