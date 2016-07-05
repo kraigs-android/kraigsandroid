@@ -209,14 +209,22 @@ public class AlarmNotificationService extends Service {
     }
 
     for (long alarmid : activeAlarms.alarmids) {
+      final int repeat = AlarmOptions.AlarmSettings.getRepeat(this, alarmid);
       ContentValues v = new ContentValues();
-      v.put(AlarmClockProvider.AlarmEntry.ENABLED, false);
       v.put(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE, 0);
+      if (repeat == 0)
+        v.put(AlarmClockProvider.AlarmEntry.ENABLED, false);
       int r = getContentResolver().update(
           ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, alarmid),
           v, null, null);
       if (r < 1) {
         Log.e(TAG, "Failed to disable " + alarmid);
+      }
+      if (repeat != 0) {
+        final long nextUTC = TimeUtil.nextOccurrence(
+            AlarmOptions.AlarmSettings.getTime(this, alarmid), repeat, 0)
+          .getTimeInMillis();
+        AlarmNotificationService.scheduleAlarmTrigger(this, alarmid, nextUTC);
       }
     }
 
