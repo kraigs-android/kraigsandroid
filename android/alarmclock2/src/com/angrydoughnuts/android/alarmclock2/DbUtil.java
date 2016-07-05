@@ -47,7 +47,7 @@ public class DbUtil {
       return s;
     }
 
-    private Alarm(Cursor c) {
+    public Alarm(Cursor c) {
       time = c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
       enabled = c.getInt(c.getColumnIndex(
           AlarmClockProvider.AlarmEntry.ENABLED)) != 0;

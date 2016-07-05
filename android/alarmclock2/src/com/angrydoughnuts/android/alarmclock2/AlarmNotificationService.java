@@ -35,20 +35,20 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
 import android.provider.Settings;
-import android.text.format.DateFormat;
 import android.util.ArrayMap;
 import android.util.Log;
 
 import java.io.IOException;
-import java.lang.Math;
 import java.util.HashSet;
 import java.util.Calendar;
-import java.util.TimeZone;
 
 public class AlarmNotificationService extends Service {
   public static final String ALARM_ID = "alarm_id";
   private static final String TIME_UTC = "time_utc";
 
+  /**
+   * Write new alarm information to the data store and schedule it.
+   */
   public static long newAlarm(Context c, int secondsPastMidnight) {
 
     ContentValues v = new ContentValues();
@@ -65,25 +65,37 @@ public class AlarmNotificationService extends Service {
     return alarmid;
   }
 
-  public static void scheduleAlarmTrigger(
-      Context c, long alarmid, long tsUTC) {
+  /**
+   * Schedule an alarm event for a previously created alarm.
+   */
+  public static void scheduleAlarmTrigger(Context c, long alarmid, long tsUTC) {
     c.startService(new Intent(c, AlarmNotificationService.class)
                    .putExtra(COMMAND, SCHEDULE_TRIGGER)
                    .putExtra(ALARM_ID, alarmid)
                    .putExtra(TIME_UTC, tsUTC));
   }
 
+  /**
+   * Un-schedule a previously scheduled alarm event.
+   */
   public static void removeAlarmTrigger(Context c, long alarmid) {
     c.startService(new Intent(c, AlarmNotificationService.class)
                    .putExtra(COMMAND, REMOVE_TRIGGER)
                    .putExtra(ALARM_ID, alarmid));
   }
 
+  /**
+   * Dismiss all of the currently firing alarms.  Any marked for repeat will
+   * be rescheduled appropriately.
+   */
   public static void dismissAllAlarms(Context c) {
     c.startService(new Intent(c, AlarmNotificationService.class)
                    .putExtra(COMMAND, DISMISS_ALL));
   }
 
+  /**
+   * Snooze all of the currently firing alarms.
+   */
   public static void snoozeAllAlarms(Context c, long snoozeUtc) {
     c.startService(new Intent(c, AlarmNotificationService.class)
                    .putExtra(COMMAND, SNOOZE_ALL)
@@ -97,6 +109,8 @@ public class AlarmNotificationService extends Service {
     long alarmid;
     long ts;
 
+    // NOTE: The service should continue running while there are any active
+    // alarms.
     switch (i.hasExtra(COMMAND) ? i.getExtras().getInt(COMMAND) : -1) {
     case TRIGGER_ALARM_NOTIFICATION:
       handleTriggerAlarm(i);
@@ -154,7 +168,7 @@ public class AlarmNotificationService extends Service {
     }
 
     if (w == null)
-      Log.e(TAG, "No wake lock present for TRIGGER_ALARM_NOTIFICATION");
+      Log.e(TAG, "No wake lock present for alarm trigger " + alarmid);
 
     if (activeAlarms == null) {
       activeAlarms = new ActiveAlarms(getApplicationContext(), w, settings);
@@ -180,8 +194,9 @@ public class AlarmNotificationService extends Service {
 
     final Notification notification =
       new Notification.Builder(this)
-      .setContentTitle(labels.isEmpty() ? "Alarm Klock" : labels)
-      .setContentText("Second line...")
+      // TODO: string
+      .setContentTitle("Alarm Klock")
+      .setContentText(labels)
       .setSmallIcon(R.drawable.ic_alarm_on)
       .setContentIntent(PendingIntent.getActivity(this, 0, notify, 0))
       .setCategory(Notification.CATEGORY_ALARM)
@@ -217,7 +232,7 @@ public class AlarmNotificationService extends Service {
           ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, alarmid),
           v, null, null);
       if (r < 1) {
-        Log.e(TAG, "Failed to disable " + alarmid);
+        Log.e(TAG, "Failed to dismiss " + alarmid);
       }
       if (a.repeat != 0) {
         final long nextUTC =
@@ -230,7 +245,7 @@ public class AlarmNotificationService extends Service {
     refreshNotifyBar();
   }
 
-  private void snoozeAll(long snoozeUtc) {
+  private void snoozeAll(long snoozeUTC) {
     if (activeAlarms == null) {
       Log.w(TAG, "No active alarms when snoozed");
       return;
@@ -238,14 +253,14 @@ public class AlarmNotificationService extends Service {
 
     for (long alarmid : activeAlarms.alarmids) {
       ContentValues v = new ContentValues();
-      v.put(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE, snoozeUtc);
+      v.put(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE, snoozeUTC);
       int r = getContentResolver().update(
           ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, alarmid),
           v, null, null);
       if (r < 1) {
         Log.e(TAG, "Failed to snooze " + alarmid);
       }
-      scheduleTrigger(alarmid, snoozeUtc);
+      scheduleTrigger(alarmid, snoozeUTC);
     }
 
     activeAlarms.alarmids.clear();
@@ -278,6 +293,7 @@ public class AlarmNotificationService extends Service {
   private void refreshNotifyBar() {
     final NotificationManager manager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    // Recursive trigger.
     final PendingIntent tick = PendingIntent.getService(
         this, 0, new Intent(this, AlarmNotificationService.class)
         .putExtra(AlarmNotificationService.COMMAND,
@@ -286,40 +302,46 @@ public class AlarmNotificationService extends Service {
     final Cursor c = getContentResolver().query(
         AlarmClockProvider.ALARMS_URI,
         new String[] { AlarmClockProvider.AlarmEntry.TIME,
+                       AlarmClockProvider.AlarmEntry.ENABLED,
                        AlarmClockProvider.AlarmEntry.NAME,
                        AlarmClockProvider.AlarmEntry.DAY_OF_WEEK,
                        AlarmClockProvider.AlarmEntry.NEXT_SNOOZE },
         AlarmClockProvider.AlarmEntry.ENABLED + " == 1",
         null, null);
 
+    // Clear notification bar when there are no alarms enabled or when there
+    // is an alarm currently firing (that alarm will create its own
+    // notification).
     if (c.getCount() == 0 ||
         (activeAlarms != null && !activeAlarms.alarmids.isEmpty())) {
+      ((AlarmManager)getSystemService(Context.ALARM_SERVICE)).cancel(tick);
       manager.cancel(NEXT_ALARM_NOTIFICATION_ID);
       c.close();
-      ((AlarmManager)getSystemService(Context.ALARM_SERVICE)).cancel(tick);
       return;
     }
 
+    // Find the next alarm.
     final Calendar now = Calendar.getInstance();
     Calendar next = null;
     String next_label = "";
     while (c.moveToNext()) {
-      Calendar n = TimeUtil.nextOccurrence(
-          now,
-          c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME)),
-          c.getLong(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE)),
-          c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK)));
+      final DbUtil.Alarm a = new DbUtil.Alarm(c);
+      final Calendar n =
+        TimeUtil.nextOccurrence(now, a.time, a.repeat, a.next_snooze);
       if (next == null || n.before(next)) {
         next = n;
-        next_label = c.getString(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NAME));
+        next_label = a.label;
       }
     }
     c.close();
 
+    // Build notification and display it.
     manager.notify(
         NEXT_ALARM_NOTIFICATION_ID,
         new Notification.Builder(this)
+        // TODO: string
         .setContentTitle(next_label.isEmpty() ? "Alarm Klock" : next_label)
+        // TODO: string
         .setContentText(TimeUtil.formatLong(this, next) + " in " + TimeUtil.until(next))
         .setSmallIcon(R.drawable.ic_alarm)
         .setCategory(Notification.CATEGORY_STATUS)
@@ -330,6 +352,7 @@ public class AlarmNotificationService extends Service {
                 this, 0, new Intent(this, AlarmClockActivity.class), 0))
         .build());
 
+    // Schedule an update for the notification on the next minute.
     final Calendar wake = TimeUtil.nextMinute();
     ((AlarmManager)getSystemService(Context.ALARM_SERVICE)).setExact(
         AlarmManager.RTC, wake.getTimeInMillis(), tick);
@@ -361,6 +384,8 @@ public class AlarmNotificationService extends Service {
 
     public ActiveAlarms(final Context c, PowerManager.WakeLock w,
                         final DbUtil.Settings s) {
+      // Since we will be changing the notification channel volume, store
+      // the initial value so we can reset it afterward.
       final AudioManager a = (AudioManager)c.getSystemService(
           Context.AUDIO_SERVICE);
       final int init_volume = a.getStreamVolume(AudioManager.STREAM_ALARM);
@@ -369,6 +394,7 @@ public class AlarmNotificationService extends Service {
 
       wakelock = w;
       player = new MediaPlayer();
+      // This handler will be used to asynchronously trigger volume adjustments.
       handler = new Handler() {
           @Override
           public void handleMessage(Message m) {
@@ -392,6 +418,9 @@ public class AlarmNotificationService extends Service {
             }
           }
         };
+
+      // Setup a watchdog to dismiss this alarm if it goes unanswered for
+      // 10 minutes.  Otherwise the screen would stay on indefinitely.
       timeout = new Runnable() {
           @Override
           public void run() {
@@ -401,17 +430,19 @@ public class AlarmNotificationService extends Service {
               .putExtra(AlarmNotificationActivity.TIMEOUT, true)
               .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             c.startActivity(timeout);
-
           }
         };
       handler.postDelayed(timeout, 10 * 60 * 1000);
 
+      // NOTE: We use the alarm channel for notification sound.
       player.setAudioStreamType(AudioManager.STREAM_ALARM);
       player.setLooping(true);
       final float start = s.volume_starting/(float)100.0;
       player.setVolume(start, start);
       Log.i(TAG, "Starting volume: " + start);
 
+      // Try to load the configured media, but fall back to the system
+      // default if that fails.
       try {
         player.setDataSource(c, s.tone_url);
       } catch (IOException e) {
@@ -430,6 +461,7 @@ public class AlarmNotificationService extends Service {
         Log.e(TAG, "prepare failed: " + e.toString());
       }
 
+      // Begin the volume fade.
       Message m = new Message();
       m.what = TRIGGER_INC;
       m.arg1 = s.volume_starting;
@@ -445,8 +477,8 @@ public class AlarmNotificationService extends Service {
       wakelock = null;
 
       handler.removeCallbacks(timeout);
-      handler.sendEmptyMessage(ActiveAlarms.RESET_VOLUME);
       handler.removeMessages(ActiveAlarms.TRIGGER_INC);
+      handler.sendEmptyMessage(ActiveAlarms.RESET_VOLUME);
       handler = null;
 
       if (player.isPlaying())

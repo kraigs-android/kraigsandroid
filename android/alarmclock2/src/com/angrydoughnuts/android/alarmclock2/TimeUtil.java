@@ -22,18 +22,18 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class TimeUtil {
-  public static Calendar nextOccurrence(int secondsPastMidnight, int repeats) {
-    return nextOccurrence(Calendar.getInstance(), secondsPastMidnight, repeats);
+  public static Calendar nextOccurrence(int secondsPastMidnight, int repeat) {
+    return nextOccurrence(Calendar.getInstance(), secondsPastMidnight, repeat);
   }
 
   public static Calendar nextOccurrence(
-      int secondsPastMidnight, int repeats, long nextSnooze) {
+      int secondsPastMidnight, int repeat, long nextSnooze) {
     return nextOccurrence(
-        Calendar.getInstance(), secondsPastMidnight, nextSnooze, repeats);
+        Calendar.getInstance(), secondsPastMidnight, repeat, nextSnooze);
   }
 
   public static Calendar nextOccurrence(
-      Calendar now, int secondsPastMidnight, int repeats) {
+      Calendar now, int secondsPastMidnight, int repeat) {
     Calendar then = (Calendar)now.clone();
     then.set(Calendar.HOUR_OF_DAY, 0);
     then.set(Calendar.MINUTE, 0);
@@ -42,14 +42,14 @@ public class TimeUtil {
     then.add(Calendar.SECOND, secondsPastMidnight);
     if (then.before(now))
       then.add(Calendar.DATE, 1);
-    while (repeats > 0 && !dayIsRepeat(then.get(Calendar.DAY_OF_WEEK), repeats))
+    while (repeat > 0 && !dayIsRepeat(then.get(Calendar.DAY_OF_WEEK), repeat))
       then.add(Calendar.DATE, 1);
     return then;
   }
 
   public static Calendar nextOccurrence(
-      Calendar now, int secondsPastMidnight, long nextSnooze, int repeats) {
-    Calendar next = nextOccurrence(now, secondsPastMidnight, repeats);
+      Calendar now, int secondsPastMidnight, int repeat, long nextSnooze) {
+    Calendar next = nextOccurrence(now, secondsPastMidnight, repeat);
     if (nextSnooze > now.getTimeInMillis()) {
       Calendar snooze = Calendar.getInstance();
       snooze.setTimeInMillis(nextSnooze);
@@ -59,22 +59,22 @@ public class TimeUtil {
     return next;
   }
 
-  private static boolean dayIsRepeat(int calendarDow, int repeats) {
+  private static boolean dayIsRepeat(int calendarDow, int repeat) {
     switch (calendarDow) {
       case Calendar.SUNDAY:
-        return (1 & repeats) != 0;
+        return (1 & repeat) != 0;
       case Calendar.MONDAY:
-        return (2 & repeats) != 0;
+        return (2 & repeat) != 0;
       case Calendar.TUESDAY:
-        return (4 & repeats) != 0;
+        return (4 & repeat) != 0;
       case Calendar.WEDNESDAY:
-        return (8 & repeats) != 0;
+        return (8 & repeat) != 0;
       case Calendar.THURSDAY:
-        return (16 & repeats) != 0;
+        return (16 & repeat) != 0;
       case Calendar.FRIDAY:
-        return (32 & repeats) != 0;
+        return (32 & repeat) != 0;
       case Calendar.SATURDAY:
-        return (64 & repeats) != 0;
+        return (64 & repeat) != 0;
     }
     return true;
   }
@@ -82,30 +82,34 @@ public class TimeUtil {
   private static final int EVERYDAY = 1 | 2 | 4 | 8 | 16 | 32 | 64;
   private static final int WEEKDAYS = 2 | 4 | 8 | 16 | 32;
   private static final int WEEKENDS = 1 | 64;
-  public static String repeatString(int repeats) {
-    if (repeats <= 0)
+  public static String repeatString(int repeat) {
+    if (repeat <= 0)
       return "";
-    else if (repeats == EVERYDAY)
+    else if (repeat == EVERYDAY)
+      // TODO: string
       return "Everyday";
-    else if (repeats == WEEKDAYS)
+    else if (repeat == WEEKDAYS)
+      // TODO: string
       return "Weekdays";
-    else if (repeats == WEEKENDS)
+    else if (repeat == WEEKENDS)
+      // TODO: string
       return "Weekends";
 
+    // TODO: string
     String s = "";
-    if ((1 & repeats) != 0)
+    if ((1 & repeat) != 0)
       s += "Su ";
-    if ((2 & repeats) != 0)
+    if ((2 & repeat) != 0)
       s += "M ";
-    if ((4 & repeats) != 0)
+    if ((4 & repeat) != 0)
       s += "Tu ";
-    if ((8 & repeats) != 0)
+    if ((8 & repeat) != 0)
       s += "W ";
-    if ((16 & repeats) != 0)
+    if ((16 & repeat) != 0)
       s += "Th ";
-    if ((32 & repeats) != 0)
+    if ((32 & repeat) != 0)
       s += "F ";
-    if ((64 & repeats) != 0)
+    if ((64 & repeat) != 0)
       s += "Sa ";
     return s;
   }
@@ -152,10 +156,13 @@ public class TimeUtil {
 
     String s = "";
     if (days > 0)
+      // TODO: string
       s += String.format("%d %s ", days, (days > 1) ? "days" : "day");
     if (hours > 0)
+      // TODO: string
       s += String.format("%d %s ", hours, (hours > 1) ? "hours" : "hour");
     if (minutes > 0)
+      // TODO: string
       s += String.format("%d %s", minutes, (minutes > 1) ? "minutes" : "minute");
     return s;
   }

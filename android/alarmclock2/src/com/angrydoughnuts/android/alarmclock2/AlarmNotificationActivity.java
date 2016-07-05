@@ -44,9 +44,7 @@ public class AlarmNotificationActivity extends Activity {
 
     final long alarmid =
       getIntent().getLongExtra(AlarmNotificationService.ALARM_ID, -1);
-    if (alarmid == -1)
-      Log.e(TAG, "Did't get an alarm id!");
-    else
+    if (alarmid != -1) // This can happen when clicking the top-bar notification
       Log.i(TAG, "Alarm notification intent " + alarmid);
 
     // Pull snooze from saved state or options database.
