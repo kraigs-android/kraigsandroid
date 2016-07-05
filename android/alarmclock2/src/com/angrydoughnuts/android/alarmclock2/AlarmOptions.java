@@ -29,6 +29,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Process;
+import android.os.Vibrator;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -38,11 +39,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import java.util.Calendar;
@@ -478,7 +481,7 @@ public class AlarmOptions extends DialogFragment {
       setImage(edit_snooze, R.drawable.ic_snooze);
       setText(edit_snooze, "" + s.snooze);
       final SeekBar snooze_bar = new SeekBar(c);
-      setView(edit_snooze, snooze_bar);
+      setView(edit_snooze, snooze_bar, 1.0f);
       snooze_bar.setMax(11);
       snooze_bar.setProgress((s.snooze - 5) / 5);
       snooze_bar.setOnSeekBarChangeListener(
@@ -500,21 +503,22 @@ public class AlarmOptions extends DialogFragment {
             }
           });
 
-      final Button edit_vibrate = new Button(c);
+      final ViewGroup edit_vibrate = newItem(c);
       addView(edit_vibrate);
-      edit_vibrate.setText("vibrate " + s.vibrate);
-      edit_vibrate.setOnClickListener(
-          new View.OnClickListener() {
+      setImage(edit_vibrate, R.drawable.ic_vibration);
+      Switch vibrate_switch = new Switch(c);
+      setView(edit_vibrate, vibrate_switch, 0.0f);
+      vibrate_switch.setChecked(s.vibrate);
+      vibrate_switch.setOnCheckedChangeListener(
+          new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View view) {
-              // TODO change this to a toggle button and use the toggle state
-              // rather than a db lookup.
-              boolean vibrate = !OptionalSettings.get(c, id).vibrate;
+            public void onCheckedChanged(CompoundButton b, boolean checked) {
+              if (checked)
+                ((Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE)).vibrate(100);
               ContentValues val = new ContentValues();
-              val.put(AlarmClockProvider.SettingsEntry.VIBRATE, vibrate);
+              val.put(AlarmClockProvider.SettingsEntry.VIBRATE, checked);
               if (c.getContentResolver().update(settings, val, null, null) < 1)
                 c.getContentResolver().insert(settings, val);
-              edit_vibrate.setText("vibrate " + vibrate);
             }
           });
 
@@ -635,13 +639,6 @@ public class AlarmOptions extends DialogFragment {
       t.setText(s);
     }
 
-    private void setView(ViewGroup g, View v) {
-      LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-          LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 1.0f);
-      p.gravity = Gravity.CENTER;
-      g.addView(v, -1, p);
-    }
-
     private void setEdit(View v, String s, String hint, TextWatcher w) {
       EditText t = (EditText)v.findViewById(R.id.setting_edit);
       t.setVisibility(View.VISIBLE);
@@ -650,5 +647,13 @@ public class AlarmOptions extends DialogFragment {
       t.setHint(hint);
       t.addTextChangedListener(w);
     }
+
+    private void setView(ViewGroup g, View v, float gravity) {
+      LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
+          LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, gravity);
+      p.gravity = Gravity.CENTER;
+      g.addView(v, -1, p);
+    }
+
   }
 }
