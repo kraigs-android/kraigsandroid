@@ -1,6 +1,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- TODO: string -->
   <item android:id="@+id/default_settings"
         android:title="Default Alarm Options..."/>
+  <!-- TODO: string -->
   <item android:id="@+id/delete_all"
         android:title="Delete All..."/>
 </menu>

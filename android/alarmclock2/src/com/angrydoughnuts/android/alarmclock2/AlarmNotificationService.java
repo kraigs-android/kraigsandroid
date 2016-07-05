@@ -222,7 +222,7 @@ public class AlarmNotificationService extends Service {
       }
       if (a.repeat != 0) {
         final long nextUTC =
-          TimeUtil.nextOccurrence(a.time, a.repeat, 0).getTimeInMillis();
+          TimeUtil.nextOccurrence(a.time, a.repeat).getTimeInMillis();
         AlarmNotificationService.scheduleAlarmTrigger(this, alarmid, nextUTC);
       }
     }

@@ -20,49 +20,36 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.LoaderManager;
-import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.Loader;
-import android.content.ServiceConnection;
 import android.content.pm.ApplicationInfo;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.lang.Runnable;
 import java.util.Calendar;
 import java.util.LinkedList;
 
 public class AlarmClockActivity extends Activity {
-  private final Handler handler = new Handler();
   private Runnable refresh_tick;
+  private final Handler handler = new Handler();
   private final TimePicker.OnTimePickListener new_alarm =
     new TimePicker.OnTimePickListener() {
       @Override
-      public void onTimePick(int secondsPastMidnight) {
-        AlarmNotificationService.newAlarm(
-            getApplicationContext(), secondsPastMidnight);
+      public void onTimePick(int s) {
+        AlarmNotificationService.newAlarm(getApplicationContext(), s);
       }
     };
 
@@ -71,20 +58,21 @@ public class AlarmClockActivity extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.alarm_list);
 
+    // Map AlarmEntry fields to list view item views.
     final ResourceCursorAdapter adapter = new ResourceCursorAdapter(
         this, R.layout.alarm_list_item, null, 0) {
         @Override
         public void bindView(View v, Context context, Cursor c) {
-          final int secondsPastMidnight = c.getInt(
-              c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
-          final int enabled = c.getInt(
-              c.getColumnIndex(AlarmClockProvider.AlarmEntry.ENABLED));
-          final String label = c.getString(
-              c.getColumnIndex(AlarmClockProvider.AlarmEntry.NAME));
-          final int repeats = c.getInt(
-              c.getColumnIndex(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
-          final long nextSnooze = c.getLong(
-              c.getColumnIndex(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE));
+          final int secondsPastMidnight =
+            c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
+          final int enabled =
+            c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.ENABLED));
+          final String label =
+            c.getString(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NAME));
+          final int repeats =
+            c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
+          final long nextSnooze =
+            c.getLong(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE));
           final Calendar next =
             TimeUtil.nextOccurrence(secondsPastMidnight, repeats, nextSnooze);
 
@@ -92,14 +80,16 @@ public class AlarmClockActivity extends Activity {
             .setText(TimeUtil.formatLong(getApplicationContext(), next));
           ((TextView)v.findViewById(R.id.countdown))
             .setText(TimeUtil.until(next));
-          ((TextView)v.findViewById(R.id.label)).setText(label);
-          ((TextView)v.findViewById(R.id.repeats))
+          ((TextView)v.findViewById(R.id.label))
+            .setText(label);
+          ((TextView)v.findViewById(R.id.repeat))
             .setText(TimeUtil.repeatString(repeats));
           ((CheckBox)v.findViewById(R.id.enabled))
             .setChecked(enabled != 0);
         }
       };
 
+    // Setup list view to enable/disable entries upon click.
     ListView list = (ListView)findViewById(R.id.alarm_list);
     list.setAdapter(adapter);
     list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -118,23 +108,15 @@ public class AlarmClockActivity extends Activity {
             AlarmNotificationService.removeAlarmTrigger(
                 getApplicationContext(), id);
           } else {
-            Cursor c = getContentResolver().query(
-                ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
-                new String[] { AlarmClockProvider.AlarmEntry.TIME,
-                               AlarmClockProvider.AlarmEntry.DAY_OF_WEEK },
-                null, null, null);
-            c.moveToFirst();
-            int secondsPastMidnight =
-              c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
-            int repeats =
-              c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
-            c.close();
-            Calendar alarm = TimeUtil.nextOccurrence(secondsPastMidnight, repeats);
+            DbUtil.Alarm a = DbUtil.Alarm.get(getApplicationContext(), id);
+            long nextUTC = TimeUtil.nextOccurrence(a.time, a.repeat)
+              .getTimeInMillis();
             AlarmNotificationService.scheduleAlarmTrigger(
-                getApplicationContext(), id, alarm.getTimeInMillis());
+                getApplicationContext(), id, nextUTC);
           }
         }
       });
+    // And to display the options menu on long click.
     list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
         @Override
         public boolean onItemLongClick(AdapterView<?> p, View v, int x, long id) {
@@ -147,6 +129,8 @@ public class AlarmClockActivity extends Activity {
         }
       });
 
+    // Define the cursor loader for the list view to query all AlarmEntry
+    // columns and sort by time.
     final Loader<Cursor> loader = getLoaderManager().initLoader(
         0, null, new LoaderManager.LoaderCallbacks<Cursor>() {
             @Override
@@ -171,6 +155,9 @@ public class AlarmClockActivity extends Activity {
               adapter.changeCursor(null);
             }
           });
+
+    // Force the cursor loader to refresh on the minute every minute to
+    // recompute countdown displays.
     refresh_tick = new Runnable() {
         @Override
         public void run() {
@@ -179,8 +166,12 @@ public class AlarmClockActivity extends Activity {
         }
       };
 
+    // For debug binaries, display a button that creates an alarm 5 seconds
+    // in the future.
     if ((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
-      findViewById(R.id.test_alarm).setOnClickListener(
+      final View v = findViewById(R.id.test_alarm);
+      v.setVisibility(View.VISIBLE);
+      v.setOnClickListener(
           new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -193,18 +184,9 @@ public class AlarmClockActivity extends Activity {
                   getApplicationContext(), secondsPastMidnight);
             }
           });
-    } else {
-      findViewById(R.id.test_alarm).setVisibility(View.GONE);
     }
 
-    // Listener can not be serialized in time picker, so it must be explicitly
-    // set each time.
-    if (savedInstanceState != null) {
-      TimePicker t = (TimePicker)getFragmentManager()
-        .findFragmentByTag("new_alarm");
-      if (t != null)
-        t.setListener(new_alarm);
-    }
+    // Setup the new alarm button.
     findViewById(R.id.new_alarm).setOnClickListener(
         new View.OnClickListener() {
           @Override
@@ -214,6 +196,15 @@ public class AlarmClockActivity extends Activity {
             time_pick.show(getFragmentManager(), "new_alarm");
           }
         });
+
+    // Listener can not be serialized in time picker, so it must be explicitly
+    // set each time.
+    if (savedInstanceState != null) {
+      TimePicker t = (TimePicker)getFragmentManager()
+        .findFragmentByTag("new_alarm");
+      if (t != null)
+        t.setListener(new_alarm);
+    }
   }
 
   @Override
@@ -245,18 +236,24 @@ public class AlarmClockActivity extends Activity {
       options.setArguments(b);
       options.show(getFragmentManager(), "default_alarm_options");
       return true;
+
     case R.id.delete_all:
       new DialogFragment() {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
           return new AlertDialog.Builder(getContext())
+            // TODO: string
             .setTitle("Confirm Delete All")
+            // TODO: string
             .setMessage("Are you sure you want to delete all alarms?")
+            // TODO: string
             .setNegativeButton("Cancel", null)
+            // TODO: string
             .setPositiveButton(
                 "OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                      // Find all of the enabled alarm ids.
                       LinkedList<Long> ids = new LinkedList<Long>();
                       Cursor c = getContentResolver().query(
                           AlarmClockProvider.ALARMS_URI,
@@ -267,8 +264,10 @@ public class AlarmClockActivity extends Activity {
                         ids.add(c.getLong(c.getColumnIndex(
                             AlarmClockProvider.AlarmEntry._ID)));
                       c.close();
+                      // Delete the entire alarm table.
                       getContext().getContentResolver().delete(
                           AlarmClockProvider.ALARMS_URI, null, null);
+                      // Unschedule any alarms that were active.
                       for (long id : ids)
                         AlarmNotificationService.removeAlarmTrigger(
                             getContext(), id);

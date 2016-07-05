@@ -18,6 +18,7 @@
         android:id="@+id/test_alarm"
         android:src="@drawable/ic_alarm"
         android:background="@drawable/circle_btn"
+        android:visibility="gone"
         android:padding="12dp"
         android:layout_marginLeft="32dp"
         android:layout_marginRight="32dp"
