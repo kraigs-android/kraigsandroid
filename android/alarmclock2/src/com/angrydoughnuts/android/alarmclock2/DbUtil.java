@@ -68,6 +68,8 @@ public class DbUtil {
   }
 
   public static final class Settings {
+    public static final long DEFAULTS_ID = Long.MAX_VALUE;
+
     public final Uri tone_url;
     public final String tone_name;
     public final int snooze;
@@ -97,7 +99,7 @@ public class DbUtil {
 
       // If not found, lookup default settings.
       if (s == null) {
-        c = query(context, AlarmNotificationService.DEFAULTS_ALARM_ID);
+        c = query(context, DEFAULTS_ID);
         if (c.moveToFirst())
           s = new Settings(c);
         c.close();

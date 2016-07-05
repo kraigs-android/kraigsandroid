@@ -64,7 +64,7 @@ public class AlarmOptions extends DialogFragment {
 
     final long id = getArguments().getLong(
         AlarmNotificationService.ALARM_ID, -1);
-    final boolean defaults = id == AlarmNotificationService.DEFAULTS_ALARM_ID;
+    final boolean defaults = id == DbUtil.Settings.DEFAULTS_ID;
 
     final OptionsView v = new OptionsView(
         getContext(), getFragmentManager(), id);
@@ -179,7 +179,7 @@ public class AlarmOptions extends DialogFragment {
           AlarmClockProvider.ALARMS_URI, id);
       final Uri settings = ContentUris.withAppendedId(
           AlarmClockProvider.SETTINGS_URI, id);
-      final boolean defaults = id == AlarmNotificationService.DEFAULTS_ALARM_ID;
+      final boolean defaults = id == DbUtil.Settings.DEFAULTS_ID;
 
 
       final DbUtil.Alarm alarm = DbUtil.Alarm.get(c, id);

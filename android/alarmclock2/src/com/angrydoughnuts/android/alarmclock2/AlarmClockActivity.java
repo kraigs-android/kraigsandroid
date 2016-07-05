@@ -231,8 +231,7 @@ public class AlarmClockActivity extends Activity {
     case R.id.default_settings:
       AlarmOptions options = new AlarmOptions();
       Bundle b = new Bundle();
-      b.putLong(AlarmNotificationService.ALARM_ID,
-                AlarmNotificationService.DEFAULTS_ALARM_ID);
+      b.putLong(AlarmNotificationService.ALARM_ID, DbUtil.Settings.DEFAULTS_ID);
       options.setArguments(b);
       options.show(getFragmentManager(), "default_alarm_options");
       return true;

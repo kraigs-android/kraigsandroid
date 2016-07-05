@@ -26,9 +26,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.provider.BaseColumns;
-import android.provider.Settings;
-
-import java.lang.IllegalArgumentException;
 
 public final class AlarmClockProvider extends ContentProvider {
   private SQLiteDatabase db = null;
@@ -75,6 +72,8 @@ public final class AlarmClockProvider extends ContentProvider {
     case ALARMS:
       if (!values.containsKey(AlarmEntry.TIME))
         throw new IllegalArgumentException("Missing time");
+      // New alarms are always created enabled, but without a label, repeat,
+      // nor optional settings.
       values.put(AlarmEntry.ENABLED, true);
       values.put(AlarmEntry.NAME, "");
       values.put(AlarmEntry.DAY_OF_WEEK, 0);
@@ -91,7 +90,9 @@ public final class AlarmClockProvider extends ContentProvider {
       } else {
         values.put(SettingsEntry.ALARM_ID, alarmid);
       }
-      final DbUtil.Settings defaults = DbUtil.Settings.get(getContext(), AlarmNotificationService.DEFAULTS_ALARM_ID);
+      // Fill in missing fields with defaults.
+      final DbUtil.Settings defaults =
+        DbUtil.Settings.get(getContext(), DbUtil.Settings.DEFAULTS_ID);
       if (!values.containsKey(SettingsEntry.TONE_URL))
         values.put(SettingsEntry.TONE_URL, defaults.tone_url.toString());
       if (!values.containsKey(SettingsEntry.TONE_NAME))
@@ -132,16 +133,10 @@ public final class AlarmClockProvider extends ContentProvider {
       return count;
     case SETTINGS_ID:
       alarmid = ContentUris.parseId(uri);
-      if (values.containsKey(SettingsEntry.ALARM_ID)) {
-        if (values.getAsLong(SettingsEntry.ALARM_ID) != alarmid)
-          throw new IllegalArgumentException(
-              "ID does not match url: " + alarmid + " vs " + uri);
-      } else {
-        values.put(SettingsEntry.ALARM_ID, alarmid);
-      }
       count = db.update(
           SettingsEntry.TABLE_NAME, values,
           SettingsEntry.ALARM_ID + " == " + alarmid, null);
+      // If the row did not exist, automatically fall back to insert behavior.
       if (count == 0)
         insert(uri, values);
       getContext().getContentResolver().notifyChange(uri, null);
@@ -159,16 +154,18 @@ public final class AlarmClockProvider extends ContentProvider {
     switch (matcher.match(uri)) {
     case ALARMS:
       count = db.delete(AlarmEntry.TABLE_NAME, null, null);
+      // Also delete corresponding entries in the settings table.
+      // (But not the default alarm settings)
       count += db.delete(
           SettingsEntry.TABLE_NAME,
-          SettingsEntry.ALARM_ID + " != " +
-          AlarmNotificationService.DEFAULTS_ALARM_ID, null);
+          SettingsEntry.ALARM_ID + " != " + DbUtil.Settings.DEFAULTS_ID, null);
       getContext().getContentResolver().notifyChange(uri, null);
       return count;
     case ALARM_ID:
       alarmid = ContentUris.parseId(uri);
       count = db.delete(
           AlarmEntry.TABLE_NAME, AlarmEntry._ID + " == " + alarmid, null);
+      // Also delete corresponding entries in the settings table.
       if (count > 0) {
         getContext().getContentResolver().notifyChange(uri, null);
         count += db.delete(
@@ -289,6 +286,9 @@ public final class AlarmClockProvider extends ContentProvider {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+      // Application version 1.x -> 2.0 added a column to the alarm table
+      // for tracking next snooze trigger (rather that trying to keep this
+      // information in memory).
       if (oldVersion < 2) {
         db.execSQL(
             "ALTER TABLE " + AlarmEntry.TABLE_NAME + " ADD COLUMN " +
