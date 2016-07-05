@@ -91,22 +91,22 @@ public final class AlarmClockProvider extends ContentProvider {
       } else {
         values.put(SettingsEntry.ALARM_ID, alarmid);
       }
-      final AlarmOptions.OptionalSettings s =
-        AlarmOptions.OptionalSettings.get(getContext(), alarmid);
+      final AlarmOptions.OptionalSettings defaults =
+        AlarmOptions.OptionalSettings.get(getContext(), AlarmNotificationService.DEFAULTS_ALARM_ID);
       if (!values.containsKey(SettingsEntry.TONE_URL))
-        values.put(SettingsEntry.TONE_URL, s.tone_url.toString());
+        values.put(SettingsEntry.TONE_URL, defaults.tone_url.toString());
       if (!values.containsKey(SettingsEntry.TONE_NAME))
-        values.put(SettingsEntry.TONE_NAME, s.tone_name);
+        values.put(SettingsEntry.TONE_NAME, defaults.tone_name);
       if (!values.containsKey(SettingsEntry.SNOOZE))
-        values.put(SettingsEntry.SNOOZE, s.snooze);
+        values.put(SettingsEntry.SNOOZE, defaults.snooze);
       if (!values.containsKey(SettingsEntry.VIBRATE))
-        values.put(SettingsEntry.VIBRATE, s.vibrate);
+        values.put(SettingsEntry.VIBRATE, defaults.vibrate);
       if (!values.containsKey(SettingsEntry.VOLUME_STARTING))
-        values.put(SettingsEntry.VOLUME_STARTING, s.volume_starting);
+        values.put(SettingsEntry.VOLUME_STARTING, defaults.volume_starting);
       if (!values.containsKey(SettingsEntry.VOLUME_ENDING))
-        values.put(SettingsEntry.VOLUME_ENDING, s.volume_ending);
+        values.put(SettingsEntry.VOLUME_ENDING, defaults.volume_ending);
       if (!values.containsKey(SettingsEntry.VOLUME_TIME))
-        values.put(SettingsEntry.VOLUME_TIME, s.volume_time);
+        values.put(SettingsEntry.VOLUME_TIME, defaults.volume_time);
 
       db.insertOrThrow(SettingsEntry.TABLE_NAME, null, values);
       getContext().getContentResolver().notifyChange(uri, null);
