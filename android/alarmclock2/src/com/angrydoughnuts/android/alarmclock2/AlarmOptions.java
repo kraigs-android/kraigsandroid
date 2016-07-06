@@ -25,6 +25,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -51,6 +52,8 @@ import android.widget.TextView;
 import java.util.Calendar;
 
 public class AlarmOptions extends DialogFragment {
+  private final SettingsObserver observer = new SettingsObserver();
+
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     super.onCreateDialog(savedInstanceState);
@@ -81,10 +84,33 @@ public class AlarmOptions extends DialogFragment {
       if (m != null) m.setListener(v.tone_listener);
     }
 
+    getContext().getContentResolver().registerContentObserver(
+        ContentUris.withAppendedId(
+            AlarmClockProvider.ALARMS_URI, id), false, observer);
+    getContext().getContentResolver().registerContentObserver(
+        ContentUris.withAppendedId(
+            AlarmClockProvider.SETTINGS_URI, id), false, observer);
+
     return new AlertDialog.Builder(getContext())
       .setTitle(defaults ? "Default Alarm Options" : "Alarm Options")
       .setView(v)
-      .setPositiveButton("Done", null)
+      .setPositiveButton("Done",
+        new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            DbUtil.Alarm a = DbUtil.Alarm.get(getContext(), id);
+            if (a.enabled || !observer.state_changed)
+              return;
+            ContentValues val = new ContentValues();
+            val.put(AlarmClockProvider.AlarmEntry.ENABLED, true);
+            getContext().getContentResolver().update(
+                ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, id),
+                val, null, null);
+            long utc = TimeUtil.nextOccurrence(a.time, a.repeat)
+              .getTimeInMillis();
+            AlarmNotificationService.scheduleAlarmTrigger(getContext(), id, utc);
+          }
+        })
       .setNeutralButton(!defaults ? "Delete" : null,
         new DialogInterface.OnClickListener() {
           @Override
@@ -113,7 +139,22 @@ public class AlarmOptions extends DialogFragment {
         }).create();
   }
 
-  static public class RepeatEditor extends DialogFragment {
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+    getContext().getContentResolver().unregisterContentObserver(observer);
+  }
+
+  private static class SettingsObserver extends ContentObserver {
+    public boolean state_changed = false;
+    public SettingsObserver() { super(null); }
+    @Override
+    public void onChange(boolean selfChange, Uri uri) {
+      state_changed = true;
+    }
+  };
+
+  private static class RepeatEditor extends DialogFragment {
     final public static String BITMASK = "bitmask";
     public static interface OnPickListener {
       abstract void onPick(int repeats);
