@@ -214,6 +214,12 @@ public class AlarmClockActivity extends Activity {
   }
 
   @Override
+  public void onRestart() {
+    super.onRestart();
+    getLoaderManager().getLoader(0).forceLoad();
+  }
+
+  @Override
   public void onStop() {
     super.onStop();
     handler.removeCallbacks(refresh_tick);
