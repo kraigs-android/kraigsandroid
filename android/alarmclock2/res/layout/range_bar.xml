@@ -7,6 +7,12 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
   <ImageView
+      android:id="@+id/range_bar_progress"
+      android:layout_gravity="center"
+      android:padding="18dp"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
+  <ImageView
       android:id="@+id/range_bar_min"
       android:clickable="true"
       android:layout_gravity="start"

@@ -18,7 +18,6 @@ package com.angrydoughnuts.android.alarmclock2;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -30,7 +29,7 @@ public class RangeBar extends FrameLayout {
   private static final int MAX = 13;
   private final ImageView min;
   private final ImageView max;
-  private final Drawable progress;
+  private final ImageView progress;
   private boolean tracking_min = false;
   private boolean tracking_max = false;
   private boolean tracked_both = false;
@@ -57,6 +56,7 @@ public class RangeBar extends FrameLayout {
       .inflate(R.layout.range_bar, this, true);
     min = (ImageView)findViewById(R.id.range_bar_min);
     max = (ImageView)findViewById(R.id.range_bar_max);
+    progress = (ImageView)findViewById(R.id.range_bar_progress);
     final ImageView track = (ImageView)findViewById(R.id.range_bar_bg);
 
     final TypedArray ta = c.obtainStyledAttributes(
@@ -66,8 +66,7 @@ public class RangeBar extends FrameLayout {
           android.R.attr.thumb },
         defStyleAtr, android.R.style.Widget_Material_SeekBar);
     final Drawable thumb_bg = ta.getDrawable(0);
-    final LayerDrawable track_bg = (LayerDrawable)ta.getDrawable(1);
-    progress = track_bg.findDrawableByLayerId(android.R.id.progress);
+    final Drawable track_bg = ta.getDrawable(1);
     final Drawable thumb = ta.getDrawable(2);
     ta.recycle();
 
@@ -76,6 +75,8 @@ public class RangeBar extends FrameLayout {
     max.setImageDrawable(thumb.getConstantState().newDrawable());
     max.setBackground(thumb_bg.getConstantState().newDrawable());
     track.setImageDrawable(track_bg);
+    progress.setImageDrawable(track_bg.getConstantState().newDrawable());
+    progress.setImageLevel(10000);  // Scale 0 - 10000
   }
 
   @Override
@@ -117,6 +118,10 @@ public class RangeBar extends FrameLayout {
         } else if (listener != null) {
           listener.onMaxChange(position(max));
         }
+      }
+      if (tracking_min || tracking_max) {
+        progress.setLeft(min.getLeft());
+        progress.setRight(max.getRight() - max.getWidth()/2);
       }
       break;
 
