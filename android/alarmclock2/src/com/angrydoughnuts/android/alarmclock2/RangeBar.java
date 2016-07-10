@@ -26,7 +26,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 public class RangeBar extends FrameLayout {
-  private static final int MAX = 13;
+  private static final int MAX = 100;
   private final ImageView min;
   private final ImageView max;
   private final ImageView progress;
@@ -168,9 +168,10 @@ public class RangeBar extends FrameLayout {
   }
 
   private int position(View v) {
-    final int width = getWidth() - getPaddingLeft() - getPaddingRight();
-    final float stride = (width - v.getWidth()) / (float)MAX;
-    return (int)(v.getLeft() / stride);
+    final int width =
+      getWidth() - getPaddingLeft() - getPaddingRight() - v.getWidth();
+    final float stride = width / (float)MAX;
+    return (int)((v.getLeft() - v.getPaddingLeft()) / stride);
   }
 
   public static interface Listener {
