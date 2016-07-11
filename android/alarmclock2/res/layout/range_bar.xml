@@ -15,15 +15,15 @@
   <ImageView
       android:id="@+id/range_bar_min"
       android:clickable="true"
-      android:layout_gravity="start"
-      android:padding="12dp"
+      android:layout_gravity="start|center_vertical"
+      android:padding="6dp"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content" />
   <ImageView
       android:id="@+id/range_bar_max"
       android:clickable="true"
-      android:layout_gravity="end"
-      android:padding="12dp"
+      android:layout_gravity="end|center_vertical"
+      android:padding="6dp"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content" />
 </merge>
