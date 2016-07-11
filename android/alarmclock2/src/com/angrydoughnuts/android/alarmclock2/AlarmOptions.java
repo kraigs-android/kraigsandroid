@@ -340,32 +340,6 @@ public class AlarmOptions extends DialogFragment {
             }
           });
 
-      final ViewGroup edit_snooze = newItem(c);
-      addView(edit_snooze);
-      setImage(edit_snooze, R.drawable.ic_snooze);
-      setText(edit_snooze, "" + s.snooze);
-      final SeekBar snooze_bar = new SeekBar(c);
-      setView(edit_snooze, snooze_bar, 1.0f);
-      snooze_bar.setMax(11);
-      snooze_bar.setProgress((s.snooze - 5) / 5);
-      snooze_bar.setOnSeekBarChangeListener(
-          new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar s, int progress, boolean user) {
-              final int snooze = progress * 5 + 5;
-              setText(edit_snooze, "" + snooze);
-            }
-            @Override
-            public void onStartTrackingTouch(SeekBar s) {}
-            @Override
-            public void onStopTrackingTouch(SeekBar s) {
-              final int snooze = s.getProgress() * 5 + 5;
-              ContentValues val = new ContentValues();
-              val.put(AlarmClockProvider.SettingsEntry.SNOOZE, snooze);
-              c.getContentResolver().update(settings, val, null, null);
-            }
-          });
-
       final ViewGroup edit_vibrate = newItem(c);
       addView(edit_vibrate);
       setImage(edit_vibrate, R.drawable.ic_vibration);
@@ -380,6 +354,34 @@ public class AlarmOptions extends DialogFragment {
                 ((Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE)).vibrate(100);
               ContentValues val = new ContentValues();
               val.put(AlarmClockProvider.SettingsEntry.VIBRATE, checked);
+              c.getContentResolver().update(settings, val, null, null);
+            }
+          });
+
+      final ViewGroup edit_snooze = newItem(c);
+      addView(edit_snooze);
+      setImage(edit_snooze, R.drawable.ic_snooze);
+      // TODO: string
+      setText(edit_snooze, s.snooze + "m");
+      final SeekBar snooze_bar = new SeekBar(c);
+      setView(edit_snooze, snooze_bar, 1.0f);
+      snooze_bar.setMax(11);
+      snooze_bar.setProgress((s.snooze - 5) / 5);
+      snooze_bar.setOnSeekBarChangeListener(
+          new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar s, int progress, boolean user) {
+              final int snooze = progress * 5 + 5;
+              // TODO: string
+              setText(edit_snooze, snooze + "m");
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar s) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar s) {
+              final int snooze = s.getProgress() * 5 + 5;
+              ContentValues val = new ContentValues();
+              val.put(AlarmClockProvider.SettingsEntry.SNOOZE, snooze);
               c.getContentResolver().update(settings, val, null, null);
             }
           });
