@@ -31,7 +31,6 @@ public class RangeBar extends FrameLayout {
   private final ImageView progress;
   private boolean tracking_min = false;
   private boolean tracking_max = false;
-  private boolean tracked_both = false;
 
   private Listener listener;
   public void setListener(Listener l) { listener = l; }
@@ -46,6 +45,9 @@ public class RangeBar extends FrameLayout {
     max_value = new_max;
     updatePosition();
   }
+
+  public int getPositionMin() { return position(min); }
+  public int getPositionMax() { return position(max); }
 
   public RangeBar(Context c) {
     this(c, null);
@@ -119,24 +121,16 @@ public class RangeBar extends FrameLayout {
     case MotionEvent.ACTION_MOVE:
       if (tracking_min) {
         move(min, event.getX());
-        if (min.getLeft() > max.getLeft()) {
+        if (min.getLeft() > max.getLeft())
           move(max, event.getX());
-          tracked_both = true;
-          if (listener != null)
-            listener.onBothChange(position(min), position(max));
-        } else if (listener != null) {
-          listener.onMinChange(position(min));
-        }
+        if (listener != null)
+          listener.onChange(position(min), position(max));
       } else if (tracking_max) {
         move(max, event.getX());
-        if (min.getLeft() > max.getLeft()) {
+        if (min.getLeft() > max.getLeft())
           move(min, event.getX());
-          tracked_both = true;
-          if (listener != null)
-            listener.onBothChange(position(min), position(max));
-        } else if (listener != null) {
-          listener.onMaxChange(position(max));
-        }
+        if (listener != null)
+          listener.onChange(position(min), position(max));
       }
       if (tracking_min || tracking_max) {
         progress.setLeft(min.getLeft());
@@ -145,21 +139,15 @@ public class RangeBar extends FrameLayout {
       break;
 
     case MotionEvent.ACTION_UP:
-      if (tracked_both && listener != null)
-        listener.onBothDone(position(min), position(max));
-      else if (tracking_min && listener != null)
-        listener.onMinDone(position(min));
-      else if (tracking_max && listener != null)
-        listener.onMaxDone(position(max));
+      if ((tracking_min || tracking_max) && listener != null)
+        listener.onDone(position(min), position(max));
       tracking_min = false;
       tracking_max = false;
-      tracked_both = false;
       break;
 
     case MotionEvent.ACTION_CANCEL:
       tracking_min = false;
       tracking_max = false;
-      tracked_both = false;
       break;
     }
     return super.onInterceptTouchEvent(event);
@@ -207,11 +195,7 @@ public class RangeBar extends FrameLayout {
   }
 
   public static interface Listener {
-    abstract void onMinChange(int min);
-    abstract void onMinDone(int min);
-    abstract void onMaxChange(int max);
-    abstract void onMaxDone(int max);
-    abstract void onBothChange(int min, int max);
-    abstract void onBothDone(int min, int max);
+    abstract void onChange(int min, int max);
+    abstract void onDone(int min, int max);
   }
 }
