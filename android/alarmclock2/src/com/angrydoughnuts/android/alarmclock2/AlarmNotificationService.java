@@ -400,7 +400,9 @@ public class AlarmNotificationService extends Service {
           public void handleMessage(Message m) {
             switch (m.what) {
             case TRIGGER_INC:
-              int inc = (s.volume_ending - s.volume_starting) / s.volume_time;
+              int inc = s.volume_time > 0 ?
+                (s.volume_ending - s.volume_starting) / s.volume_time :
+                s.volume_ending;
               int next = Math.min(s.volume_ending, m.arg1 + inc);
               float norm = (float)((Math.pow(5, next/100.0)-1)/4);
               Log.i(TAG, "Incrementing volume to " + norm);
