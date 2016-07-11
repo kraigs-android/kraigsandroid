@@ -26,7 +26,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 public class RangeBar extends FrameLayout {
-  private static final int MAX = 100;
   private final ImageView min;
   private final ImageView max;
   private final ImageView progress;
@@ -36,6 +35,17 @@ public class RangeBar extends FrameLayout {
 
   private Listener listener;
   public void setListener(Listener l) { listener = l; }
+
+  private int range = 100;
+  public void setRange(int max) { range = max; }
+
+  private int min_value = 0;
+  private int max_value = 100;
+  public void setPosition(int new_min, int new_max) {
+    min_value = new_min;
+    max_value = new_max;
+    updatePosition();
+  }
 
   public RangeBar(Context c) {
     this(c, null);
@@ -77,6 +87,15 @@ public class RangeBar extends FrameLayout {
     track.setImageDrawable(track_bg);
     progress.setImageDrawable(track_bg.getConstantState().newDrawable());
     progress.setImageLevel(10000);  // Scale 0 - 10000
+  }
+
+  @Override
+  protected void onLayout(boolean changed, int l, int t, int r, int b) {
+    super.onLayout(changed, l, t, r, b);
+    updatePosition();
+    min.invalidate();
+    max.invalidate();
+    progress.invalidate();
   }
 
   @Override
@@ -156,8 +175,9 @@ public class RangeBar extends FrameLayout {
   private void move(View v, float x) {
     final int xmin = getLeft() + getPaddingLeft();
     final int xmax = getRight() - getPaddingRight() - v.getWidth();
-    final int width = getWidth() - getPaddingLeft() - getPaddingRight();
-    final float stride = (width - v.getWidth()) / (float)MAX;
+    final int width =
+      getWidth() - getPaddingLeft() - getPaddingRight() - v.getWidth();
+    final float stride = width / (float)range;
     final int target = (int)((x + stride/2.0f - v.getWidth()/1.5f) / stride);
     x = stride * target + getLeft() + getPaddingLeft();
     if (x < xmin)
@@ -170,8 +190,20 @@ public class RangeBar extends FrameLayout {
   private int position(View v) {
     final int width =
       getWidth() - getPaddingLeft() - getPaddingRight() - v.getWidth();
-    final float stride = width / (float)MAX;
-    return (int)((v.getLeft() - v.getPaddingLeft()) / stride);
+    final float stride = width / (float)range;
+    return (int)((v.getLeft() - getPaddingLeft()) / stride);
+  }
+
+  private void updatePosition() {
+    final int width =
+      getWidth() - getPaddingLeft() - getPaddingRight() - min.getWidth();
+    final float stride = width / (float)range;
+    final int min_target = (int)(min_value * stride);
+    final int max_target = (int)(max_value * stride);
+    min.offsetLeftAndRight(min_target - min.getLeft() + getPaddingLeft());
+    max.offsetLeftAndRight(max_target - max.getLeft() + getPaddingLeft());
+    progress.setLeft(min.getLeft());
+    progress.setRight(max.getRight() - max.getWidth()/2);
   }
 
   public static interface Listener {
