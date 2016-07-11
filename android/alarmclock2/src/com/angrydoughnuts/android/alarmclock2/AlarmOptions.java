@@ -388,24 +388,24 @@ public class AlarmOptions extends DialogFragment {
       volume_status.setText("volume " + s.volume_starting + " to " + s.volume_ending + " over " + s.volume_time);
 
       // Range 0 - 100 increments of 5.
-      final RangeBar edit_volume = new RangeBar(c);
-      edit_volume.setRange(20);
-      edit_volume.setPosition(
+      final RangeBar volume_range = new RangeBar(c);
+      volume_range.setRange(20);
+      volume_range.setPosition(
           s.volume_starting / 5,
           s.volume_ending / 5);
 
       // Range 0 - 60 increments of 5.
-      final SeekBar edit_volume_time = new SeekBar(c);
-      edit_volume_time.setMax(12);
-      edit_volume_time.setProgress(s.volume_time / 5);
+      final SeekBar volume_time_slide = new SeekBar(c);
+      volume_time_slide.setMax(12);
+      volume_time_slide.setProgress(s.volume_time / 5);
 
-      edit_volume.setListener(
+      volume_range.setListener(
           new RangeBar.Listener() {
             @Override
             public void onChange(int min, int max) {
               final int volume_starting = min * 5;
               final int volume_ending = max * 5;
-              final int volume_time = edit_volume_time.getProgress() * 5;
+              final int volume_time = volume_time_slide.getProgress() * 5;
               volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
             }
             public void onDone(int min, int max) {
@@ -416,13 +416,13 @@ public class AlarmOptions extends DialogFragment {
             }
           });
 
-      edit_volume_time.setOnSeekBarChangeListener(
+      volume_time_slide.setOnSeekBarChangeListener(
           new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar s, int progress, boolean user) {
-              final int volume_starting = edit_volume.getPositionMin() * 5;
-              final int volume_ending = edit_volume.getPositionMax() * 5;
-              final int volume_time = edit_volume_time.getProgress() * 5;
+              final int volume_starting = volume_range.getPositionMin() * 5;
+              final int volume_ending = volume_range.getPositionMax() * 5;
+              final int volume_time = volume_time_slide.getProgress() * 5;
               volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
             }
             @Override
@@ -436,12 +436,17 @@ public class AlarmOptions extends DialogFragment {
             }
           });
 
-      final LinearLayout volume_layout = new LinearLayout(c);
-      volume_layout.setOrientation(LinearLayout.VERTICAL);
-      volume_layout.addView(volume_status);
-      volume_layout.addView(edit_volume);
-      volume_layout.addView(edit_volume_time);
-      addView(volume_layout);
+      final ViewGroup edit_volume = newItem(c);
+      addView(edit_volume);
+      setImage(edit_volume, R.drawable.ic_volume_up);
+      setView(edit_volume, volume_range, 1.0f);
+
+      final ViewGroup edit_volume_time = newItem(c);
+      addView(edit_volume_time);
+      setImage(edit_volume_time, R.drawable.ic_access_time);
+      setView(edit_volume_time, volume_time_slide, 1.0f);
+
+      setView(this, volume_status, 1.0f);
     }
 
     private ViewGroup newItem(Context c) {
