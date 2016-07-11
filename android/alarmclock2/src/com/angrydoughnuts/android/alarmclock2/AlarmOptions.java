@@ -45,6 +45,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -69,8 +70,10 @@ public class AlarmOptions extends DialogFragment {
         AlarmNotificationService.ALARM_ID, -1);
     final boolean defaults = id == DbUtil.Settings.DEFAULTS_ID;
 
-    final OptionsView v = new OptionsView(
+    final ScrollView v = new ScrollView(getContext());
+    final OptionsView o = new OptionsView(
         getContext(), getFragmentManager(), id);
+    v.addView(o);
 
     if (savedInstanceState != null) {
       TimePicker t = (TimePicker)getFragmentManager()
@@ -79,9 +82,9 @@ public class AlarmOptions extends DialogFragment {
         .findFragmentByTag("edit_repeat");
       MediaPicker m = (MediaPicker)getFragmentManager()
         .findFragmentByTag("edit_tone");
-      if (t != null) t.setListener(v.time_listener);
-      if (r != null) r.setListener(v.repeat_listener);
-      if (m != null) m.setListener(v.tone_listener);
+      if (t != null) t.setListener(o.time_listener);
+      if (r != null) r.setListener(o.repeat_listener);
+      if (m != null) m.setListener(o.tone_listener);
     }
 
     getContext().getContentResolver().registerContentObserver(
