@@ -87,9 +87,6 @@ public class AlarmOptions extends DialogFragment {
     getContext().getContentResolver().registerContentObserver(
         ContentUris.withAppendedId(
             AlarmClockProvider.ALARMS_URI, id), false, observer);
-    getContext().getContentResolver().registerContentObserver(
-        ContentUris.withAppendedId(
-            AlarmClockProvider.SETTINGS_URI, id), false, observer);
 
     return new AlertDialog.Builder(getContext())
       .setTitle(defaults ? "Default Alarm Options" : "Alarm Options")
