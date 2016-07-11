@@ -387,68 +387,31 @@ public class AlarmOptions extends DialogFragment {
       final TextView volume_status = new TextView(c);
       volume_status.setText("volume " + s.volume_starting + " to " + s.volume_ending + " over " + s.volume_time);
 
-      final SeekBar edit_volume_starting = new SeekBar(c);
-      edit_volume_starting.setMax(20);
-      edit_volume_starting.setProgress(s.volume_starting / 5);
+      // Range 0 - 100 increments of 5.
+      final RangeBar edit_volume = new RangeBar(c);
+      edit_volume.setRange(20);
+      edit_volume.setPosition(
+          s.volume_starting / 5,
+          s.volume_ending / 5);
 
-      final SeekBar edit_volume_ending = new SeekBar(c);
-      edit_volume_ending.setMax(20);
-      edit_volume_ending.setProgress(s.volume_ending / 5);
-
+      // Range 0 - 60 increments of 5.
       final SeekBar edit_volume_time = new SeekBar(c);
       edit_volume_time.setMax(12);
       edit_volume_time.setProgress(s.volume_time / 5);
 
-      edit_volume_starting.setOnSeekBarChangeListener(
-          new SeekBar.OnSeekBarChangeListener() {
+      edit_volume.setListener(
+          new RangeBar.Listener() {
             @Override
-            public void onProgressChanged(SeekBar s, int progress, boolean user) {
-              final int volume_starting = edit_volume_starting.getProgress() * 5;
-              final int volume_ending = edit_volume_ending.getProgress() * 5;
+            public void onChange(int min, int max) {
+              final int volume_starting = min * 5;
+              final int volume_ending = max * 5;
               final int volume_time = edit_volume_time.getProgress() * 5;
-              if (user && volume_ending < volume_starting) {
-                edit_volume_ending.setProgress(volume_starting / 5);
-                volume_status.setText("volume " + volume_starting + " to " + volume_starting + " over " + volume_time);
-              } else {
-                volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
-              }
+              volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
             }
-            @Override
-            public void onStartTrackingTouch(SeekBar s) {}
-            @Override
-            public void onStopTrackingTouch(SeekBar s) {
+            public void onDone(int min, int max) {
               ContentValues val = new ContentValues();
-              val.put(AlarmClockProvider.SettingsEntry.VOLUME_STARTING,
-                      edit_volume_starting.getProgress() * 5);
-              val.put(AlarmClockProvider.SettingsEntry.VOLUME_ENDING,
-                      edit_volume_ending.getProgress() * 5);
-              c.getContentResolver().update(settings, val, null, null);
-            }
-          });
-
-      edit_volume_ending.setOnSeekBarChangeListener(
-          new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar s, int progress, boolean user) {
-              final int volume_starting = edit_volume_starting.getProgress() * 5;
-              final int volume_ending = edit_volume_ending.getProgress() * 5;
-              final int volume_time = edit_volume_time.getProgress() * 5;
-              if (user && volume_ending < volume_starting) {
-                edit_volume_starting.setProgress(volume_ending / 5);
-                volume_status.setText("volume " + volume_ending + " to " + volume_ending + " over " + volume_time);
-              } else {
-                volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
-              }
-            }
-            @Override
-            public void onStartTrackingTouch(SeekBar s) {}
-            @Override
-            public void onStopTrackingTouch(SeekBar s) {
-              ContentValues val = new ContentValues();
-              val.put(AlarmClockProvider.SettingsEntry.VOLUME_STARTING,
-                      edit_volume_starting.getProgress() * 5);
-              val.put(AlarmClockProvider.SettingsEntry.VOLUME_ENDING,
-                      edit_volume_ending.getProgress() * 5);
+              val.put(AlarmClockProvider.SettingsEntry.VOLUME_STARTING, min * 5);
+              val.put(AlarmClockProvider.SettingsEntry.VOLUME_ENDING, max * 5);
               c.getContentResolver().update(settings, val, null, null);
             }
           });
@@ -457,8 +420,8 @@ public class AlarmOptions extends DialogFragment {
           new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar s, int progress, boolean user) {
-              final int volume_starting = edit_volume_starting.getProgress() * 5;
-              final int volume_ending = edit_volume_ending.getProgress() * 5;
+              final int volume_starting = edit_volume.getPositionMin() * 5;
+              final int volume_ending = edit_volume.getPositionMax() * 5;
               final int volume_time = edit_volume_time.getProgress() * 5;
               volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
             }
@@ -476,8 +439,7 @@ public class AlarmOptions extends DialogFragment {
       final LinearLayout volume_layout = new LinearLayout(c);
       volume_layout.setOrientation(LinearLayout.VERTICAL);
       volume_layout.addView(volume_status);
-      volume_layout.addView(edit_volume_starting);
-      volume_layout.addView(edit_volume_ending);
+      volume_layout.addView(edit_volume);
       volume_layout.addView(edit_volume_time);
       addView(volume_layout);
     }
