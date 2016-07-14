@@ -26,20 +26,16 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Process;
 import android.os.Vibrator;
-import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -87,13 +83,16 @@ public class AlarmOptions extends DialogFragment {
       if (m != null) m.setListener(o.tone_listener);
     }
 
+    // NOTE: observe alarm entry changes but not settings entry changes.
     getContext().getContentResolver().registerContentObserver(
         ContentUris.withAppendedId(
             AlarmClockProvider.ALARMS_URI, id), false, observer);
 
     return new AlertDialog.Builder(getContext())
+      // TODO: string
       .setTitle(defaults ? "Default Alarm Options" : "Alarm Options")
       .setView(v)
+      // TODO: string
       .setPositiveButton("Done",
         new DialogInterface.OnClickListener() {
           @Override
@@ -101,6 +100,7 @@ public class AlarmOptions extends DialogFragment {
             DbUtil.Alarm a = DbUtil.Alarm.get(getContext(), id);
             if (a.enabled || !observer.state_changed)
               return;
+            // Enable the alarm if the alarm entry changed.
             ContentValues val = new ContentValues();
             val.put(AlarmClockProvider.AlarmEntry.ENABLED, true);
             getContext().getContentResolver().update(
@@ -108,9 +108,11 @@ public class AlarmOptions extends DialogFragment {
                 val, null, null);
             long utc = TimeUtil.nextOccurrence(a.time, a.repeat)
               .getTimeInMillis();
-            AlarmNotificationService.scheduleAlarmTrigger(getContext(), id, utc);
+            AlarmNotificationService.scheduleAlarmTrigger(
+                getContext(), id, utc);
           }
         })
+      // TODO: string
       .setNeutralButton(!defaults ? "Delete" : null,
         new DialogInterface.OnClickListener() {
           @Override
@@ -119,9 +121,13 @@ public class AlarmOptions extends DialogFragment {
               @Override
               public Dialog onCreateDialog(Bundle savedInstanceState) {
                 return new AlertDialog.Builder(getContext())
+                  // TODO: string
                   .setTitle("Confirm Delete")
+                  // TODO: string
                   .setMessage("Are you sure you want to delete this alarm?")
+                  // TODO: string
                   .setNegativeButton("Cancel", null)
+                  // TODO: string
                   .setPositiveButton(
                       "OK", new DialogInterface.OnClickListener() {
                       @Override
@@ -175,6 +181,7 @@ public class AlarmOptions extends DialogFragment {
         for (int i = 0; i < 7; ++i)
           checked[i] = (b & (1 << i)) != 0;
       }
+      // TODO: string
       final CharSequence days[] = new CharSequence[] {
         "Sunday",
         "Monday",
@@ -185,9 +192,12 @@ public class AlarmOptions extends DialogFragment {
         "Saturday"
       };
       return new AlertDialog.Builder(getContext())
+        // TODO: string
         .setTitle("Repeat")
         .setMultiChoiceItems(days, checked, null)
+        // TODO: string
         .setNegativeButton("Cancel", null)
+        // TODO: string
         .setPositiveButton(
             "OK", new DialogInterface.OnClickListener() {
                 @Override
@@ -226,6 +236,7 @@ public class AlarmOptions extends DialogFragment {
       final DbUtil.Alarm alarm = DbUtil.Alarm.get(c, id);
       final DbUtil.Settings s = DbUtil.Settings.get(c, id);
 
+      // EDIT TIME
       final ViewGroup edit_time = newItem(c);
       if (!defaults) addView(edit_time);
       time_listener = new TimePicker.OnTimePickListener() {
@@ -243,12 +254,12 @@ public class AlarmOptions extends DialogFragment {
               AlarmNotificationService.scheduleAlarmTrigger(
                   c, id, next.getTimeInMillis());
             }
-
             setText(edit_time, TimeUtil.formatLong(c, next));
           }
         };
       setImage(edit_time, R.drawable.ic_alarm);
-      setText(edit_time, TimeUtil.formatLong(c, TimeUtil.nextOccurrence(alarm.time, alarm.repeat)));
+      setText(edit_time, TimeUtil.formatLong(
+          c, TimeUtil.nextOccurrence(alarm.time, alarm.repeat)));
       edit_time.setOnClickListener(
           new View.OnClickListener() {
             @Override
@@ -258,6 +269,7 @@ public class AlarmOptions extends DialogFragment {
               time_pick.setListener(time_listener);
               Bundle b = new Bundle();
               b.putInt(TimePicker.TIME, a.time);
+              // TODO: string
               b.putString(TimePicker.TITLE, "Edit time");
               b.putInt(TimePicker.REPEAT, a.repeat);
               time_pick.setArguments(b);
@@ -265,6 +277,7 @@ public class AlarmOptions extends DialogFragment {
             }
           });
 
+      // EDIT REPEAT
       final ViewGroup edit_repeat = newItem(c);
       if (!defaults) addView(edit_repeat);
       repeat_listener = new RepeatEditor.OnPickListener() {
@@ -273,7 +286,9 @@ public class AlarmOptions extends DialogFragment {
             ContentValues val = new ContentValues();
             val.put(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK, repeat);
             c.getContentResolver().update(uri, val, null, null);
-            setText(edit_repeat, repeat == 0 ? "No repeats" : TimeUtil.repeatString(repeat));
+            // TODO: string
+            setText(edit_repeat, repeat == 0 ? "No repeats" :
+                    TimeUtil.repeatString(repeat));
             final DbUtil.Alarm a = DbUtil.Alarm.get(c, id);
             final Calendar next =
               TimeUtil.nextOccurrence(a.time, repeat, a.next_snooze);
@@ -285,7 +300,9 @@ public class AlarmOptions extends DialogFragment {
           }
         };
       setImage(edit_repeat, R.drawable.ic_today);
-      setText(edit_repeat, alarm.repeat == 0 ? "No repeats" : TimeUtil.repeatString(alarm.repeat));
+      // TODO: string
+      setText(edit_repeat, alarm.repeat == 0 ? "No repeats" :
+              TimeUtil.repeatString(alarm.repeat));
       edit_repeat.setOnClickListener(
           new View.OnClickListener() {
             @Override
@@ -299,6 +316,7 @@ public class AlarmOptions extends DialogFragment {
             }
           });
 
+      // EDIT LABEL
       final ViewGroup edit_label = newItem(c);
       if (!defaults) addView(edit_label);
       final TextWatcher label_change = new TextWatcher() {
@@ -315,8 +333,10 @@ public class AlarmOptions extends DialogFragment {
           }
         };
       setImage(edit_label, R.drawable.ic_label_outline);
+      // TODO: string
       setEdit(edit_label, alarm.label, "Label", label_change);
 
+      // EDIT TONE
       final ViewGroup edit_tone = newItem(c);
       addView(edit_tone);
       tone_listener = new MediaPicker.Listener() {
@@ -340,6 +360,7 @@ public class AlarmOptions extends DialogFragment {
             }
           });
 
+      // EDIT VIBRATE
       final ViewGroup edit_vibrate = newItem(c);
       addView(edit_vibrate);
       setImage(edit_vibrate, R.drawable.ic_vibration);
@@ -351,13 +372,15 @@ public class AlarmOptions extends DialogFragment {
             @Override
             public void onCheckedChanged(CompoundButton b, boolean checked) {
               if (checked)
-                ((Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE)).vibrate(100);
+                ((Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE))
+                  .vibrate(100);
               ContentValues val = new ContentValues();
               val.put(AlarmClockProvider.SettingsEntry.VIBRATE, checked);
               c.getContentResolver().update(settings, val, null, null);
             }
           });
 
+      // EDIT SNOOZE
       final ViewGroup edit_snooze = newItem(c);
       addView(edit_snooze);
       setImage(edit_snooze, R.drawable.ic_snooze);
@@ -365,13 +388,14 @@ public class AlarmOptions extends DialogFragment {
       setText(edit_snooze, s.snooze + "m");
       final SeekBar snooze_bar = new SeekBar(c);
       setView(edit_snooze, snooze_bar, 1.0f);
+      // Range 5 - 60 increments of 5.
       snooze_bar.setMax(11);
       snooze_bar.setProgress((s.snooze - 5) / 5);
       snooze_bar.setOnSeekBarChangeListener(
           new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onProgressChanged(SeekBar s, int progress, boolean user) {
-              final int snooze = progress * 5 + 5;
+            public void onProgressChanged(SeekBar s, int prog, boolean user) {
+              final int snooze = prog * 5 + 5;
               // TODO: string
               setText(edit_snooze, snooze + "m");
             }
@@ -386,7 +410,9 @@ public class AlarmOptions extends DialogFragment {
             }
           });
 
+      // VOLUME FADE
       final TextView volume_status = new TextView(c);
+      // TODO: string
       volume_status.setText("volume " + s.volume_starting + " to " + s.volume_ending + " over " + s.volume_time);
 
       // Range 0 - 100 increments of 5.
@@ -408,12 +434,13 @@ public class AlarmOptions extends DialogFragment {
               final int volume_starting = min * 5;
               final int volume_ending = max * 5;
               final int volume_time = volume_time_slide.getProgress() * 5;
+              // TODO: string
               volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
             }
             public void onDone(int min, int max) {
               ContentValues val = new ContentValues();
-              val.put(AlarmClockProvider.SettingsEntry.VOLUME_STARTING, min * 5);
-              val.put(AlarmClockProvider.SettingsEntry.VOLUME_ENDING, max * 5);
+              val.put(AlarmClockProvider.SettingsEntry.VOLUME_STARTING, min*5);
+              val.put(AlarmClockProvider.SettingsEntry.VOLUME_ENDING, max*5);
               c.getContentResolver().update(settings, val, null, null);
             }
           });
@@ -425,6 +452,7 @@ public class AlarmOptions extends DialogFragment {
               final int volume_starting = volume_range.getPositionMin() * 5;
               final int volume_ending = volume_range.getPositionMax() * 5;
               final int volume_time = volume_time_slide.getProgress() * 5;
+              // TODO: string
               volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
             }
             @Override
