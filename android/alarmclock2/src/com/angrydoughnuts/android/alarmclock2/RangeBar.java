@@ -35,19 +35,24 @@ public class RangeBar extends FrameLayout {
   private Listener listener;
   public void setListener(Listener l) { listener = l; }
 
-  private int range = 100;
-  public void setRange(int max) { range = max; }
-
   private int min_value = 0;
   private int max_value = 100;
   public void setPosition(int new_min, int new_max) {
     min_value = new_min;
     max_value = new_max;
-    updatePosition();
+    requestLayout();
   }
 
-  public int getPositionMin() { return position(min); }
-  public int getPositionMax() { return position(max); }
+  private int range = 100;
+  public void setRange(int max) {
+    range = max;
+    min_value = 0;
+    max_value = max;
+    requestLayout();
+  }
+
+  public int getPositionMin() { return min_value; }
+  public int getPositionMax() { return max_value; }
 
   public RangeBar(Context c) {
     this(c, null);
@@ -69,7 +74,7 @@ public class RangeBar extends FrameLayout {
     min = (ImageView)findViewById(R.id.range_bar_min);
     max = (ImageView)findViewById(R.id.range_bar_max);
     progress = (ImageView)findViewById(R.id.range_bar_progress);
-    final ImageView track = (ImageView)findViewById(R.id.range_bar_bg);
+    final ImageView bar = (ImageView)findViewById(R.id.range_bar_bg);
 
     final TypedArray ta = c.obtainStyledAttributes(
         a, new int[] {
@@ -78,7 +83,7 @@ public class RangeBar extends FrameLayout {
           android.R.attr.thumb },
         defStyleAtr, android.R.style.Widget_Material_SeekBar);
     final Drawable thumb_bg = ta.getDrawable(0);
-    final Drawable track_bg = ta.getDrawable(1);
+    final Drawable track = ta.getDrawable(1);
     final Drawable thumb = ta.getDrawable(2);
     ta.recycle();
 
@@ -86,19 +91,27 @@ public class RangeBar extends FrameLayout {
     min.setBackground(thumb_bg);
     max.setImageDrawable(thumb.getConstantState().newDrawable());
     max.setBackground(thumb_bg.getConstantState().newDrawable());
-    track.setImageDrawable(track_bg);
-    progress.setImageDrawable(track_bg.getConstantState().newDrawable());
+    bar.setImageDrawable(track);
+    bar.setImageLevel(-1);
+    progress.setImageDrawable(track.getConstantState().newDrawable());
     progress.setImageLevel(10000);  // Scale 0 - 10000
   }
 
   @Override
   protected void onLayout(boolean changed, int l, int t, int r, int b) {
     super.onLayout(changed, l, t, r, b);
-    updatePosition();
-    min.invalidate();
-    max.invalidate();
-    progress.invalidate();
+
+    final int width =
+      getWidth() - getPaddingLeft() - getPaddingRight() - min.getWidth();
+    final float stride = width / (float)range;
+    final int min_target = (int)(min_value * stride);
+    final int max_target = (int)(max_value * stride);
+    min.offsetLeftAndRight(min_target - min.getLeft() + getPaddingLeft());
+    max.offsetLeftAndRight(max_target - max.getLeft() + getPaddingLeft());
+    progress.setLeft(min.getLeft());
+    progress.setRight(max.getRight() - max.getWidth()/2);
   }
+
 
   @Override
   public boolean onInterceptTouchEvent(MotionEvent event) {
@@ -120,27 +133,24 @@ public class RangeBar extends FrameLayout {
 
     case MotionEvent.ACTION_MOVE:
       if (tracking_min) {
-        move(min, event.getX());
-        if (min.getLeft() > max.getLeft())
-          move(max, event.getX());
-        if (listener != null)
-          listener.onChange(position(min), position(max));
+        min_value = position(event.getX());
+        if (min_value > max_value)
+          max_value = min_value;
       } else if (tracking_max) {
-        move(max, event.getX());
-        if (min.getLeft() > max.getLeft())
-          move(min, event.getX());
-        if (listener != null)
-          listener.onChange(position(min), position(max));
+        max_value = position(event.getX());
+        if (min_value > max_value)
+          min_value = max_value;
       }
       if (tracking_min || tracking_max) {
-        progress.setLeft(min.getLeft());
-        progress.setRight(max.getRight() - max.getWidth()/2);
+        requestLayout();
+        if (listener != null)
+          listener.onChange(min_value, max_value);
       }
       break;
 
     case MotionEvent.ACTION_UP:
       if ((tracking_min || tracking_max) && listener != null)
-        listener.onDone(position(min), position(max));
+        listener.onDone(min_value, max_value);
       tracking_min = false;
       tracking_max = false;
       break;
@@ -157,41 +167,17 @@ public class RangeBar extends FrameLayout {
     return x > v.getLeft() && x < v.getRight();
   }
 
-  // L|---                                                         ---|R
-  //  |---|-----------*---------------|---------------*-----------|---|
-  //  |---         target           stride                         ---|
-  private void move(View v, float x) {
-    final int xmin = getLeft() + getPaddingLeft();
-    final int xmax = getRight() - getPaddingRight() - v.getWidth();
-    final int width =
-      getWidth() - getPaddingLeft() - getPaddingRight() - v.getWidth();
-    final float stride = width / (float)range;
-    final int target = (int)((x + stride/2.0f - v.getWidth()/1.5f) / stride);
-    x = stride * target + getLeft() + getPaddingLeft();
-    if (x < xmin)
-      x = xmin;
-    else if (x > xmax)
-      x = xmax;
-    v.offsetLeftAndRight((int)(x - v.getLeft() - getLeft()));
-  }
-
-  private int position(View v) {
-    final int width =
-      getWidth() - getPaddingLeft() - getPaddingRight() - v.getWidth();
-    final float stride = width / (float)range;
-    return (int)((v.getLeft() - getPaddingLeft()) / stride);
-  }
-
-  private void updatePosition() {
+  private int position(float x) {
     final int width =
       getWidth() - getPaddingLeft() - getPaddingRight() - min.getWidth();
     final float stride = width / (float)range;
-    final int min_target = (int)(min_value * stride);
-    final int max_target = (int)(max_value * stride);
-    min.offsetLeftAndRight(min_target - min.getLeft() + getPaddingLeft());
-    max.offsetLeftAndRight(max_target - max.getLeft() + getPaddingLeft());
-    progress.setLeft(min.getLeft());
-    progress.setRight(max.getRight() - max.getWidth()/2);
+    int p = (int)((x - getPaddingLeft()) / stride);
+    if (p < 0)
+      return 0;
+    else if (p > range)
+      return range;
+    else
+      return p;
   }
 
   public static interface Listener {
