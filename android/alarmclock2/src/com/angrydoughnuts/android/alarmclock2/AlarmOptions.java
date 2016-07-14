@@ -36,6 +36,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -88,7 +89,7 @@ public class AlarmOptions extends DialogFragment {
         ContentUris.withAppendedId(
             AlarmClockProvider.ALARMS_URI, id), false, observer);
 
-    return new AlertDialog.Builder(getContext())
+    AlertDialog d = new AlertDialog.Builder(getContext())
       // TODO: string
       .setTitle(defaults ? "Default Alarm Options" : "Alarm Options")
       .setView(v)
@@ -143,6 +144,12 @@ public class AlarmOptions extends DialogFragment {
             }.show(getFragmentManager(), "confirm_delete");
           }
         }).create();
+
+    // Don't display the keyboard until necessary
+    d.getWindow().setSoftInputMode(
+        WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+
+    return d;
   }
 
   @Override
