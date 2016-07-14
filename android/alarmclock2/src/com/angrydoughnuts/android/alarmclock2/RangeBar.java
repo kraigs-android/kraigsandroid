@@ -133,11 +133,11 @@ public class RangeBar extends FrameLayout {
 
     case MotionEvent.ACTION_MOVE:
       if (tracking_min) {
-        min_value = position(event.getX());
+        min_value = position(event.getX(), min);
         if (min_value > max_value)
           max_value = min_value;
       } else if (tracking_max) {
-        max_value = position(event.getX());
+        max_value = position(event.getX(), max);
         if (min_value > max_value)
           min_value = max_value;
       }
@@ -167,9 +167,10 @@ public class RangeBar extends FrameLayout {
     return x > v.getLeft() && x < v.getRight();
   }
 
-  private int position(float x) {
+  private int position(float x, View v) {
+    x -= v.getWidth() / 2;
     final int width =
-      getWidth() - getPaddingLeft() - getPaddingRight() - min.getWidth();
+      getWidth() - getPaddingLeft() - getPaddingRight() - v.getWidth();
     final float stride = width / (float)range;
     int p = (int)((x - getPaddingLeft()) / stride);
     if (p < 0)
