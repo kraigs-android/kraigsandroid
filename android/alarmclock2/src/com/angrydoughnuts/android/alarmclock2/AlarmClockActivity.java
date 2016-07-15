@@ -92,6 +92,7 @@ public class AlarmClockActivity extends Activity {
     // Setup list view to enable/disable entries upon click.
     ListView list = (ListView)findViewById(R.id.alarm_list);
     list.setAdapter(adapter);
+    list.setEmptyView(findViewById(R.id.empty_list));
     list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View v, int x, long id) {

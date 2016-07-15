@@ -8,6 +8,17 @@
       android:layout_weight="1"
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
+  <!-- TODO: string -->
+  <TextView
+      style="@android:style/TextAppearance.Large"
+      android:id="@+id/empty_list"
+      android:visibility="gone"
+      android:text="No Alarms"
+      android:layout_weight="1"
+      android:gravity="center"
+      android:textStyle="italic"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content" />
   <LinearLayout
       android:orientation="horizontal"
       android:gravity="center"
