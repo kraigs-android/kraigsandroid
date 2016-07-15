@@ -94,7 +94,6 @@ public class Slider extends FrameLayout {
   }
 
   private static final double COMPLETION = 0.8;
-  private static final int FADE_MS = 200;
   private static final int SLIP_MS = 1000;
   private static final float SLIP_ACCEL = 3.0f;
 
