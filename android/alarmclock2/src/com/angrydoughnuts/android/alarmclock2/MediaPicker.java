@@ -27,12 +27,16 @@ import android.content.DialogInterface;
 import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.MatrixCursor;
+import android.database.MergeCursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Process;
+import android.provider.BaseColumns;
 import android.provider.MediaStore.Audio;
 import android.provider.MediaStore.MediaColumns;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -90,7 +94,11 @@ public class MediaPicker extends DialogFragment {
             new TabHost.TabContentFactory() {
               @Override
               public View createTabContent(String tag) {
-                return newList(Audio.Media.INTERNAL_CONTENT_URI);
+                return newList(
+                    Audio.Media.INTERNAL_CONTENT_URI, new ExtraEntry[] {
+                      new ExtraEntry(Settings.System.DEFAULT_NOTIFICATION_URI,
+                                     // TODO: string
+                                     "System default") });
               }
             }));
 
@@ -134,12 +142,12 @@ public class MediaPicker extends DialogFragment {
     player = null;
   }
 
-  private AdapterView.OnItemClickListener newListener(final Uri base) {
+  private AdapterView.OnItemClickListener newListener() {
     return new AdapterView.OnItemClickListener() {
       @Override
       public void onItemClick(AdapterView<?> parent, View v, int x, long id) {
         TextView t = (TextView)v;
-        uri = ContentUris.withAppendedId(base, id);
+        uri = (Uri)t.getTag();
         title = t.getText().toString();
         // TODO: string
         ((TextView)getDialog().findViewById(R.id.selected))
@@ -163,8 +171,7 @@ public class MediaPicker extends DialogFragment {
         ViewGroup.LayoutParams.MATCH_PARENT,
         ViewGroup.LayoutParams.MATCH_PARENT);
 
-    final AdapterView.OnItemClickListener song_selected =
-      newListener(Audio.Media.EXTERNAL_CONTENT_URI);
+    final AdapterView.OnItemClickListener song_selected = newListener();
     final AdapterView.OnItemClickListener album_selected =
       new AdapterView.OnItemClickListener() {
         @Override
@@ -191,7 +198,11 @@ public class MediaPicker extends DialogFragment {
   }
 
   private View newList(Uri q) {
-    return newList(new MediaQuery(q), newListener(q));
+    return newList(new MediaQuery(q, null), newListener());
+  }
+
+  private View newList(Uri q, ExtraEntry[] entries) {
+    return newList(new MediaQuery(q, entries), newListener());
   }
 
   private View newList(
@@ -225,6 +236,12 @@ public class MediaPicker extends DialogFragment {
         public void bindView(View v, Context context, Cursor c) {
           TextView t = (TextView)v;
           t.setText(c.getString(c.getColumnIndex(q.display)));
+          int index = c.getColumnIndex("uri");
+          if (index >= 0)
+            t.setTag(Uri.parse(c.getString(index)));
+          else
+            t.setTag(ContentUris.withAppendedId(
+                q.query, c.getLong(c.getColumnIndex(BaseColumns._ID))));
         }
       };
 
@@ -242,7 +259,19 @@ public class MediaPicker extends DialogFragment {
             }
             @Override
             public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-              adapter.changeCursor(data);
+              if (q.entries == null) {
+                adapter.changeCursor(data);
+              } else {
+                MatrixCursor static_entries = new MatrixCursor(new String[] {
+                    BaseColumns._ID, "uri", q.display });
+                for (ExtraEntry entry : q.entries)
+                  static_entries.newRow()
+                    .add(BaseColumns._ID, -1)
+                    .add("uri", entry.uri.toString())
+                    .add(q.display, entry.display);
+                adapter.changeCursor(
+                    new MergeCursor(new Cursor[] { static_entries, data }));
+              }
             }
             @Override
             public void onLoaderReset(Loader<Cursor> loader) {
@@ -257,6 +286,13 @@ public class MediaPicker extends DialogFragment {
     String selection;
     String sort;
     String display;
+    ExtraEntry[] entries;
+  }
+
+  private class ExtraEntry {
+    final Uri uri;
+    final String display;
+    public ExtraEntry(Uri u, String d) { uri = u; display = d; }
   }
 
   private final class ArtistsQuery extends PickerQuery {
@@ -278,16 +314,18 @@ public class MediaPicker extends DialogFragment {
   }
 
   private final class MediaQuery extends PickerQuery {
-    public MediaQuery(Uri q) {
+    public MediaQuery(Uri q, ExtraEntry[] e) {
       query = q;
       sort = Audio.Media.DEFAULT_SORT_ORDER;
       display = MediaColumns.TITLE;
+      entries = e;
     }
     public MediaQuery(long album_id) {
       query = Audio.Media.EXTERNAL_CONTENT_URI;
       selection = Audio.AudioColumns.ALBUM_ID + " == " + album_id;
       sort = Audio.AudioColumns.TRACK;
       display = MediaColumns.TITLE;
+      entries = null;
     }
   }
 
