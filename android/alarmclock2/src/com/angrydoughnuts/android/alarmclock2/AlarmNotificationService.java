@@ -195,7 +195,7 @@ public class AlarmNotificationService extends Service {
     final Notification notification =
       new Notification.Builder(this)
       .setContentTitle(getString(R.string.app_name))
-      .setContentText(labels)
+      .setContentText(labels.isEmpty() ? getString(R.string.dismiss) : labels)
       .setSmallIcon(R.drawable.ic_alarm_on)
       .setContentIntent(PendingIntent.getActivity(this, 0, notify, 0))
       .setCategory(Notification.CATEGORY_ALARM)

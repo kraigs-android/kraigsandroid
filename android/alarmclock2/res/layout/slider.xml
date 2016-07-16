@@ -3,7 +3,7 @@
   <TextView
       style="@android:style/TextAppearance.Large"
       android:id="@+id/slider_text"
-      android:text="string/dismiss"
+      android:text="@string/dismiss"
       android:alpha="0.5"
       android:background="@android:color/black"
       android:gravity="center"

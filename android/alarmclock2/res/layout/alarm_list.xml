@@ -12,7 +12,7 @@
       style="@android:style/TextAppearance.Large"
       android:id="@+id/empty_list"
       android:visibility="gone"
-      android:text="string/no_alarms"
+      android:text="@string/no_alarms"
       android:layout_weight="1"
       android:gravity="center"
       android:textStyle="italic"

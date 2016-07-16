@@ -152,14 +152,14 @@ public class TimeUtil {
 
     String s = "";
     if (days > 0)
-      s += days > 1 ? c.getString(R.string.days, days) :
-        c.getString(R.string.day, days);
+      s += days > 1 ? c.getString(R.string.days, days) + " " :
+        c.getString(R.string.day, days) + " ";
     if (hours > 0)
-      s += hours > 1 ? c.getString(R.string.hours, hours) :
-        c.getString(R.string.hour, hours);
+      s += hours > 1 ? c.getString(R.string.hours, hours) + " " :
+        c.getString(R.string.hour, hours) + " ";
     if (minutes > 0)
-      s += minutes > 1 ? c.getString(R.string.minutes, minutes) :
-        c.getString(R.string.minute, minutes);
+      s += minutes > 1 ? c.getString(R.string.minutes, minutes) + " " :
+        c.getString(R.string.minute, minutes) + " ";
     return s;
   }
 

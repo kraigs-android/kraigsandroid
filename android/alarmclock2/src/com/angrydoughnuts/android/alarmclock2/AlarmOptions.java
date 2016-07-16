@@ -134,7 +134,7 @@ public class AlarmOptions extends DialogFragment {
                 getContext(), id, utc);
           }
         })
-      .setNeutralButton(!defaults ? R.string.delete : null,
+      .setNeutralButton(!defaults ? getString(R.string.delete) : null,
         new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {

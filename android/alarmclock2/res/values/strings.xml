@@ -4,11 +4,10 @@
   <string name="no_alarms">No Alarms</string>
   <string name="default_options">Default Alarm Options</string>
   <string name="alarm_options">Alarm Options</string>
-  <string name="delete_all">Delete All...</string>
+  <string name="delete_all">Delete All</string>
   <string name="delete">Delete</string>
   <string name="delete_sure">Are you sure you want to delete this alarm?</string>
   <string name="delete_all_sure">Are you sure you want to delete all alarms?</string>
-  <string name="time">Time</string>
   <string name="label">Label</string>
   <string name="repeat">Repeat</string>
   <string name="alarm_tone">Alarm tone</string>
@@ -30,11 +29,11 @@
   <string name="am">AM</string>
   <string name="pm">PM</string>
   <string name="dow_sun_short">Su</string>
-  <string name="dow_mon_short">Mo</string>
+  <string name="dow_mon_short">M</string>
   <string name="dow_tue_short">Tu</string>
-  <string name="dow_wed_short">We</string>
+  <string name="dow_wed_short">W</string>
   <string name="dow_thu_short">Th</string>
-  <string name="dow_fri_short">Fr</string>
+  <string name="dow_fri_short">F</string>
   <string name="dow_sat_short">Sa</string>
   <string name="dow_sun">Sunday</string>
   <string name="dow_mon">Monday</string>
