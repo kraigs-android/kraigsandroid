@@ -8,12 +8,11 @@
       android:layout_weight="1"
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
-  <!-- TODO: string -->
   <TextView
       style="@android:style/TextAppearance.Large"
       android:id="@+id/empty_list"
       android:visibility="gone"
-      android:text="No Alarms"
+      android:text="string/no_alarms"
       android:layout_weight="1"
       android:gravity="center"
       android:textStyle="italic"

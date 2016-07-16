@@ -113,11 +113,9 @@ public class AlarmOptions extends DialogFragment {
             AlarmClockProvider.ALARMS_URI, id), false, observer);
 
     AlertDialog d = new AlertDialog.Builder(getContext())
-      // TODO: string
-      .setTitle(defaults ? "Default Alarm Options" : "Alarm Options")
+      .setTitle(defaults ? R.string.default_options : R.string.alarm_options)
       .setView(v)
-      // TODO: string
-      .setPositiveButton("Done",
+      .setPositiveButton(R.string.done,
         new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
@@ -136,8 +134,7 @@ public class AlarmOptions extends DialogFragment {
                 getContext(), id, utc);
           }
         })
-      // TODO: string
-      .setNeutralButton(!defaults ? "Delete" : null,
+      .setNeutralButton(!defaults ? R.string.delete : null,
         new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
@@ -145,10 +142,8 @@ public class AlarmOptions extends DialogFragment {
               @Override
               public Dialog onCreateDialog(Bundle savedInstanceState) {
                 return new AlertDialog.Builder(getContext())
-                  // TODO: string
-                  .setTitle("Confirm Delete")
-                  // TODO: string
-                  .setMessage("Are you sure you want to delete this alarm?")
+                  .setTitle(R.string.delete)
+                  .setMessage(R.string.delete_sure)
                   .setNegativeButton(R.string.cancel, null)
                   .setPositiveButton(
                       R.string.ok, new DialogInterface.OnClickListener() {
@@ -303,8 +298,6 @@ public class AlarmOptions extends DialogFragment {
               time_pick.setListener(time_listener);
               Bundle b = new Bundle();
               b.putInt(TimePicker.TIME, a.time);
-              // TODO: string
-              b.putString(TimePicker.TITLE, "Edit time");
               b.putInt(TimePicker.REPEAT, a.repeat);
               time_pick.setArguments(b);
               time_pick.show(fm, "edit_alarm");
@@ -417,8 +410,7 @@ public class AlarmOptions extends DialogFragment {
       final ViewGroup edit_snooze = newItem(c);
       addView(edit_snooze);
       setImage(edit_snooze, R.drawable.ic_snooze);
-      // TODO: string
-      setText(edit_snooze, s.snooze + "m");
+      setText(edit_snooze, c.getString(R.string.minute_abbriv, s.snooze));
       final SeekBar snooze_bar = new SeekBar(c);
       setView(edit_snooze, snooze_bar, 1.0f);
       // Range 5 - 60 increments of 5.
@@ -429,8 +421,7 @@ public class AlarmOptions extends DialogFragment {
             @Override
             public void onProgressChanged(SeekBar s, int prog, boolean user) {
               final int snooze = prog * 5 + 5;
-              // TODO: string
-              setText(edit_snooze, snooze + "m");
+              setText(edit_snooze, c.getString(R.string.minute_abbriv, snooze));
             }
             @Override
             public void onStartTrackingTouch(SeekBar s) {}
@@ -445,8 +436,8 @@ public class AlarmOptions extends DialogFragment {
 
       // VOLUME FADE
       final TextView volume_status = new TextView(c);
-      // TODO: string
-      volume_status.setText("volume " + s.volume_starting + " to " + s.volume_ending + " over " + s.volume_time);
+      volume_status.setText(c.getString(R.string.fade_description,
+          s.volume_starting, s.volume_ending, s.volume_time));
 
       // Range 0 - 100 increments of 5.
       final RangeBar volume_range = new RangeBar(c);
@@ -467,8 +458,8 @@ public class AlarmOptions extends DialogFragment {
               final int volume_starting = min * 5;
               final int volume_ending = max * 5;
               final int volume_time = volume_time_slide.getProgress() * 5;
-              // TODO: string
-              volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
+              volume_status.setText(c.getString(R.string.fade_description,
+                  volume_starting, volume_ending, volume_time));
             }
             public void onDoneMin(int min) {
               int start = min * 5;
@@ -505,8 +496,8 @@ public class AlarmOptions extends DialogFragment {
               final int volume_starting = volume_range.getPositionMin() * 5;
               final int volume_ending = volume_range.getPositionMax() * 5;
               final int volume_time = volume_time_slide.getProgress() * 5;
-              // TODO: string
-              volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
+              volume_status.setText(c.getString(R.string.fade_description,
+                  volume_starting, volume_ending, volume_time));
             }
             @Override
             public void onStartTrackingTouch(SeekBar s) {}

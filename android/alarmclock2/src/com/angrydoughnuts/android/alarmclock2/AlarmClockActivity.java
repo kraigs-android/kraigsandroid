@@ -235,7 +235,7 @@ public class AlarmClockActivity extends Activity {
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
-    case R.id.default_settings:
+    case R.id.default_options:
       AlarmOptions options = new AlarmOptions();
       Bundle b = new Bundle();
       b.putLong(AlarmNotificationService.ALARM_ID, DbUtil.Settings.DEFAULTS_ID);
@@ -248,10 +248,8 @@ public class AlarmClockActivity extends Activity {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
           return new AlertDialog.Builder(getContext())
-            // TODO: string
-            .setTitle("Confirm Delete All")
-            // TODO: string
-            .setMessage("Are you sure you want to delete all alarms?")
+            .setTitle(R.string.delete)
+            .setMessage(R.string.delete_all_sure)
             .setNegativeButton(R.string.cancel, null)
             .setPositiveButton(
                 R.string.ok, new DialogInterface.OnClickListener() {

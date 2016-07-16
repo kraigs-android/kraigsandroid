@@ -1,6 +1,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-  <item android:id="@+id/default_settings"
-        android:title="@string/default_settings" />
+  <item android:id="@+id/default_options"
+        android:title="@string/default_options" />
   <item android:id="@+id/delete_all"
         android:title="@string/delete_all" />
 </menu>

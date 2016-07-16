@@ -46,7 +46,6 @@ public class TimePicker extends DialogFragment {
     minute = now.get(Calendar.MINUTE);
     repeat = 0;
 
-    String title = "";
     // Override defaults with user-specified state.
     if (getArguments() != null) {
       int secondsPastMidnight = getArguments().getInt(TIME, -1);
@@ -54,7 +53,6 @@ public class TimePicker extends DialogFragment {
         hour = secondsPastMidnight / 3600;
         minute = secondsPastMidnight / 60 - hour * 60;
       }
-      title = getArguments().getString(TITLE, "");
       repeat = getArguments().getInt(REPEAT, 0);
     }
 
@@ -70,8 +68,7 @@ public class TimePicker extends DialogFragment {
           Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.time_picker, null);
 
     final AlertDialog d = new AlertDialog.Builder(getContext())
-      // TODO: string
-      .setTitle(title.isEmpty() ? "New Alarm" : title)
+      .setTitle(R.string.time)
       .setView(v)
       .setNegativeButton(R.string.cancel, null)
       .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
@@ -260,7 +257,6 @@ public class TimePicker extends DialogFragment {
 
   // Input parameters
   public static final String TIME = "time";
-  public static final String TITLE = "title";
   public static final String REPEAT = "repeat";
   public static interface OnTimePickListener {
     abstract void onTimePick(int secondsPastMidnight);

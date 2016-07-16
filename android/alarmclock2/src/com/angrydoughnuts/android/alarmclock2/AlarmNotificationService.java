@@ -341,8 +341,8 @@ public class AlarmNotificationService extends Service {
         .setContentTitle(next_label.isEmpty() ?
                          getString(R.string.app_name) :
                          next_label)
-        // TODO: string
-        .setContentText(TimeUtil.formatLong(this, next) + " in " + TimeUtil.until(getApplicationContext(), next))
+        .setContentText(TimeUtil.formatLong(this, next) + " : " +
+                        TimeUtil.until(getApplicationContext(), next))
         .setSmallIcon(R.drawable.ic_alarm)
         .setCategory(Notification.CATEGORY_STATUS)
         .setVisibility(Notification.VISIBILITY_PUBLIC)

@@ -80,8 +80,6 @@ public class DbUtil {
 
     private static final Uri TONE_URL_DEFAULT =
       android.provider.Settings.System.DEFAULT_NOTIFICATION_URI;
-    // TODO: string
-    private static final String TONE_NAME_DEFAULT = "System default";
     private static final int SNOOZE_DEFAULT = 10;
     private static final boolean VIBRATE_DEFAULT = false;
     private static final int VOLUME_STARTING_DEFAULT = 0;
@@ -109,7 +107,7 @@ public class DbUtil {
       if (s != null)
         return s;
       else
-        return new Settings();
+        return new Settings(context);
     }
 
     private static Cursor query(Context context, long id) {
@@ -143,9 +141,9 @@ public class DbUtil {
           AlarmClockProvider.SettingsEntry.VOLUME_TIME));
     }
 
-    private Settings() {
+    private Settings(Context c) {
       tone_url = TONE_URL_DEFAULT;
-      tone_name = TONE_NAME_DEFAULT;
+      tone_name = c.getString(R.string.system_default);
       snooze = SNOOZE_DEFAULT;
       vibrate = VIBRATE_DEFAULT;
       volume_starting = VOLUME_STARTING_DEFAULT;

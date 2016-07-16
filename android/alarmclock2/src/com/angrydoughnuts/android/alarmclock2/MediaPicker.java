@@ -97,8 +97,7 @@ public class MediaPicker extends DialogFragment {
                 return newList(
                     Audio.Media.INTERNAL_CONTENT_URI, new ExtraEntry[] {
                       new ExtraEntry(Settings.System.DEFAULT_NOTIFICATION_URI,
-                                     // TODO: string
-                                     "System default") });
+                                     getString(R.string.system_default)) });
               }
             }));
 
@@ -110,8 +109,7 @@ public class MediaPicker extends DialogFragment {
       player = new MediaPlayer();
 
     return new AlertDialog.Builder(getContext())
-      // TODO: string
-      .setTitle("Media picker")
+      .setTitle(R.string.alarm_tone)
       .setView(t)
       .setNegativeButton(R.string.cancel, null)
       .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
