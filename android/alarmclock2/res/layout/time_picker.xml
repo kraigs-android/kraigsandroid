@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="horizontal"
+              android:paddingTop="20dip"
               android:paddingStart="14dip"
-              android:paddingEnd="10dip"
+              android:paddingEnd="14dip"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent">
   <LinearLayout
@@ -44,7 +45,7 @@
         android:gravity="center"
         android:textSize="34sp"
         android:layout_gravity="center"
-        android:layout_width="fill_parent"
+        android:layout_width="192dp"
         android:layout_height="wrap_content" />
 
     <TextView
