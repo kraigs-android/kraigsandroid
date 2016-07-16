@@ -134,12 +134,16 @@ public class RangeBar extends FrameLayout {
     case MotionEvent.ACTION_MOVE:
       if (tracking_min) {
         min_value = position(event.getX(), min);
-        if (min_value > max_value)
+        if (min_value > max_value) {
           max_value = min_value;
+          tracking_max = true;
+        }
       } else if (tracking_max) {
         max_value = position(event.getX(), max);
-        if (min_value > max_value)
+        if (min_value > max_value) {
           min_value = max_value;
+          tracking_min = true;
+        }
       }
       if (tracking_min || tracking_max) {
         requestLayout();
@@ -149,8 +153,14 @@ public class RangeBar extends FrameLayout {
       break;
 
     case MotionEvent.ACTION_UP:
-      if ((tracking_min || tracking_max) && listener != null)
-        listener.onDone(min_value, max_value);
+      if (listener != null) {
+        if (tracking_min && tracking_max)
+          listener.onDone(min_value, max_value);
+        else if (tracking_min)
+          listener.onDoneMin(min_value);
+        else if (tracking_max)
+          listener.onDoneMax(max_value);
+      }
       tracking_min = false;
       tracking_max = false;
       break;
@@ -184,5 +194,7 @@ public class RangeBar extends FrameLayout {
   public static interface Listener {
     abstract void onChange(int min, int max);
     abstract void onDone(int min, int max);
+    abstract void onDoneMin(int min);
+    abstract void onDoneMax(int max);
   }
 }

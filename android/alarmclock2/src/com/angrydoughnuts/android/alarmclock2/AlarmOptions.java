@@ -26,10 +26,13 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Process;
 import android.os.Vibrator;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
@@ -47,10 +50,13 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.util.Calendar;
 
 public class AlarmOptions extends DialogFragment {
   private final SettingsObserver observer = new SettingsObserver();
+  private MediaPlayer player = null;
+  private int init_volume = 0;
 
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -67,9 +73,26 @@ public class AlarmOptions extends DialogFragment {
         AlarmNotificationService.ALARM_ID, -1);
     final boolean defaults = id == DbUtil.Settings.DEFAULTS_ID;
 
+    if (player == null) {
+      // Since we will be changing the notification channel volume, store
+      // the initial value so we can reset it afterward.
+      final AudioManager a =
+        (AudioManager)getContext().getSystemService(Context.AUDIO_SERVICE);
+      init_volume = a.getStreamVolume(AudioManager.STREAM_ALARM);
+      a.setStreamVolume(AudioManager.STREAM_ALARM,
+                        a.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
+      player = new MediaPlayer();
+      player.setAudioStreamType(AudioManager.STREAM_ALARM);
+      try {
+        player.setDataSource(
+            getContext(), Settings.System.DEFAULT_NOTIFICATION_URI);
+        player.prepare();
+      } catch (IOException e) {}
+    }
+
     final ScrollView v = new ScrollView(getContext());
     final OptionsView o = new OptionsView(
-        getContext(), getFragmentManager(), id);
+        getContext(), getFragmentManager(), player, id);
     v.addView(o);
 
     if (savedInstanceState != null) {
@@ -156,6 +179,15 @@ public class AlarmOptions extends DialogFragment {
   public void onDestroy() {
     super.onDestroy();
     getContext().getContentResolver().unregisterContentObserver(observer);
+
+    if (player.isPlaying())
+      player.stop();
+    player.reset();
+    player.release();
+    player = null;
+
+    ((AudioManager)getContext().getSystemService(Context.AUDIO_SERVICE))
+      .setStreamVolume(AudioManager.STREAM_ALARM, init_volume, 0);
   }
 
   private static class SettingsObserver extends ContentObserver {
@@ -229,7 +261,8 @@ public class AlarmOptions extends DialogFragment {
     public final MediaPicker.Listener tone_listener;
 
     public OptionsView(
-        final Context c, final FragmentManager fm, final long id) {
+        final Context c, final FragmentManager fm, final MediaPlayer media,
+        final long id) {
       super(c);
       setOrientation(LinearLayout.VERTICAL);
 
@@ -444,11 +477,31 @@ public class AlarmOptions extends DialogFragment {
               // TODO: string
               volume_status.setText("volume " + volume_starting + " to " + volume_ending + " over " + volume_time);
             }
-            public void onDone(int min, int max) {
+            public void onDoneMin(int min) {
+              int start = min * 5;
               ContentValues val = new ContentValues();
-              val.put(AlarmClockProvider.SettingsEntry.VOLUME_STARTING, min*5);
-              val.put(AlarmClockProvider.SettingsEntry.VOLUME_ENDING, max*5);
+              val.put(AlarmClockProvider.SettingsEntry.VOLUME_STARTING, start);
               c.getContentResolver().update(settings, val, null, null);
+              media.setVolume(start/100.0f, start/100.0f);
+              if (media.isPlaying()) media.seekTo(0); else media.start();
+            }
+            public void onDoneMax(int max) {
+              int end = max * 5;
+              ContentValues val = new ContentValues();
+              val.put(AlarmClockProvider.SettingsEntry.VOLUME_ENDING, end);
+              c.getContentResolver().update(settings, val, null, null);
+              media.setVolume(end/100.0f, end/100.0f);
+              if (media.isPlaying()) media.seekTo(0); else media.start();
+            }
+            public void onDone(int min, int max) {
+              int start = min * 5;
+              int end = max * 5;
+              ContentValues val = new ContentValues();
+              val.put(AlarmClockProvider.SettingsEntry.VOLUME_STARTING, start);
+              val.put(AlarmClockProvider.SettingsEntry.VOLUME_ENDING, end);
+              c.getContentResolver().update(settings, val, null, null);
+              media.setVolume(end/100.0f, end/100.0f);
+              if (media.isPlaying()) media.seekTo(0); else media.start();
             }
           });
 
