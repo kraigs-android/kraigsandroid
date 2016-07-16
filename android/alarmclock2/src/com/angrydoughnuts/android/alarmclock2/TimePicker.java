@@ -25,7 +25,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
@@ -63,9 +62,7 @@ public class TimePicker extends DialogFragment {
       repeat = savedInstanceState.getInt("repeat");
     }
 
-    final View v =
-      ((LayoutInflater)getContext().getSystemService(
-          Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.time_picker, null);
+    final View v = View.inflate(getContext(), R.layout.time_picker, null);
 
     final AlertDialog d = new AlertDialog.Builder(getContext())
       .setView(v)

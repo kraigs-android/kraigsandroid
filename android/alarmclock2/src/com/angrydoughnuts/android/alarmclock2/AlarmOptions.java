@@ -36,7 +36,6 @@ import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -524,9 +523,7 @@ public class AlarmOptions extends DialogFragment {
     }
 
     private ViewGroup newItem(Context c) {
-      return (ViewGroup)
-        ((LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
-        .inflate(R.layout.settings_item, null);
+      return (ViewGroup)inflate(c, R.layout.settings_item, null);
     }
 
     private void setImage(ViewGroup v, int id) {

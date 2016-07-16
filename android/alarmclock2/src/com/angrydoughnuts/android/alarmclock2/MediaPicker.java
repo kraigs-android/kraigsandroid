@@ -39,7 +39,6 @@ import android.provider.MediaStore.MediaColumns;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -65,9 +64,8 @@ public class MediaPicker extends DialogFragment {
       getContext().checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE,
                                    Process.myPid(), Process.myUid());
 
-    final TabHost t = (TabHost)((LayoutInflater)getContext().getSystemService(
-                        Context.LAYOUT_INFLATER_SERVICE)).inflate(
-                            R.layout.media_picker, null);
+    final TabHost t = (TabHost)(View.inflate(
+        getContext(), R.layout.media_picker, null));
     t.setup();
 
     if (has_external) {
