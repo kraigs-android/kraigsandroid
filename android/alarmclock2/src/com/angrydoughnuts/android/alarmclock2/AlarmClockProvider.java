@@ -123,6 +123,12 @@ public final class AlarmClockProvider extends ContentProvider {
     int count;
 
     switch (matcher.match(uri)) {
+    case ALARMS:
+       count = db.update(
+          AlarmEntry.TABLE_NAME, values, selection, selectionArgs);
+      if (count > 0)
+        getContext().getContentResolver().notifyChange(uri, null);
+      return count;
     case ALARM_ID:
       alarmid = ContentUris.parseId(uri);
        count = db.update(

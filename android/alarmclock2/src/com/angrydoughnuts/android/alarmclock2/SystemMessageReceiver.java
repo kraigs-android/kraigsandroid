@@ -17,6 +17,7 @@ package com.angrydoughnuts.android.alarmclock2;
 
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -40,7 +41,15 @@ public class SystemMessageReceiver extends BroadcastReceiver {
     }
   }
 
+  private void clearSnooze(Context c) {
+    ContentValues val = new ContentValues();
+    val.put(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE, 0);
+    c.getContentResolver().update(
+        AlarmClockProvider.ALARMS_URI, val, null, null);
+  }
+
   private void rescheduleAll(Context c) {
+    clearSnooze(c);
     for (Alarm a : enabledAlarms(c.getContentResolver())) {
       Log.i(TAG, "Rescheduling alarm " + a.id);
       AlarmNotificationService.removeAlarmTrigger(c, a.id);
@@ -49,6 +58,7 @@ public class SystemMessageReceiver extends BroadcastReceiver {
   }
 
   private void scheduleAll(Context c) {
+    clearSnooze(c);
     for (Alarm a : enabledAlarms(c.getContentResolver())) {
       Log.i(TAG, "Scheduling alarm " + a.id);
       AlarmNotificationService.scheduleAlarmTrigger(c, a.id, a.tsUTC);
