@@ -149,11 +149,9 @@ public class AlarmOptions extends DialogFragment {
                   .setTitle("Confirm Delete")
                   // TODO: string
                   .setMessage("Are you sure you want to delete this alarm?")
-                  // TODO: string
-                  .setNegativeButton("Cancel", null)
-                  // TODO: string
+                  .setNegativeButton(R.string.cancel, null)
                   .setPositiveButton(
-                      "OK", new DialogInterface.OnClickListener() {
+                      R.string.ok, new DialogInterface.OnClickListener() {
                       @Override
                       public void onClick(DialogInterface dialog, int which) {
                         getContext().getContentResolver().delete(
@@ -220,25 +218,21 @@ public class AlarmOptions extends DialogFragment {
         for (int i = 0; i < 7; ++i)
           checked[i] = (b & (1 << i)) != 0;
       }
-      // TODO: string
       final CharSequence days[] = new CharSequence[] {
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday"
+        getString(R.string.dow_sun),
+        getString(R.string.dow_mon),
+        getString(R.string.dow_tue),
+        getString(R.string.dow_wed),
+        getString(R.string.dow_thu),
+        getString(R.string.dow_fri),
+        getString(R.string.dow_sat),
       };
       return new AlertDialog.Builder(getContext())
-        // TODO: string
-        .setTitle("Repeat")
+        .setTitle(R.string.repeat)
         .setMultiChoiceItems(days, checked, null)
-        // TODO: string
-        .setNegativeButton("Cancel", null)
-        // TODO: string
+        .setNegativeButton(R.string.cancel, null)
         .setPositiveButton(
-            "OK", new DialogInterface.OnClickListener() {
+            R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                   if (listener == null)
@@ -326,9 +320,9 @@ public class AlarmOptions extends DialogFragment {
             ContentValues val = new ContentValues();
             val.put(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK, repeat);
             c.getContentResolver().update(uri, val, null, null);
-            // TODO: string
-            setText(edit_repeat, repeat == 0 ? "No repeats" :
-                    TimeUtil.repeatString(repeat));
+            setText(edit_repeat, repeat == 0 ?
+                    getResources().getString(R.string.no_repeats) :
+                    TimeUtil.repeatString(c, repeat));
             final DbUtil.Alarm a = DbUtil.Alarm.get(c, id);
             final Calendar next =
               TimeUtil.nextOccurrence(a.time, repeat, a.next_snooze);
@@ -340,9 +334,9 @@ public class AlarmOptions extends DialogFragment {
           }
         };
       setImage(edit_repeat, R.drawable.ic_today);
-      // TODO: string
-      setText(edit_repeat, alarm.repeat == 0 ? "No repeats" :
-              TimeUtil.repeatString(alarm.repeat));
+      setText(edit_repeat, alarm.repeat == 0 ?
+              getResources().getString(R.string.no_repeats) :
+              TimeUtil.repeatString(c, alarm.repeat));
       edit_repeat.setOnClickListener(
           new View.OnClickListener() {
             @Override
@@ -373,8 +367,7 @@ public class AlarmOptions extends DialogFragment {
           }
         };
       setImage(edit_label, R.drawable.ic_label_outline);
-      // TODO: string
-      setEdit(edit_label, alarm.label, "Label", label_change);
+      setEdit(edit_label, alarm.label, R.string.label, label_change);
 
       // EDIT TONE
       final ViewGroup edit_tone = newItem(c);
@@ -555,12 +548,12 @@ public class AlarmOptions extends DialogFragment {
       t.setText(s);
     }
 
-    private void setEdit(View v, String s, String hint, TextWatcher w) {
+    private void setEdit(View v, String s, int hint_res, TextWatcher w) {
       EditText t = (EditText)v.findViewById(R.id.setting_edit);
       t.setVisibility(View.VISIBLE);
       t.setText(s);
       t.setSelection(s.length());
-      t.setHint(hint);
+      t.setHint(hint_res);
       t.addTextChangedListener(w);
     }
 

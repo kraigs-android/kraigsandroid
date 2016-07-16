@@ -194,8 +194,7 @@ public class AlarmNotificationService extends Service {
 
     final Notification notification =
       new Notification.Builder(this)
-      // TODO: string
-      .setContentTitle("Alarm Klock")
+      .setContentTitle(getString(R.string.app_name))
       .setContentText(labels)
       .setSmallIcon(R.drawable.ic_alarm_on)
       .setContentIntent(PendingIntent.getActivity(this, 0, notify, 0))
@@ -339,10 +338,11 @@ public class AlarmNotificationService extends Service {
     manager.notify(
         NEXT_ALARM_NOTIFICATION_ID,
         new Notification.Builder(this)
+        .setContentTitle(next_label.isEmpty() ?
+                         getString(R.string.app_name) :
+                         next_label)
         // TODO: string
-        .setContentTitle(next_label.isEmpty() ? "Alarm Klock" : next_label)
-        // TODO: string
-        .setContentText(TimeUtil.formatLong(this, next) + " in " + TimeUtil.until(next))
+        .setContentText(TimeUtil.formatLong(this, next) + " in " + TimeUtil.until(getApplicationContext(), next))
         .setSmallIcon(R.drawable.ic_alarm)
         .setCategory(Notification.CATEGORY_STATUS)
         .setVisibility(Notification.VISIBILITY_PUBLIC)

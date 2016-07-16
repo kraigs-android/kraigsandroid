@@ -55,8 +55,7 @@ public class AlarmNotificationActivity extends Activity {
     }
 
     final TextView snooze_text = (TextView)findViewById(R.id.snooze_text);
-    // TODO: string
-    snooze_text.setText(snooze + " minutes");
+    snooze_text.setText(getString(R.string.minutes, snooze));
 
     ((TextView)findViewById(R.id.alarm_label))
       .setText(DbUtil.Alarm.get(this, alarmid).label);
@@ -67,8 +66,7 @@ public class AlarmNotificationActivity extends Activity {
           public void onClick(View view) {
             snooze -= 5;
             if (snooze <= 0) snooze = 5;
-            // TODO: string
-            snooze_text.setText(snooze + " minutes");
+            snooze_text.setText(getString(R.string.minutes, snooze));
           }
         });
 
@@ -78,8 +76,7 @@ public class AlarmNotificationActivity extends Activity {
           public void onClick(View view) {
             snooze += 5;
             if (snooze >= 60) snooze = 60;
-            // TODO: string
-            snooze_text.setText(snooze + " minutes");
+            snooze_text.setText(getString(R.string.minutes, snooze));
           }
         });
 
@@ -116,10 +113,9 @@ public class AlarmNotificationActivity extends Activity {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
           return new AlertDialog.Builder(getContext())
-            // TODO: string
-            .setMessage("timeout")
-            // TODO: string
-            .setPositiveButton("OK", null)
+            .setTitle(R.string.time_out_title)
+            .setMessage(R.string.time_out_error)
+            .setPositiveButton(R.string.ok, null)
             .create();
         }
         @Override

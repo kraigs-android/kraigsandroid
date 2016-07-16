@@ -82,35 +82,31 @@ public class TimeUtil {
   private static final int EVERYDAY = 1 | 2 | 4 | 8 | 16 | 32 | 64;
   private static final int WEEKDAYS = 2 | 4 | 8 | 16 | 32;
   private static final int WEEKENDS = 1 | 64;
-  public static String repeatString(int repeat) {
+  public static String repeatString(Context c, int repeat) {
     if (repeat <= 0)
       return "";
     else if (repeat == EVERYDAY)
-      // TODO: string
-      return "Everyday";
+      return c.getString(R.string.everyday);
     else if (repeat == WEEKDAYS)
-      // TODO: string
-      return "Weekdays";
+      return c.getString(R.string.weekdays);
     else if (repeat == WEEKENDS)
-      // TODO: string
-      return "Weekends";
+      return c.getString(R.string.weekends);
 
-    // TODO: string
     String s = "";
     if ((1 & repeat) != 0)
-      s += "Su ";
+      s += c.getString(R.string.dow_sun_short) + " ";
     if ((2 & repeat) != 0)
-      s += "M ";
+      s += c.getString(R.string.dow_mon_short) + " ";
     if ((4 & repeat) != 0)
-      s += "Tu ";
+      s += c.getString(R.string.dow_tue_short) + " ";
     if ((8 & repeat) != 0)
-      s += "W ";
+      s += c.getString(R.string.dow_wed_short) + " ";
     if ((16 & repeat) != 0)
-      s += "Th ";
+      s += c.getString(R.string.dow_thu_short) + " ";
     if ((32 & repeat) != 0)
-      s += "F ";
+      s += c.getString(R.string.dow_fri_short) + " ";
     if ((64 & repeat) != 0)
-      s += "Sa ";
+      s += c.getString(R.string.dow_sat_short) + " ";
     return s;
   }
 
@@ -140,14 +136,14 @@ public class TimeUtil {
     return then.getTimeInMillis() - now.getTimeInMillis();
   }
 
-  public static String until(Calendar alarm) {
+  public static String until(Context c, Calendar alarm) {
     Calendar now = Calendar.getInstance();
     now.set(Calendar.SECOND, 0);
     now.set(Calendar.MILLISECOND, 0);
-    return until(now, alarm);
+    return until(c, now, alarm);
   }
 
-  public static String until(Calendar from, Calendar to) {
+  public static String until(Context c, Calendar from, Calendar to) {
     long minutes = (to.getTimeInMillis() - from.getTimeInMillis()) / 1000 / 60;
     long days = minutes / 1440;
     minutes -= (days * 1440);
@@ -156,14 +152,14 @@ public class TimeUtil {
 
     String s = "";
     if (days > 0)
-      // TODO: string
-      s += String.format("%d %s ", days, (days > 1) ? "days" : "day");
+      s += days > 1 ? c.getString(R.string.days, days) :
+        c.getString(R.string.day, days);
     if (hours > 0)
-      // TODO: string
-      s += String.format("%d %s ", hours, (hours > 1) ? "hours" : "hour");
+      s += hours > 1 ? c.getString(R.string.hours, hours) :
+        c.getString(R.string.hour, hours);
     if (minutes > 0)
-      // TODO: string
-      s += String.format("%d %s", minutes, (minutes > 1) ? "minutes" : "minute");
+      s += minutes > 1 ? c.getString(R.string.minutes, minutes) :
+        c.getString(R.string.minute, minutes);
     return s;
   }
 

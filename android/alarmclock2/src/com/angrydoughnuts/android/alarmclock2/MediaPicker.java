@@ -72,15 +72,15 @@ public class MediaPicker extends DialogFragment {
 
     if (has_external) {
       t.addTab(
-          // TODO: string
-          t.newTabSpec("artists").setIndicator("artists").setContent(
+          t.newTabSpec("artists").setIndicator(getString(R.string.artists))
+          .setContent(
               new TabHost.TabContentFactory() {
                 @Override
                 public View createTabContent(String tag) { return newFlip(); }
               }));
       t.addTab(
-          // TODO: string
-          t.newTabSpec("external").setIndicator("external").setContent(
+          t.newTabSpec("external").setIndicator(getString(R.string.songs))
+          .setContent(
               new TabHost.TabContentFactory() {
                 @Override
                 public View createTabContent(String tag) {
@@ -89,8 +89,8 @@ public class MediaPicker extends DialogFragment {
               }));
     }
     t.addTab(
-        // TODO: string
-        t.newTabSpec("internal").setIndicator("internal").setContent(
+        t.newTabSpec("internal").setIndicator(getString(R.string.internal))
+        .setContent(
             new TabHost.TabContentFactory() {
               @Override
               public View createTabContent(String tag) {
@@ -103,8 +103,8 @@ public class MediaPicker extends DialogFragment {
             }));
 
     if (title != null)
-      // TODO: string
-      ((TextView)t.findViewById(R.id.selected)).setText("Selected: " + title);
+      ((TextView)t.findViewById(R.id.selected))
+        .setText(getString(R.string.selected) + title);
 
     if (player == null)
       player = new MediaPlayer();
@@ -113,10 +113,8 @@ public class MediaPicker extends DialogFragment {
       // TODO: string
       .setTitle("Media picker")
       .setView(t)
-      // TODO: string
-      .setNegativeButton("Cancel", null)
-      // TODO: string
-      .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+      .setNegativeButton(R.string.cancel, null)
+      .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
             if (listener != null && uri != null && title != null)
@@ -149,9 +147,8 @@ public class MediaPicker extends DialogFragment {
         TextView t = (TextView)v;
         uri = (Uri)t.getTag();
         title = t.getText().toString();
-        // TODO: string
         ((TextView)getDialog().findViewById(R.id.selected))
-          .setText("Selected: " + title);
+          .setText(getString(R.string.selected) + title);
 
         player.reset();
         try {

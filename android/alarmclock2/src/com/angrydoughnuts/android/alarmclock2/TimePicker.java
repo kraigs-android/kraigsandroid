@@ -73,10 +73,8 @@ public class TimePicker extends DialogFragment {
       // TODO: string
       .setTitle(title.isEmpty() ? "New Alarm" : title)
       .setView(v)
-      // TODO: string
-      .setNegativeButton("Cancel", null)
-      // TODO: string
-      .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+      .setNegativeButton(R.string.cancel, null)
+      .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
             if (listener != null)
@@ -236,9 +234,8 @@ public class TimePicker extends DialogFragment {
   private int seconds() { return hour * 3600 + minute * 60; }
   private Calendar next() { return TimeUtil.nextOccurrence(seconds(), repeat); }
   private String time() { return TimeUtil.format(getContext(), next()); }
-  private String until() { return TimeUtil.until(next()); }
-  // TODO: string
-  private String ampm() { return (hour < 12) ? "AM" : "PM"; }
+  private String until() { return TimeUtil.until(getContext(), next()); }
+  private int ampm() { return (hour < 12) ? R.string.am : R.string.pm; }
 
   private void refresh(EditText time, TextView countdown, Button am_pm) {
     time.setText(time());

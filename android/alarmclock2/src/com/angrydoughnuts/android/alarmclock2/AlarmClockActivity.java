@@ -79,11 +79,11 @@ public class AlarmClockActivity extends Activity {
           ((TextView)v.findViewById(R.id.time))
             .setText(TimeUtil.formatLong(getApplicationContext(), next));
           ((TextView)v.findViewById(R.id.countdown))
-            .setText(TimeUtil.until(next));
+            .setText(TimeUtil.until(getApplicationContext(), next));
           ((TextView)v.findViewById(R.id.label))
             .setText(label);
           ((TextView)v.findViewById(R.id.repeat))
-            .setText(TimeUtil.repeatString(repeats));
+            .setText(TimeUtil.repeatString(getApplicationContext(), repeats));
           ((CheckBox)v.findViewById(R.id.enabled))
             .setChecked(enabled != 0);
         }
@@ -252,11 +252,9 @@ public class AlarmClockActivity extends Activity {
             .setTitle("Confirm Delete All")
             // TODO: string
             .setMessage("Are you sure you want to delete all alarms?")
-            // TODO: string
-            .setNegativeButton("Cancel", null)
-            // TODO: string
+            .setNegativeButton(R.string.cancel, null)
             .setPositiveButton(
-                "OK", new DialogInterface.OnClickListener() {
+                R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                       // Find all of the enabled alarm ids.
