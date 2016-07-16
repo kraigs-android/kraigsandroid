@@ -17,6 +17,7 @@
       android:paddingRight="12dp"
       android:paddingTop="6dp"
       android:paddingBottom="6dp"
+      android:elevation="6dp"
       android:layout_width="wrap_content"
       android:layout_height="fill_parent" />
 </merge>

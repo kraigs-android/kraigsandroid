@@ -21,14 +21,14 @@
   <LinearLayout
       android:orientation="horizontal"
       android:gravity="center"
-      android:layout_marginBottom="24dp"
       android:layout_width="fill_parent"
-      android:layout_height="wrap_content">
+      android:layout_height="92dp">
     <ImageButton
         android:id="@+id/test_alarm"
         android:src="@drawable/ic_alarm"
         android:background="@drawable/circle_btn"
         android:visibility="gone"
+        android:elevation="6dp"
         android:padding="12dp"
         android:layout_marginLeft="32dp"
         android:layout_marginRight="32dp"
@@ -38,6 +38,7 @@
         android:id="@+id/new_alarm"
         android:src="@drawable/ic_add"
         android:background="@drawable/circle_btn"
+        android:elevation="6dp"
         android:padding="12dp"
         android:layout_marginLeft="32dp"
         android:layout_marginRight="32dp"
