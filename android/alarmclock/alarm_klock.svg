@@ -24,7 +24,9 @@
     <filter
        style="color-interpolation-filters:sRGB;"
        inkscape:label="Drop Shadow"
-       id="filter4216">
+       id="filter4216"
+       height="1.5"
+       width="1.5">
       <feFlood
          flood-opacity="0.498039"
          flood-color="rgb(0,0,0)"
@@ -85,134 +87,6 @@
          result="composite2"
          id="feComposite4250" />
     </filter>
-    <filter
-       style="color-interpolation-filters:sRGB"
-       inkscape:label="Drop Shadow"
-       id="filter4216-3">
-      <feFlood
-         flood-opacity="0.498039"
-         flood-color="rgb(0,0,0)"
-         result="flood"
-         id="feFlood4218-6" />
-      <feComposite
-         in="flood"
-         in2="SourceGraphic"
-         operator="in"
-         result="composite1"
-         id="feComposite4220-7" />
-      <feGaussianBlur
-         in="composite1"
-         stdDeviation="3"
-         result="blur"
-         id="feGaussianBlur4222-5" />
-      <feOffset
-         dx="6"
-         dy="6"
-         result="offset"
-         id="feOffset4224-3" />
-      <feComposite
-         in="SourceGraphic"
-         in2="offset"
-         operator="over"
-         result="composite2"
-         id="feComposite4226-5" />
-    </filter>
-    <filter
-       style="color-interpolation-filters:sRGB;"
-       inkscape:label="Drop Shadow"
-       id="filter4307">
-      <feFlood
-         flood-opacity="0.498039"
-         flood-color="rgb(0,0,0)"
-         result="flood"
-         id="feFlood4309" />
-      <feComposite
-         in="flood"
-         in2="SourceGraphic"
-         operator="in"
-         result="composite1"
-         id="feComposite4311" />
-      <feGaussianBlur
-         in="composite1"
-         stdDeviation="3"
-         result="blur"
-         id="feGaussianBlur4313" />
-      <feOffset
-         dx="6"
-         dy="6"
-         result="offset"
-         id="feOffset4315" />
-      <feComposite
-         in="SourceGraphic"
-         in2="offset"
-         operator="over"
-         result="composite2"
-         id="feComposite4317" />
-    </filter>
-    <filter
-       style="color-interpolation-filters:sRGB;"
-       inkscape:label="Drop Shadow"
-       id="filter4319">
-      <feFlood
-         flood-opacity="0.498039"
-         flood-color="rgb(0,0,0)"
-         result="flood"
-         id="feFlood4321" />
-      <feComposite
-         in="flood"
-         in2="SourceGraphic"
-         operator="in"
-         result="composite1"
-         id="feComposite4323" />
-      <feGaussianBlur
-         in="composite1"
-         stdDeviation="3"
-         result="blur"
-         id="feGaussianBlur4325" />
-      <feOffset
-         dx="6"
-         dy="6"
-         result="offset"
-         id="feOffset4327" />
-      <feComposite
-         in="SourceGraphic"
-         in2="offset"
-         operator="over"
-         result="composite2"
-         id="feComposite4329" />
-    </filter>
-    <filter
-       style="color-interpolation-filters:sRGB;"
-       inkscape:label="Drop Shadow"
-       id="filter4355">
-      <feFlood
-         flood-opacity="0.498039"
-         flood-color="rgb(0,0,0)"
-         result="flood"
-         id="feFlood4357" />
-      <feComposite
-         in="flood"
-         in2="SourceGraphic"
-         operator="in"
-         result="composite1"
-         id="feComposite4359" />
-      <feGaussianBlur
-         in="composite1"
-         stdDeviation="3"
-         result="blur"
-         id="feGaussianBlur4361" />
-      <feOffset
-         dx="6"
-         dy="-6"
-         result="offset"
-         id="feOffset4363" />
-      <feComposite
-         in="SourceGraphic"
-         in2="offset"
-         operator="over"
-         result="composite2"
-         id="feComposite4365" />
-    </filter>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -221,9 +95,9 @@
      borderopacity="1"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="-91.974608"
-     inkscape:cy="182.05569"
+     inkscape:zoom="3.959798"
+     inkscape:cx="72.691023"
+     inkscape:cy="187.99711"
      inkscape:document-units="px"
      inkscape:current-layer="layer4"
      showgrid="true"
@@ -237,7 +111,8 @@
      inkscape:window-x="0"
      inkscape:window-y="55"
      inkscape:window-maximized="1"
-     objecttolerance="20">
+     objecttolerance="20"
+     gridtolerance="10">
     <inkscape:grid
        type="xygrid"
        id="grid3344"
@@ -253,7 +128,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
         <cc:license
            rdf:resource="http://creativecommons.org/licenses/by/3.0/" />
       </cc:Work>
@@ -292,7 +167,7 @@
      inkscape:label="circle 1"
      style="display:inline">
     <circle
-       style="fill:#ffd201;fill-opacity:1;stroke:none;stroke-width:2;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;"
+       style="fill:#ffd201;fill-opacity:1;stroke:none;stroke-width:2;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="path8231"
        cx="192"
        cy="192"
@@ -322,7 +197,7 @@
      id="g4262"
      inkscape:groupmode="layer">
     <rect
-       style="fill:#ffffff;fill-opacity:0.78431373;stroke:none;stroke-width:10;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter4307)"
+       style="fill:#ffffff;fill-opacity:0.78431373;stroke:none;stroke-width:10;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter4216)"
        id="rect4268"
        width="9.749999"
        height="73.39286"
@@ -330,15 +205,11 @@
        y="113.07143"
        ry="0"
        transform="matrix(1,0,0,0.86858046,0,19.051078)" />
-    <rect
-       style="display:inline;fill:#ffffff;fill-opacity:0.78431373;stroke:none;stroke-width:10;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter4355)"
-       id="rect4268-6"
-       width="9.749999"
-       height="73.39286"
-       x="187.21429"
-       y="113.07143"
-       ry="0"
-       transform="matrix(-0.42261826,0.90630779,-0.58946697,-0.27487296,392.10569,76.044577)" />
+    <path
+       style="fill:#ffffff;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:0.78431374;filter:url(#filter4216)"
+       d="m 203.53644,194.90878 41.75293,24.20221 -4.68513,8.14724 -42.03995,-24.36859 z"
+       id="path4264"
+       inkscape:connector-curvature="0" />
   </g>
   <g
      inkscape:groupmode="layer"
