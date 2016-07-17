@@ -300,6 +300,15 @@ public final class AlarmClockProvider extends ContentProvider {
             "ALTER TABLE " + AlarmEntry.TABLE_NAME + " ADD COLUMN " +
             AlarmEntry.NEXT_SNOOZE + " UNSIGNED INTEGER DEFAULT 0");
       }
+      // Application versions 1.x stored default alarm settings in row
+      // id -1.  Since UriMatcher can only match positive numbers, this
+      // data is now stored in row id Long.MAX_VALUE.  This move the row.
+      if (oldVersion < 2) {
+        db.execSQL(
+            "UPDATE " + SettingsEntry.TABLE_NAME + " SET " +
+            SettingsEntry.ALARM_ID + " = " + DbUtil.Settings.DEFAULTS_ID +
+            " WHERE " + SettingsEntry.ALARM_ID + " == -1");
+      }
     }
   }
 }
