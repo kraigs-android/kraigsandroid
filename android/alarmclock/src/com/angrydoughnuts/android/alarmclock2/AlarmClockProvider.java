@@ -13,7 +13,7 @@
  * limitations under the License.
  ****************************************************************************/
 
-package com.angrydoughnuts.android.alarmclock2;
+package com.angrydoughnuts.android.alarmclock;
 
 import android.content.ContentProvider;
 import android.content.ContentResolver;
@@ -207,7 +207,7 @@ public final class AlarmClockProvider extends ContentProvider {
   }
 
   private static final String AUTHORITY =
-    "com.angrydoughnuts.android.alarmclock2.provider";
+    "com.angrydoughnuts.android.alarmclock.provider";
   private static final int ALARMS = 1;
   private static final int ALARM_ID = 2;
   private static final int SETTINGS_ID = 3;

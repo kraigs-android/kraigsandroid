@@ -13,7 +13,7 @@
  * limitations under the License.
  ****************************************************************************/
 
-package com.angrydoughnuts.android.alarmclock2;
+package com.angrydoughnuts.android.alarmclock;
 
 import android.app.Activity;
 import android.app.AlertDialog;
