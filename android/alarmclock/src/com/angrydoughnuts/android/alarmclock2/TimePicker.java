@@ -18,7 +18,6 @@ package com.angrydoughnuts.android.alarmclock;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
@@ -32,7 +31,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-// import java.lang.NumberFormatException;
 import java.util.Calendar;
 
 public class TimePicker extends DialogFragment {

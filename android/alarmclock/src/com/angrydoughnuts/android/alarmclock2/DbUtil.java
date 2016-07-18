@@ -15,8 +15,8 @@
 
 package com.angrydoughnuts.android.alarmclock;
 
-import android.content.Context;
 import android.content.ContentUris;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 

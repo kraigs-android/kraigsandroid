@@ -23,8 +23,8 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.util.Log;
 
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 
 public class SystemMessageReceiver extends BroadcastReceiver {
   @Override

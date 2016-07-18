@@ -30,8 +30,8 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.IBinder;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
 import android.provider.Settings;
@@ -39,8 +39,8 @@ import android.util.ArrayMap;
 import android.util.Log;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Calendar;
+import java.util.HashSet;
 
 public class AlarmNotificationService extends Service {
   public static final String ALARM_ID = "alarm_id";
