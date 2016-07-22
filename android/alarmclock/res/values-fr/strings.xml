@@ -2,8 +2,8 @@
 <!-- Translation by Biljana Milicevic <engr3337@gmail.com> -->
 <resources>
   <string name="app_name">Alarm Klock</string>
-  <string name="delete_all">Supprimer tout</string>
-  <string name="label">Etiquette</string>
+  <string name="delete_all">Tout supprimer</string>
+  <string name="label">Étiquette</string>
   <string name="repeat">Répéter</string>
   <string name="alarm_tone">Sonnerie d\'alarme</string>
   <string name="fade_description">De %1$d%% à %2$d%% durée %3$d secondes</string>
@@ -11,7 +11,7 @@
   <string name="cancel">Annuler</string>
   <string name="delete">Supprimer</string>
   <string name="snooze">EN VEILLE</string>
-  <string name="dismiss">REVOQUER</string>
+  <string name="dismiss">RÉVOQUER</string>
   <string name="plus_five">+5</string>
   <string name="minus_five">-5</string>
   <string name="day">%d jour</string>
@@ -28,7 +28,7 @@
   <string name="dow_wed_short">Mer</string>
   <string name="dow_thu_short">Jeu</string>
   <string name="dow_fri_short">Ven</string>
-  <string name="dow_sat_short">Sa</string>
+  <string name="dow_sat_short">Sam</string>
   <string name="dow_sun">Dimanche</string>
   <string name="dow_mon">Lundi</string>
   <string name="dow_tue">Mardi</string>
