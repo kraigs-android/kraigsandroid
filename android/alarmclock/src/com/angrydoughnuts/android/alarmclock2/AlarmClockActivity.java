@@ -30,6 +30,7 @@ import android.content.pm.ApplicationInfo;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -229,6 +230,9 @@ public class AlarmClockActivity extends Activity {
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     getMenuInflater().inflate(R.menu.alarm_list_menu, menu);
+    menu.findItem(R.id.display_notification)
+      .setChecked(PreferenceManager.getDefaultSharedPreferences(this)
+        .getBoolean(AlarmNotificationService.DISPLAY_NOTIFICATION, true));
     return super.onCreateOptionsMenu(menu);
   }
 
@@ -241,6 +245,16 @@ public class AlarmClockActivity extends Activity {
       b.putLong(AlarmNotificationService.ALARM_ID, DbUtil.Settings.DEFAULTS_ID);
       options.setArguments(b);
       options.show(getFragmentManager(), "default_alarm_options");
+      return true;
+
+    case R.id.display_notification:
+      boolean new_val = !item.isChecked();
+      item.setChecked(new_val);
+      PreferenceManager.getDefaultSharedPreferences(this)
+        .edit()
+        .putBoolean(AlarmNotificationService.DISPLAY_NOTIFICATION, new_val)
+        .commit();
+      AlarmNotificationService.refreshNotificationBar(this);
       return true;
 
     case R.id.delete_all:

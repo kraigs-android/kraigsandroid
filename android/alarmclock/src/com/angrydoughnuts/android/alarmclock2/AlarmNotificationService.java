@@ -34,6 +34,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.ArrayMap;
 import android.util.Log;
@@ -43,6 +44,7 @@ import java.util.Calendar;
 import java.util.HashSet;
 
 public class AlarmNotificationService extends Service {
+  public static final String DISPLAY_NOTIFICATION = "NOTIFICATION_ICON";
   public static final String ALARM_ID = "alarm_id";
   private static final String TIME_UTC = "time_utc";
 
@@ -100,6 +102,14 @@ public class AlarmNotificationService extends Service {
     c.startService(new Intent(c, AlarmNotificationService.class)
                    .putExtra(COMMAND, SNOOZE_ALL)
                    .putExtra(TIME_UTC, snoozeUtc));
+  }
+
+  /**
+   * Trigger a notification bar refresh.
+   */
+  public static void refreshNotificationBar(Context c) {
+    c.startService(new Intent(c, AlarmNotificationService.class)
+                   .putExtra(COMMAND, REFRESH));
   }
 
   private ActiveAlarms activeAlarms = null;
@@ -310,9 +320,11 @@ public class AlarmNotificationService extends Service {
 
     // Clear notification bar when there are no alarms enabled or when there
     // is an alarm currently firing (that alarm will create its own
-    // notification).
+    // notification), or when the setting is disabled.
     if (c.getCount() == 0 ||
-        (activeAlarms != null && !activeAlarms.alarmids.isEmpty())) {
+        (activeAlarms != null && !activeAlarms.alarmids.isEmpty()) ||
+        PreferenceManager.getDefaultSharedPreferences(this)
+        .getBoolean(DISPLAY_NOTIFICATION, true) == false) {
       ((AlarmManager)getSystemService(Context.ALARM_SERVICE)).cancel(tick);
       manager.cancel(NEXT_ALARM_NOTIFICATION_ID);
       c.close();

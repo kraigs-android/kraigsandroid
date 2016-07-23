@@ -3,6 +3,7 @@
   <string name="app_name">Alarm Klock</string>
   <string name="no_alarms">No Alarms</string>
   <string name="default_options">Default Alarm Options</string>
+  <string name="display_notification">Persistent Notification</string>
   <string name="alarm_options">Alarm Options</string>
   <string name="delete_all">Delete All</string>
   <string name="delete">Delete</string>
