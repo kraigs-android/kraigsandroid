@@ -412,21 +412,21 @@ public class AlarmOptions extends DialogFragment {
       setText(edit_snooze, c.getString(R.string.minute_abbriv, s.snooze));
       final SeekBar snooze_bar = new SeekBar(c);
       setView(edit_snooze, snooze_bar, 1.0f);
-      // Range 5 - 60 increments of 5.
-      snooze_bar.setMax(11);
-      snooze_bar.setProgress((s.snooze - 5) / 5);
+      // Range 1 - 60 increments of 1.
+      snooze_bar.setMax(59);
+      snooze_bar.setProgress(s.snooze - 1);
       snooze_bar.setOnSeekBarChangeListener(
           new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar s, int prog, boolean user) {
-              final int snooze = prog * 5 + 5;
+              final int snooze = prog + 1;
               setText(edit_snooze, c.getString(R.string.minute_abbriv, snooze));
             }
             @Override
             public void onStartTrackingTouch(SeekBar s) {}
             @Override
             public void onStopTrackingTouch(SeekBar s) {
-              final int snooze = s.getProgress() * 5 + 5;
+              final int snooze = s.getProgress() + 1;
               ContentValues val = new ContentValues();
               val.put(AlarmClockProvider.SettingsEntry.SNOOZE, snooze);
               c.getContentResolver().update(settings, val, null, null);
