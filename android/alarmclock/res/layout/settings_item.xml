@@ -18,6 +18,7 @@
       android:id="@+id/setting_text"
       android:visibility="gone"
       android:textSize="24sp"
+      android:minEms="2"
       android:layout_gravity="center"
       android:singleLine="true"
       android:layout_width="wrap_content"
