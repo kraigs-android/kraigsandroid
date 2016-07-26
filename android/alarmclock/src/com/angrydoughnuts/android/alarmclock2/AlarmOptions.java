@@ -445,9 +445,9 @@ public class AlarmOptions extends DialogFragment {
           s.volume_starting / 5,
           s.volume_ending / 5);
 
-      // Range 0 - 60 increments of 5.
+      // Range 0 - 120 increments of 5.
       final SeekBar volume_time_slide = new SeekBar(c);
-      volume_time_slide.setMax(12);
+      volume_time_slide.setMax(24);
       volume_time_slide.setProgress(s.volume_time / 5);
 
       volume_range.setListener(
