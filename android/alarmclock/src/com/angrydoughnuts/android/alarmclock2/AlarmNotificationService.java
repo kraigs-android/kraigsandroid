@@ -412,17 +412,17 @@ public class AlarmNotificationService extends Service {
           public void handleMessage(Message m) {
             switch (m.what) {
             case TRIGGER_INC:
-              int inc = s.volume_time > 0 ?
-                (s.volume_ending - s.volume_starting) / s.volume_time :
+              float inc = s.volume_time > 0 ?
+                (s.volume_ending - s.volume_starting) / (float)s.volume_time :
                 s.volume_ending;
-              int next = Math.min(s.volume_ending, m.arg1 + inc);
+              float next = Math.min(s.volume_ending, (float)m.obj + inc);
               float norm = (float)((Math.pow(5, next/100.0)-1)/4);
               Log.i(TAG, "Incrementing volume to " + norm);
               player.setVolume(norm, norm);
               if (next < s.volume_ending) {
                 Message m2 = new Message();
                 m2.what = TRIGGER_INC;
-                m2.arg1 = next;
+                m2.obj = next;
                 sendMessageDelayed(m2, 1000);
               }
               break;
@@ -478,7 +478,7 @@ public class AlarmNotificationService extends Service {
       // Begin the volume fade.
       Message m = new Message();
       m.what = TRIGGER_INC;
-      m.arg1 = s.volume_starting;
+      m.obj = (float)s.volume_starting;
       handler.sendMessage(m);
     }
 
