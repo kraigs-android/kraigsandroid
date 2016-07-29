@@ -42,10 +42,9 @@ public class AlarmNotificationActivity extends Activity {
     // Make sure this window always shows over the lock screen.
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 
-    final long alarmid =
-      getIntent().getLongExtra(AlarmNotificationService.ALARM_ID, -1);
-    if (alarmid != -1) // This can happen when clicking the top-bar notification
-      Log.i(TAG, "Alarm notification intent " + alarmid);
+    final long alarmid = getIntent().getLongExtra(
+        AlarmNotificationService.ALARM_ID, DbUtil.Settings.DEFAULTS_ID);
+    Log.i(TAG, "Alarm notification intent " + alarmid);
 
     // Pull snooze from saved state or options database.
     if (state != null && state.containsKey("snooze")) {

@@ -200,7 +200,8 @@ public class AlarmNotificationService extends Service {
     }
 
     Intent notify = new Intent(this, AlarmNotificationActivity.class)
-      .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+      .putExtra(ALARM_ID, alarmid);
 
     final Notification notification =
       new Notification.Builder(this)
@@ -220,9 +221,7 @@ public class AlarmNotificationService extends Service {
 
     refreshNotifyBar();
 
-    Intent notifyAct = (Intent) notify.clone();
-    notifyAct.putExtra(ALARM_ID, alarmid);
-    startActivity(notifyAct);
+    startActivity(notify);
   }
 
   private void dismissAll() {
