@@ -213,6 +213,7 @@ public class AlarmClockActivity extends Activity {
   public void onStart() {
     super.onStart();
     handler.postDelayed(refresh_tick, TimeUtil.nextMinuteDelay());
+    AlarmNotificationService.maybeShowDismiss(this);
   }
 
   @Override

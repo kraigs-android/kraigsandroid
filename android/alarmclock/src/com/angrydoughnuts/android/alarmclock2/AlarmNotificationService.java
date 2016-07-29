@@ -112,6 +112,14 @@ public class AlarmNotificationService extends Service {
                    .putExtra(COMMAND, REFRESH));
   }
 
+  /**
+   * Show the dismiss activity if an alarm is firing.
+   */
+  public static void maybeShowDismiss(Context c) {
+    c.startService(new Intent(c, AlarmNotificationService.class)
+                   .putExtra(COMMAND, MAYBE_SHOW_DISMISS));
+  }
+
   private ActiveAlarms activeAlarms = null;
 
   @Override
@@ -145,6 +153,15 @@ public class AlarmNotificationService extends Service {
       break;
     case REFRESH:
       refreshNotifyBar();
+      break;
+    case MAYBE_SHOW_DISMISS:
+      if (activeAlarms != null && !activeAlarms.alarmids.isEmpty()) {
+        startActivity(
+            new Intent(this, AlarmNotificationActivity.class)
+            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            .putExtra(ALARM_ID, activeAlarms.alarmids.iterator().next()));
+
+      }
       break;
     }
 
@@ -379,6 +396,7 @@ public class AlarmNotificationService extends Service {
   private static final int DISMISS_ALL = 4;
   private static final int SNOOZE_ALL = 5;
   private static final int REFRESH = 6;
+  private static final int MAYBE_SHOW_DISMISS = 7;
   // Notification ids
   private static final int FIRING_ALARM_NOTIFICATION_ID = 42;
   private static final int NEXT_ALARM_NOTIFICATION_ID = 69;
