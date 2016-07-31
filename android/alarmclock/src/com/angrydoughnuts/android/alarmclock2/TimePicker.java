@@ -115,8 +115,7 @@ public class TimePicker extends DialogFragment {
           d.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
 
           // Strip out colons and leading zeros.
-          String hhmm =
-            s.toString().replaceAll(":", "").replaceFirst("^0+(?!$)", "");
+          String hhmm = s.toString().replaceAll(":", "");
           int new_hour;
           int new_minute;
           // Both 12 and 24 hour formats require at least 3 digits in a valid
@@ -153,16 +152,20 @@ public class TimePicker extends DialogFragment {
           if (new_minute < 0 || new_minute > 59)
             return;
 
+          // Re-enable the OK button now that we have valid input.
+          d.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
+
+          final boolean changed = hour != new_hour || minute != new_minute;
           hour = new_hour;
           minute = new_minute;
 
-          // Simply calling setText here will trigger an infinite loop.
-          // Temporarily remove our self as a listener while updating text.
-          e.removeTextChangedListener(this);
-          refresh(e, t, am_pm);
-          e.addTextChangedListener(this);
-          // Re-enable the OK button now that we have valid input.
-          d.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(true);
+          if (changed) {
+            // Simply calling setText here will trigger an infinite loop.
+            // Temporarily remove our self as a listener while updating text.
+            e.removeTextChangedListener(this);
+            refresh(e, t, am_pm);
+            e.addTextChangedListener(this);
+          }
         }
       });
     // Simulate clicking 'OK' when the done key is pressed on the keyboard
