@@ -20,10 +20,12 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
@@ -182,45 +184,122 @@ public class TimePicker extends DialogFragment {
         }
       });
 
-    v.findViewById(R.id.hour_plus_one).setOnClickListener(
-        new View.OnClickListener() {
+    final View.OnTouchListener button_up = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+          if ((event.getAction() & MotionEvent.ACTION_MASK) ==
+              MotionEvent.ACTION_UP)
+            increment.removeCallbacksAndMessages(null);
+          return false;
+        }
+      };
+
+    final View hour_inc = v.findViewById(R.id.hour_inc);
+    hour_inc.setOnTouchListener(button_up);
+    hour_inc.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+          ++hour;
+          if (hour > 23) hour = 0;
+          refresh(e, t, am_pm);
+        }
+      });
+    hour_inc.setOnLongClickListener(new View.OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View view) {
+          increment.post(new Runnable() {
+              @Override
+              public void run() {
+                ++hour;
+                if (hour > 23) hour = 0;
+                refresh(e, t, am_pm);
+                increment.postDelayed(this, 200);
+              }
+            });
+          return true;
+        }
+      });
+
+    final View hour_dec = v.findViewById(R.id.hour_dec);
+    hour_dec.setOnTouchListener(button_up);
+    hour_dec.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            hour = (hour + 1) % 24;
+            --hour;
+            if (hour < 0) hour = 23;
             refresh(e, t, am_pm);
           }
         });
-    v.findViewById(R.id.hour_minus_one).setOnClickListener(
-        new View.OnClickListener() {
+    hour_dec.setOnLongClickListener(new View.OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View view) {
+          increment.post(new Runnable() {
+              @Override
+              public void run() {
+                --hour;
+                if (hour < 0) hour = 23;
+                refresh(e, t, am_pm);
+                increment.postDelayed(this, 200);
+              }
+            });
+          return true;
+        }
+      });
+
+    final View minute_inc = v.findViewById(R.id.minute_inc);
+    minute_inc.setOnTouchListener(button_up);
+    minute_inc.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+          ++minute;
+          if (minute > 59) minute = 0;
+          refresh(e, t, am_pm);
+        }
+      });
+    minute_inc.setOnLongClickListener(new View.OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View view) {
+          increment.post(new Runnable() {
+              @Override
+              public void run() {
+                minute = minute / 5 * 5 + 5;
+                if (minute > 59) minute = 0;
+                refresh(e, t, am_pm);
+                increment.postDelayed(this, 200);
+              }
+            });
+          return true;
+        }
+      });
+
+    final View minute_dec = v.findViewById(R.id.minute_dec);
+    minute_dec.setOnTouchListener(button_up);
+    minute_dec.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-            hour = (hour - 1) % 24;
-            if (hour < 0)
-              hour += 24;
+            --minute;
+            if (minute < 0) minute = 59;
             refresh(e, t, am_pm);
           }
         });
-    v.findViewById(R.id.minute_plus_five).setOnClickListener(
-        new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-            minute = (minute / 5 * 5 + 5) % 60;
-            refresh(e, t, am_pm);
-          }
-        });
-    v.findViewById(R.id.minute_minus_five).setOnClickListener(
-        new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-            int new_minute = minute / 5 * 5;
-            if (new_minute == minute)
-              new_minute -= 5;
-            if (new_minute < 0)
-              new_minute += 60;
-            minute = new_minute;
-            refresh(e, t, am_pm);
-          }
-        });
+    minute_dec.setOnLongClickListener(new View.OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View view) {
+          increment.post(new Runnable() {
+              @Override
+              public void run() {
+                int new_minute = minute / 5 * 5;
+                if (new_minute == minute)
+                  new_minute -= 5;
+                if (new_minute < 0) new_minute = 59;
+                minute = new_minute;
+                refresh(e, t, am_pm);
+                increment.postDelayed(this, 200);
+              }
+            });
+          return true;
+        }
+      });
 
     return d;
   }
@@ -246,6 +325,7 @@ public class TimePicker extends DialogFragment {
     outState.putInt("repeat", repeat);
   }
 
+  private final Handler increment = new Handler();
   private int hour;
   private int minute;
   private int repeat;

@@ -18,7 +18,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content">
       <ImageButton
-          android:id="@+id/hour_plus_one"
+          android:id="@+id/hour_inc"
           android:src="@drawable/ic_forward"
           android:background="@drawable/circle_btn"
           android:rotation="-90"
@@ -28,7 +28,7 @@
           android:layout_height="64dp"
           android:layout_width="64dp" />
       <ImageButton
-          android:id="@+id/minute_plus_five"
+          android:id="@+id/minute_inc"
           android:src="@drawable/ic_forward"
           android:background="@drawable/circle_btn"
           android:rotation="-90"
@@ -63,7 +63,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content">
       <ImageButton
-          android:id="@+id/hour_minus_one"
+          android:id="@+id/hour_dec"
           android:src="@drawable/ic_forward"
           android:background="@drawable/circle_btn"
           android:rotation="90"
@@ -73,7 +73,7 @@
           android:layout_height="64dp"
           android:layout_width="64dp" />
       <ImageButton
-          android:id="@+id/minute_minus_five"
+          android:id="@+id/minute_dec"
           android:src="@drawable/ic_forward"
           android:background="@drawable/circle_btn"
           android:rotation="90"
