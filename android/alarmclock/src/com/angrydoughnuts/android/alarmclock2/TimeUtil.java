@@ -35,11 +35,13 @@ public class TimeUtil {
   public static Calendar nextOccurrence(
       Calendar now, int secondsPastMidnight, int repeat) {
     Calendar then = (Calendar)now.clone();
+    then.set(Calendar.DAY_OF_YEAR, 1);  // Explicitly not a DST transition day
     then.set(Calendar.HOUR_OF_DAY, 0);
     then.set(Calendar.MINUTE, 0);
     then.set(Calendar.SECOND, 0);
     then.set(Calendar.MILLISECOND, 0);
     then.add(Calendar.SECOND, secondsPastMidnight);
+    then.set(Calendar.DAY_OF_YEAR, now.get(Calendar.DAY_OF_YEAR));
     if (then.before(now))
       then.add(Calendar.DATE, 1);
     while (repeat > 0 && !dayIsRepeat(then.get(Calendar.DAY_OF_WEEK), repeat))
