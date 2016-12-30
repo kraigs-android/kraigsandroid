@@ -58,6 +58,7 @@ public class MediaPicker extends DialogFragment {
     if (savedInstanceState != null) {
       uri = savedInstanceState.getParcelable("uri");
       title = savedInstanceState.getString("title");
+      tab = savedInstanceState.getInt("tab");
     }
 
     final boolean has_external = PackageManager.PERMISSION_GRANTED ==
@@ -98,6 +99,13 @@ public class MediaPicker extends DialogFragment {
                                      getString(R.string.system_default)) });
               }
             }));
+    t.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+        @Override
+        public void onTabChanged(String id) {
+          tab = t.getCurrentTab();
+        }
+      });
+    t.setCurrentTab(tab);
 
     if (title != null)
       ((TextView)t.findViewById(R.id.selected))
@@ -124,6 +132,7 @@ public class MediaPicker extends DialogFragment {
     super.onSaveInstanceState(outState);
     if (uri != null) outState.putParcelable("uri", uri);
     if (title != null) outState.putString("title", title);
+    outState.putInt("tab", tab);
   }
 
   @Override
@@ -332,5 +341,6 @@ public class MediaPicker extends DialogFragment {
   private String title = null;
   private Listener listener = null;
   private MediaPlayer player = null;
+  private int tab = 0;
   public void setListener(Listener l) { listener = l; }
 }
