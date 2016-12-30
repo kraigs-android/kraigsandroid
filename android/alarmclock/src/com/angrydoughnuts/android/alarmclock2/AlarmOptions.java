@@ -557,10 +557,10 @@ public class AlarmOptions extends DialogFragment {
     private void setEdit(View v, String s, int hint_res, TextWatcher w) {
       EditText t = (EditText)v.findViewById(R.id.setting_edit);
       t.setVisibility(View.VISIBLE);
+      t.addTextChangedListener(w);
       t.setText(s);
       t.setSelection(s.length());
       t.setHint(hint_res);
-      t.addTextChangedListener(w);
     }
 
     private void setView(ViewGroup g, View v, float gravity) {
