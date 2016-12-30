@@ -108,21 +108,7 @@ public class AlarmNotificationActivity extends Activity {
 
     // A firing alarm has run long enough to trigger a timeout.
     if (i.hasExtra(TIMEOUT)) {
-      new DialogFragment() {
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-          return new AlertDialog.Builder(getContext())
-            .setTitle(R.string.time_out_title)
-            .setMessage(R.string.time_out_error)
-            .setPositiveButton(R.string.ok, null)
-            .create();
-        }
-        @Override
-        public void onDismiss(DialogInterface d) {
-          super.onDismiss(d);
-          finish();
-        }
-      }.show(getFragmentManager(), "timeout");
+      new TimeoutMessage().show(getFragmentManager(), "timeout");
     // Another alarm triggered before the current one one has been dismissed.
     } else if (alarmid != -1) {
       Log.i(TAG, "Another alarm notification intent " + alarmid);
@@ -143,5 +129,16 @@ public class AlarmNotificationActivity extends Activity {
   public void onSaveInstanceState(Bundle outState) {
     super.onSaveInstanceState(outState);
     outState.putInt("snooze", snooze);
+  }
+
+  public static class TimeoutMessage extends DialogFragment {
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+      return new AlertDialog.Builder(getContext())
+        .setTitle(R.string.time_out_title)
+        .setMessage(R.string.time_out_error)
+        .setPositiveButton(R.string.ok, null)
+        .create();
+    }
   }
 }

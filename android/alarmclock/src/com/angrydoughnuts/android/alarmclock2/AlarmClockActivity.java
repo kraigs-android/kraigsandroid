@@ -259,43 +259,46 @@ public class AlarmClockActivity extends Activity {
       return true;
 
     case R.id.delete_all:
-      new DialogFragment() {
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-          return new AlertDialog.Builder(getContext())
-            .setTitle(R.string.delete)
-            .setMessage(R.string.delete_all_sure)
-            .setNegativeButton(R.string.cancel, null)
-            .setPositiveButton(
-                R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                      // Find all of the enabled alarm ids.
-                      LinkedList<Long> ids = new LinkedList<Long>();
-                      Cursor c = getContentResolver().query(
-                          AlarmClockProvider.ALARMS_URI,
-                          new String[] { AlarmClockProvider.AlarmEntry._ID },
-                          AlarmClockProvider.AlarmEntry.ENABLED + " == 1",
-                          null, null);
-                      while (c.moveToNext())
-                        ids.add(c.getLong(c.getColumnIndex(
-                            AlarmClockProvider.AlarmEntry._ID)));
-                      c.close();
-                      // Delete the entire alarm table.
-                      getContext().getContentResolver().delete(
-                          AlarmClockProvider.ALARMS_URI, null, null);
-                      // Unschedule any alarms that were active.
-                      for (long id : ids)
-                        AlarmNotificationService.removeAlarmTrigger(
-                            getContext(), id);
-                    }
-                  }).create();
-        }
-      }.show(getFragmentManager(), "confirm_delete_all");
+      new DeleteAllConfirmation()
+        .show(getFragmentManager(), "confirm_delete_all");
 
       return true;
     default:
       return super.onOptionsItemSelected(item);
+    }
+  }
+
+  public static class DeleteAllConfirmation extends DialogFragment {
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+      return new AlertDialog.Builder(getContext())
+        .setTitle(R.string.delete)
+        .setMessage(R.string.delete_all_sure)
+        .setNegativeButton(R.string.cancel, null)
+        .setPositiveButton(
+            R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                  // Find all of the enabled alarm ids.
+                  LinkedList<Long> ids = new LinkedList<Long>();
+                  Cursor c = getContext().getContentResolver().query(
+                      AlarmClockProvider.ALARMS_URI,
+                      new String[] { AlarmClockProvider.AlarmEntry._ID },
+                      AlarmClockProvider.AlarmEntry.ENABLED + " == 1",
+                          null, null);
+                  while (c.moveToNext())
+                    ids.add(c.getLong(c.getColumnIndex(
+                        AlarmClockProvider.AlarmEntry._ID)));
+                  c.close();
+                  // Delete the entire alarm table.
+                  getContext().getContentResolver().delete(
+                      AlarmClockProvider.ALARMS_URI, null, null);
+                  // Unschedule any alarms that were active.
+                  for (long id : ids)
+                    AlarmNotificationService.removeAlarmTrigger(
+                        getContext(), id);
+                }
+              }).create();
     }
   }
 }

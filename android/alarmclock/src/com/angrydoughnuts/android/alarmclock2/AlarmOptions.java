@@ -137,26 +137,9 @@ public class AlarmOptions extends DialogFragment {
         new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
-            new DialogFragment() {
-              @Override
-              public Dialog onCreateDialog(Bundle savedInstanceState) {
-                return new AlertDialog.Builder(getContext())
-                  .setTitle(R.string.delete)
-                  .setMessage(R.string.delete_sure)
-                  .setNegativeButton(R.string.cancel, null)
-                  .setPositiveButton(
-                      R.string.ok, new DialogInterface.OnClickListener() {
-                      @Override
-                      public void onClick(DialogInterface dialog, int which) {
-                        getContext().getContentResolver().delete(
-                            ContentUris.withAppendedId(
-                                AlarmClockProvider.ALARMS_URI, id), null, null);
-                        AlarmNotificationService.removeAlarmTrigger(
-                            getContext(), id);
-                      }
-                  }).create();
-              }
-            }.show(getFragmentManager(), "confirm_delete");
+            DeleteConfirmation confirm = new DeleteConfirmation();
+            confirm.setListener(o.delete_listener);
+            confirm.show(getFragmentManager(), "confirm_delete");
           }
         }).create();
 
@@ -191,7 +174,7 @@ public class AlarmOptions extends DialogFragment {
     }
   };
 
-  private static class RepeatEditor extends DialogFragment {
+  public static class RepeatEditor extends DialogFragment {
     final public static String BITMASK = "bitmask";
     public static interface OnPickListener {
       abstract void onPick(int repeats);
@@ -243,10 +226,34 @@ public class AlarmOptions extends DialogFragment {
     }
   }
 
+  public static class DeleteConfirmation extends DialogFragment {
+    public static interface Listener {
+      abstract void onConfirm();
+    }
+
+    private Listener listener = null;
+    public void setListener(Listener l) { listener = l; }
+
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+      return new AlertDialog.Builder(getContext())
+        .setTitle(R.string.delete)
+        .setMessage(R.string.delete_sure)
+        .setNegativeButton(R.string.cancel, null)
+        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+              if (listener != null) listener.onConfirm();
+            }
+          }).create();
+    }
+  }
+
   private static class OptionsView extends LinearLayout {
     public final TimePicker.OnTimePickListener time_listener;
     public final RepeatEditor.OnPickListener repeat_listener;
     public final MediaPicker.Listener tone_listener;
+    public final DeleteConfirmation.Listener delete_listener;
 
     public OptionsView(
         final Context c, final FragmentManager fm, final MediaPlayer media,
@@ -263,6 +270,17 @@ public class AlarmOptions extends DialogFragment {
 
       final DbUtil.Alarm alarm = DbUtil.Alarm.get(c, id);
       final DbUtil.Settings s = DbUtil.Settings.get(c, id);
+
+      // DELETE
+      delete_listener =  new DeleteConfirmation.Listener() {
+          @Override
+          public void onConfirm() {
+            getContext().getContentResolver().delete(
+                ContentUris.withAppendedId(
+                    AlarmClockProvider.ALARMS_URI, id), null, null);
+            AlarmNotificationService.removeAlarmTrigger(getContext(), id);
+          }
+        };
 
       // EDIT TIME
       final ViewGroup edit_time = newItem(c);
