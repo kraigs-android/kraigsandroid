@@ -5,7 +5,7 @@
   <string name="delete_all">Alle löschen</string>
   <string name="label">Bezeichnung</string>
   <string name="repeat">Wiederholung</string>
-  <string name="alarm_tone">Weck-Ton</string>
+  <string name="alarm_tone">Weckton</string>
   <string name="fade_description">Von %1$d%% bis %2$d%% über %3$d Sekunden</string>
   <string name="ok">OK</string>
   <string name="cancel">Abbrechen</string>
@@ -44,6 +44,6 @@
   <string name="artists">Interpreten</string>
   <string name="songs">Lieder</string>
   <string name="selected">Ausgewählt: </string>
-  <string name="time_out_title">Wecker-Time-out</string>
-  <string name="time_out_error">ACHTUNG: Diese Weckzeit hat ihren Time-Out erreicht.</string>
+  <string name="time_out_title">Wecker-Zeitlimit</string>
+  <string name="time_out_error">ACHTUNG: Diese Weckzeit hat ihr Zeitlimit erreicht.</string>
 </resources>
