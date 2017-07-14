@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">Alarm Klock</string>
+  <string name="name">Nom :</string>
+  <string name="brightness">Luminosité :</string>
+  <string name="auto_brightness">Luminosité automatique</string>
+  <string name="add">Ajouter...</string>
+  <string name="edit">Éditer...</string>
+  <string name="delete">Supprimer</string>
+  <string name="ok">OK</string>
+  <string name="cancel">Annuler</string>
+  <string name="close">Fermer</string>
+  <string name="calibrate">Calibrer</string>
+  <string name="current_setting">Réglage actuel :</string>
+  <string name="test_setting">Réglage de test :</string>
+  <string name="calibration_warning">ATTENTION : cela permet de configurer la luminosité minimale acceptable pour votre appareil. Un réglage trop bas peut rendre votre appareil inutilisable. Utilisez les boutons de réglage du volume pour trouver la luminosité minimale que vous souhaitez. Elle sera utilisée quand le slider de l\'application est mis à zéro.</string>
+</resources>

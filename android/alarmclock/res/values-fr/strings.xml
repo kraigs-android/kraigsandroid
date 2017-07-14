@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Translation by Biljana Milicevic <engr3337@gmail.com> -->
 <resources>
   <string name="app_name">Alarm Klock</string>
+  <string name="no_alarms">Aucune alarme</string>
+  <string name="default_options">Option d\'alarme par défaut</string>
+  <string name="display_notification">Notification persistante</string>
+  <string name="alarm_options">Options d\'alarme</string>
   <string name="delete_all">Tout supprimer</string>
+  <string name="delete">Supprimer</string>
+  <string name="delete_sure">Souhaitez-vous vraiment supprimer cette alarme ?</string>
+  <string name="delete_all_sure">Souhaitez-vous vraiment supprimer toutes les alarmes ?</string>
   <string name="label">Étiquette</string>
   <string name="repeat">Répéter</string>
   <string name="alarm_tone">Sonnerie d\'alarme</string>
   <string name="fade_description">De %1$d%% à %2$d%% durée %3$d secondes</string>
   <string name="ok">OK</string>
   <string name="cancel">Annuler</string>
-  <string name="delete">Supprimer</string>
+  <string name="done">Terminé</string>
   <string name="snooze">EN VEILLE</string>
   <string name="dismiss">RÉVOQUER</string>
   <string name="plus_five">+5</string>
@@ -20,6 +26,7 @@
   <string name="hours">%d heure</string>
   <string name="minute">%d minute</string>
   <string name="minutes">%d minutes</string>
+  <string name="minute_abbriv">%dm</string>
   <string name="am">AM</string>
   <string name="pm">PM</string>
   <string name="dow_sun_short">Dim</string>
@@ -40,10 +47,11 @@
   <string name="everyday">Chaque jour</string>
   <string name="weekdays">Jours de semaine</string>
   <string name="weekends">Weekends</string>
+  <string name="system_default">Réglage du système</string>
   <string name="internal">Interne</string>
   <string name="artists">Artistes</string>
   <string name="songs">Chansons</string>
-  <string name="selected">Choix: </string>
+  <string name="selected">Choix:</string>
   <string name="time_out_title">Alarm time out</string>
   <string name="time_out_error">WARNING: AVERTISSEMENT:. Cette alarme a expiré en attente d\'un accusé de réception</string>
 </resources>
