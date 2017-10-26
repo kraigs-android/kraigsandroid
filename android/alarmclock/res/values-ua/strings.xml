@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Translation by ashustirch@gmail.com -->
+<resources>
+  <string name="app_name">Alarm Klock</string>
+  <string name="delete_all">Видалити всі будильники</string>
+  <string name="label">Мітка</string>
+  <string name="repeat">Повтор</string>
+  <string name="alarm_tone">Мелодія будильника</string>
+  <string name="fade_description">Від %1$d%% до %2$d%% за %3$d секунд.</string>
+  <string name="ok">Добре</string>
+  <string name="cancel">Відмінити</string>
+  <string name="delete">Видалити</string>
+  <string name="snooze">ПОДРІМАТИ</string>
+  <string name="dismiss">ВІДКЛЮЧИТИ</string>
+  <string name="plus_five">+5</string>
+  <string name="minus_five">-5</string>
+  <string name="day">%d день</string>
+  <string name="days">%d днів</string>
+  <string name="hour">%d година</string>
+  <string name="hours">%d годин</string>
+  <string name="minute">%d хвилина</string>
+  <string name="minutes">%d хвилин</string>
+  <string name="am">AM</string>
+  <string name="pm">PM</string>
+  <string name="dow_sun_short">Нд</string>
+  <string name="dow_mon_short">Пн</string>
+  <string name="dow_tue_short">Вв</string>
+  <string name="dow_wed_short">Ср</string>
+  <string name="dow_thu_short">Чт</string>
+  <string name="dow_fri_short">Пт</string>
+  <string name="dow_sat_short">Сб</string>
+  <string name="dow_sun">Неділя</string>
+  <string name="dow_mon">Понеділок</string>
+  <string name="dow_tue">Вівторок</string>
+  <string name="dow_wed">Середа</string>
+  <string name="dow_thu">Четверг</string>
+  <string name="dow_fri">П'ятница</string>
+  <string name="dow_sat">Субота</string>
+  <string name="no_repeats">Без повтору</string>
+  <string name="everyday">Кожен день</string>
+  <string name="weekdays">Будні</string>
+  <string name="weekends">Вихідні</string>
+  <string name="internal">Вмонтовані</string>
+  <string name="artists">Артисти</string>
+  <string name="songs">Композиції</string>
+  <string name="selected">Вибрати: </string>
+  <string name="time_out_title">Ліміт тривалості дзвінка</string>
+  <string name="time_out_error">УВАГА: У будильника вийшов час очікування підтвердження.</string>
+</resources>
