@@ -7,11 +7,11 @@
   <string name="repeat">Повтор</string>
   <string name="alarm_tone">Мелодія будильника</string>
   <string name="fade_description">Від %1$d%% до %2$d%% за %3$d секунд.</string>
-  <string name="ok">Добре</string>
+  <string name="ok">Ok</string>
   <string name="cancel">Відмінити</string>
   <string name="delete">Видалити</string>
   <string name="snooze">ПОДРІМАТИ</string>
-  <string name="dismiss">ВІДКЛЮЧИТИ</string>
+  <string name="dismiss">ВИМКНУТИ</string>
   <string name="plus_five">+5</string>
   <string name="minus_five">-5</string>
   <string name="day">%d день</string>
@@ -33,7 +33,7 @@
   <string name="dow_mon">Понеділок</string>
   <string name="dow_tue">Вівторок</string>
   <string name="dow_wed">Середа</string>
-  <string name="dow_thu">Четверг</string>
+  <string name="dow_thu">Четвер</string>
   <string name="dow_fri">П'ятница</string>
   <string name="dow_sat">Субота</string>
   <string name="no_repeats">Без повтору</string>
