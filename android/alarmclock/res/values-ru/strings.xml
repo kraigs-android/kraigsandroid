@@ -2,14 +2,22 @@
 <!-- Translation by av.n...@gmail.com -->
 <resources>
   <string name="app_name">Alarm Klock</string>
+  <string name="no_alarms">Будильник не выставлен</string>
+  <string name="default_options">Стандартные настройки будильника</string>
+  <string name="alarm_options">Настройки будильника</string>
+  <string name="display_notification">Всегда показывать уведомление</string>
+  <string name="delete">Удалить</string>
   <string name="delete_all">Удалить все будильники</string>
+  <string name="delete_sure">Точно удалить этот будильник?</string>
+  <string name="delete_all_sure">Точно удалить все эти будильники?</string>
+
   <string name="label">Метка</string>
   <string name="repeat">Повтор</string>
   <string name="alarm_tone">Мелодия будильника</string>
-  <string name="fade_description">От %1$d%% до %2$d%% за %3$d секунд.</string>
-  <string name="ok">ОК</string>
+  <string name="fade_description">Увеличивать громкость от  %1$d%% до %2$d%% за %3$d секунд.</string>
+  <string name="ok">OK</string>
   <string name="cancel">Отменить</string>
-  <string name="delete">Удалить</string>
+  <string name="done">Готово</string>
   <string name="snooze">ПОДРЕМАТЬ</string>
   <string name="dismiss">ОТКЛЮЧИТЬ</string>
   <string name="plus_five">+5</string>
@@ -20,8 +28,9 @@
   <string name="hours">%d часов</string>
   <string name="minute">%d минута</string>
   <string name="minutes">%d минут</string>
-  <string name="am">AM</string>
-  <string name="pm">PM</string>
+  <string name="minute_abbriv">%d мин</string>
+  <string name="am">утра</string>
+  <string name="pm">вечера</string>
   <string name="dow_sun_short">Вс</string>
   <string name="dow_mon_short">Пн</string>
   <string name="dow_tue_short">Вт</string>
@@ -41,9 +50,10 @@
   <string name="weekdays">Рабочие дни</string>
   <string name="weekends">Выходные</string>
   <string name="internal">Встроенные</string>
-  <string name="artists">Артисты</string>
+  <string name="artists">Исполнители</string>
   <string name="songs">Композиции</string>
   <string name="selected">Выбрать: </string>
+  <string name="system_default">Стандартная мелодия</string>
   <string name="time_out_title">Лимит длительности звонка</string>
   <string name="time_out_error">ВНИМАНИЕ: У будильника истекло время ожидания подтверждения.</string>
 </resources>
