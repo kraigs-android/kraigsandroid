@@ -1,24 +1,31 @@
-## Play Store
-[Alarm Klock](https://play.google.com/store/apps/details?id=com.angrydoughnuts.android.alarmclock)
-[Brightness Profiles](https://play.google.com/store/apps/details?id=com.angrydoughnuts.android.brightprof)
+## Alarm Klock
+Simple alarm clock: the stuff but not the fluff. It's licencsed under[Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
-## Discussion
+## Build
+### Prerequisites
+[Android SDK](https://developer.android.com/sdk/)
+[Gradle](https://gradle.org/)
+
+### Build
+In a terminal run:
+    cd android/alarmclock/
+    gradle build
+
+## Install
+Connect your [development-enabled](https://developer.android.com/toolsi/ device.html#developer-device-options) Android device to your PC using a USB cable and run:
+    gradle installDebug
+
+## Localization
+Supported locales so far: Croatian (hr), Dutch (nl), French (fr), German (de), Italian (it), Polish (pl), Portuguese (pt), Russian (ru), Serbian (sr), Spanish (es), Russian (ru), Ukrainian (ua).
+
+Please consider adding strings for your own language and sending pull request!
+
+## Other
+### Both applications are available at Play Store
+[Alarm Klock](https://play.google.com/store/apps/details?id=com.angrydoughnuts.android.alarmclock): this is alarm clock itself.
+
+[Brightness Profiles](https://play.google.com/store/apps/details?id=com.angrydoughnuts.android.brightprof): this is old-school Android 2.0 looking simple application to adjust brightness levels.
+
+### Discussion
 [Google Group](https://groups.google.com/forum/#!forum/kraigs-android)
-
-## Previous site
 [Google Code](https://code.google.com/archive/p/kraigsandroid/)
-
-##License
-    Copyright 2016 kraigs.android@gmail.com
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
