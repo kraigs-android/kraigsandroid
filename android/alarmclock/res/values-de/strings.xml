@@ -2,14 +2,21 @@
 <!-- Translation by Sebastian Dörner <sdoerner@st.ovgu.de> -->
 <resources>
   <string name="app_name">Alarm Klock</string>
+  <string name="no_alarms">Keine Alarme</string>
+  <string name="default_options">Standard Alarmoptionen</string>
+  <string name="display_notification">Beständige Benachrichtigung</string>
+  <string name="alarm_options">Alarmoptionen</string>
   <string name="delete_all">Alle löschen</string>
+  <string name="delete">Löschen</string>
+  <string name="delete_sure">Sind Sie sicher, dass Sie diesen Alarm löschen möchten?</string>
+  <string name="delete_all_sure">Sind Sie sicher, dass Sie alle Alarme löschen möchten?</string>
   <string name="label">Bezeichnung</string>
   <string name="repeat">Wiederholung</string>
   <string name="alarm_tone">Weckton</string>
   <string name="fade_description">Von %1$d%% bis %2$d%% über %3$d Sekunden</string>
   <string name="ok">OK</string>
   <string name="cancel">Abbrechen</string>
-  <string name="delete">Löschen</string>
+  <string name="done">Abgeschlossen</string>
   <string name="snooze">SNOOZE</string>
   <string name="dismiss">AUSSCHALTEN</string>
   <string name="plus_five">+5</string>
@@ -20,6 +27,7 @@
   <string name="hours">%d Stunden</string>
   <string name="minute">%d Minute</string>
   <string name="minutes">%d Minuten</string>
+  <string name="minute_abbriv">%dm</string>
   <string name="am">AM</string>
   <string name="pm">PM</string>
   <string name="dow_sun_short">So</string>
@@ -40,10 +48,24 @@
   <string name="everyday">Jeden Tag</string>
   <string name="weekdays">Wochentags</string>
   <string name="weekends">Am Wochenende</string>
+  <string name="system_default">Systemstandard</string>
   <string name="internal">System</string>
   <string name="artists">Interpreten</string>
   <string name="songs">Lieder</string>
-  <string name="selected">Ausgewählt: </string>
+  <string name="selected">Ausgewählt:</string>
   <string name="time_out_title">Wecker-Zeitlimit</string>
   <string name="time_out_error">ACHTUNG: Diese Weckzeit hat ihr Zeitlimit erreicht.</string>
+  <string name="name">Name:</string>
+  <string name="brightness">Helligkeit:</string>
+  <string name="auto_brightness">Automatische Helligkeit</string>
+  <string name="add">Hinzufügen...</string>
+  <string name="edit">Bearbeiten...</string>
+  <string name="delete">Löschen</string>
+  <string name="ok">OK</string>
+  <string name="cancel">Abbrechen</string>
+  <string name="close">Schließen</string>
+  <string name="calibrate">Kalibrieren</string>
+  <string name="current_setting">Momentane Einstellung:</string>
+  <string name="test_setting">Test Einstellung:</string>
+  <string name="calibration_warning">WARNUNG: Hiermit können Sie die minimale akzeptable Helligkeit für den Bildschirm Ihres Telefons konfigurieren. Wenn Sie diesen Wert zu niedrige einstellen, kann Ihr Telefon unbrauchbar werden. Verwenden Sie die Lauter- und Leiser-Tasten, um die gewünschte Mindesthelligkeit zu finden. Dies ist die Helligkeit, die verwendet wird, wenn Sie den Schieberegler in dieser Anwendung auf Null setzen.</string>
 </resources>
