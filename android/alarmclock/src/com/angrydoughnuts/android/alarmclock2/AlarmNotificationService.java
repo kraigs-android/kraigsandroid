@@ -17,6 +17,7 @@ package com.angrydoughnuts.android.alarmclock;
 
 import android.app.AlarmManager;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -30,6 +31,7 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -220,19 +222,46 @@ public class AlarmNotificationService extends Service {
       .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       .putExtra(ALARM_ID, alarmid);
 
-    final Notification notification =
-      new Notification.Builder(this)
-      .setContentTitle(getString(R.string.app_name))
-      .setContentText(labels.isEmpty() ? getString(R.string.dismiss) : labels)
-      .setSmallIcon(R.drawable.ic_alarm_on)
-      .setContentIntent(PendingIntent.getActivity(this, 0, notify, 0))
-      .setCategory(Notification.CATEGORY_ALARM)
-      .setPriority(Notification.PRIORITY_MAX)
-      .setVisibility(Notification.VISIBILITY_PUBLIC)
-      .setOngoing(true)
-      .setLights(Color.WHITE, 1000, 1000)
-      .setVibrate(settings.vibrate ? new long[] {1000, 1000} : null)
-      .build();
+    Notification notification;
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      String NOTIFICATION_CHANNEL_ID = getPackageName();
+      String channelName = getString(R.string.app_name);
+      NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
+      chan.setImportance(NotificationManager.IMPORTANCE_HIGH);
+      chan.setLightColor(Color.BLUE);
+      chan.enableLights(true);
+      chan.setVibrationPattern(settings.vibrate ? new long[] {1000, 1000} : null);
+      chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+      NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+      assert manager != null;
+      manager.createNotificationChannel(chan);
+      Notification.Builder notificationBuilder = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID);
+
+      notification = notificationBuilder
+              .setContentTitle(getString(R.string.app_name))
+              .setContentText(labels.isEmpty() ? getString(R.string.dismiss) : labels)
+              .setSmallIcon(R.drawable.ic_alarm_on)
+              .setContentIntent(PendingIntent.getActivity(this, 0, notify, 0))
+              .setCategory(Notification.CATEGORY_ALARM)
+              .setVisibility(Notification.VISIBILITY_PUBLIC)
+              .setOngoing(true)
+              .build();
+    } else {
+      notification =
+              new Notification.Builder(this)
+                      .setContentTitle(getString(R.string.app_name))
+                      .setContentText(labels.isEmpty() ? getString(R.string.dismiss) : labels)
+                      .setSmallIcon(R.drawable.ic_alarm_on)
+                      .setContentIntent(PendingIntent.getActivity(this, 0, notify, 0))
+                      .setCategory(Notification.CATEGORY_ALARM)
+                      .setPriority(Notification.PRIORITY_MAX)
+                      .setVisibility(Notification.VISIBILITY_PUBLIC)
+                      .setOngoing(true)
+                      .setLights(Color.WHITE, 1000, 1000)
+                      .setVibrate(settings.vibrate ? new long[]{1000, 1000} : null)
+                      .build();
+    }
     notification.flags |= Notification.FLAG_INSISTENT;  // Loop sound/vib/blink
     startForeground(FIRING_ALARM_NOTIFICATION_ID, notification);
 
