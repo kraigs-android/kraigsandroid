@@ -54,4 +54,6 @@
   <string name="selected">Selected: </string>
   <string name="time_out_title">Alarm time out</string>
   <string name="time_out_error">WARNING: This alarm has timed out waiting for an acknowledgment.</string>
+  <string name="pending_alarm_notification">Pending alarms</string>
+  <string name="ringing_alarm_notification">Ringing alarms</string>
 </resources>

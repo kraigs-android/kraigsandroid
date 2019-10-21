@@ -17,6 +17,7 @@ package com.angrydoughnuts.android.alarmclock;
 
 import android.app.AlarmManager;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -30,6 +31,7 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -220,8 +222,22 @@ public class AlarmNotificationService extends Service {
       .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       .putExtra(ALARM_ID, alarmid);
 
+    final NotificationManager manager =
+      (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+        manager.getNotificationChannel(FIRING_ALARM_NOTIFICATION_CHAN) == null) {
+      // Create a notification channel on first use.
+      NotificationChannel chan = new NotificationChannel(
+          FIRING_ALARM_NOTIFICATION_CHAN,
+          getString(R.string.ringing_alarm_notification),
+          NotificationManager.IMPORTANCE_HIGH);
+      chan.setSound(null, null);  // Service manages its own sound.
+      manager.createNotificationChannel(chan);
+    }
     final Notification notification =
-      new Notification.Builder(this)
+      (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
+       new Notification.Builder(this, FIRING_ALARM_NOTIFICATION_CHAN) :
+       new Notification.Builder(this))
       .setContentTitle(getString(R.string.app_name))
       .setContentText(labels.isEmpty() ? getString(R.string.dismiss) : labels)
       .setSmallIcon(R.drawable.ic_alarm_on)
@@ -363,9 +379,20 @@ public class AlarmNotificationService extends Service {
     c.close();
 
     // Build notification and display it.
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+        manager.getNotificationChannel(FIRING_ALARM_NOTIFICATION_CHAN) == null) {
+      // Create a notification channel on first use.
+      manager.createNotificationChannel(
+          new NotificationChannel(
+              NEXT_ALARM_NOTIFICATION_CHAN,
+              getString(R.string.pending_alarm_notification),
+              NotificationManager.IMPORTANCE_LOW)); // No sound.
+    }
     manager.notify(
         NEXT_ALARM_NOTIFICATION_ID,
-        new Notification.Builder(this)
+        (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
+         new Notification.Builder(this, NEXT_ALARM_NOTIFICATION_CHAN) :
+         new Notification.Builder(this))
         .setContentTitle(next_label.isEmpty() ?
                          getString(R.string.app_name) :
                          next_label)
@@ -399,7 +426,9 @@ public class AlarmNotificationService extends Service {
   private static final int MAYBE_SHOW_DISMISS = 7;
   // Notification ids
   private static final int FIRING_ALARM_NOTIFICATION_ID = 42;
+  private static final String FIRING_ALARM_NOTIFICATION_CHAN = "ring";
   private static final int NEXT_ALARM_NOTIFICATION_ID = 69;
+  private static final String NEXT_ALARM_NOTIFICATION_CHAN = "next";
 
   private static class ActiveAlarms {
     public static final int TRIGGER_INC = 1;
