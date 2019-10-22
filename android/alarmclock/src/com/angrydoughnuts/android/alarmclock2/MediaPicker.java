@@ -301,7 +301,7 @@ public class MediaPicker extends DialogFragment {
     public ArtistsQuery() {
       query = Audio.Artists.EXTERNAL_CONTENT_URI;
       sort = Audio.Artists.DEFAULT_SORT_ORDER;
-      display = Audio.ArtistColumns.ARTIST;
+      display = Audio.Artists.ARTIST;
     }
   }
 
@@ -320,14 +320,14 @@ public class MediaPicker extends DialogFragment {
     public MediaQuery(Uri q, ExtraEntry[] e) {
       query = q;
       sort = Audio.Media.DEFAULT_SORT_ORDER;
-      display = MediaColumns.TITLE;
+      display = Audio.Media.TITLE;
       entries = e;
     }
     public MediaQuery(long album_id) {
       query = Audio.Media.EXTERNAL_CONTENT_URI;
-      selection = Audio.AudioColumns.ALBUM_ID + " == " + album_id;
-      sort = Audio.AudioColumns.TRACK;
-      display = MediaColumns.TITLE;
+      selection = Audio.Media.ALBUM_ID + " == " + album_id;
+      sort = Audio.Media.TRACK;
+      display = Audio.Media.TITLE;
       entries = null;
     }
   }
