@@ -307,12 +307,13 @@ public class MediaPicker extends DialogFragment {
 
   private final class AlbumsQuery extends PickerQuery {
     public AlbumsQuery(long artist_id) {
-      query = Audio.Artists.Albums.getContentUri(volume, artist_id);
+      query = Audio.Albums.getContentUri(volume);
+      selection = Audio.Albums.ARTIST_ID + " == " + artist_id;
       sort = Audio.Albums.DEFAULT_SORT_ORDER;
       display = Audio.Albums.ALBUM;
     }
     private final String volume =
-      Audio.Artists.EXTERNAL_CONTENT_URI.getPathSegments().get(0);
+      Audio.Albums.EXTERNAL_CONTENT_URI.getPathSegments().get(0);
   }
 
   private final class MediaQuery extends PickerQuery {
