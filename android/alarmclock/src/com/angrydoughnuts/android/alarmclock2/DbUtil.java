@@ -20,6 +20,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 
+import java.util.Calendar;
+
 public class DbUtil {
   public static final class Alarm {
     public final int time;
@@ -45,6 +47,38 @@ public class DbUtil {
         s = new Alarm();
       c.close();
       return s;
+    }
+
+    public static Alarm getNextEnabled(Context context) {
+      final Cursor c = context.getContentResolver().query(
+          AlarmClockProvider.ALARMS_URI,
+          new String[] { AlarmClockProvider.AlarmEntry.TIME,
+                         AlarmClockProvider.AlarmEntry.ENABLED,
+                         AlarmClockProvider.AlarmEntry.NAME,
+                         AlarmClockProvider.AlarmEntry.DAY_OF_WEEK,
+                         AlarmClockProvider.AlarmEntry.NEXT_SNOOZE },
+          AlarmClockProvider.AlarmEntry.ENABLED + " == 1",
+          null, null);
+
+      if (c.getCount() == 0) {
+        c.close();
+        return null;
+      }
+
+      final Calendar now = Calendar.getInstance();
+      DbUtil.Alarm alarm = null;
+      Calendar next = null;
+      while (c.moveToNext()) {
+        final DbUtil.Alarm a = new DbUtil.Alarm(c);
+        final Calendar n =
+          TimeUtil.nextOccurrence(now, a.time, a.repeat, a.next_snooze);
+        if (next == null || n.before(next)) {
+          alarm = a;
+          next = n;
+        }
+      }
+      c.close();
+      return alarm;
     }
 
     public Alarm(Cursor c) {

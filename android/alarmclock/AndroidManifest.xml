@@ -31,6 +31,7 @@
         android:exported="false"
         android:foregroundServiceType="mediaPlayback" />
     <receiver android:name=".AlarmNotificationService$AlarmTriggerReceiver" />
+    <receiver android:name=".CountdownRefresh" />
     <receiver android:name=".SystemMessageReceiver">
       <intent-filter>
         <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />

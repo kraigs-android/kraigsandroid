@@ -233,7 +233,7 @@ public class AlarmClockActivity extends Activity {
     getMenuInflater().inflate(R.menu.alarm_list_menu, menu);
     menu.findItem(R.id.display_notification)
       .setChecked(PreferenceManager.getDefaultSharedPreferences(this)
-        .getBoolean(AlarmNotificationService.DISPLAY_NOTIFICATION, true));
+        .getBoolean(CountdownRefresh.DISPLAY_NOTIFICATION_PREF, true));
     return super.onCreateOptionsMenu(menu);
   }
 
@@ -253,9 +253,13 @@ public class AlarmClockActivity extends Activity {
       item.setChecked(new_val);
       PreferenceManager.getDefaultSharedPreferences(this)
         .edit()
-        .putBoolean(AlarmNotificationService.DISPLAY_NOTIFICATION, new_val)
+        .putBoolean(CountdownRefresh.DISPLAY_NOTIFICATION_PREF, new_val)
         .commit();
-      AlarmNotificationService.refreshNotificationBar(this);
+      if (new_val) {
+        CountdownRefresh.start(this);
+      } else {
+        CountdownRefresh.stop(this);
+      }
       return true;
 
     case R.id.delete_all:

@@ -26,7 +26,6 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -36,7 +35,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
-import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.ArrayMap;
 import android.util.Log;
@@ -46,7 +44,6 @@ import java.util.Calendar;
 import java.util.HashSet;
 
 public class AlarmNotificationService extends Service {
-  public static final String DISPLAY_NOTIFICATION = "NOTIFICATION_ICON";
   public static final String ALARM_ID = "alarm_id";
   private static final String TIME_UTC = "time_utc";
 
@@ -107,14 +104,6 @@ public class AlarmNotificationService extends Service {
   }
 
   /**
-   * Trigger a notification bar refresh.
-   */
-  public static void refreshNotificationBar(Context c) {
-    c.startService(new Intent(c, AlarmNotificationService.class)
-                   .putExtra(COMMAND, REFRESH));
-  }
-
-  /**
    * Show the dismiss activity if an alarm is firing.
    */
   public static void maybeShowDismiss(Context c) {
@@ -152,9 +141,6 @@ public class AlarmNotificationService extends Service {
     case REMOVE_TRIGGER:
       alarmid = i.getLongExtra(ALARM_ID, -1);
       removeTrigger(alarmid);
-      break;
-    case REFRESH:
-      refreshNotifyBar();
       break;
     case MAYBE_SHOW_DISMISS:
       if (activeAlarms != null && !activeAlarms.alarmids.isEmpty()) {
@@ -254,7 +240,7 @@ public class AlarmNotificationService extends Service {
     notification.flags |= Notification.FLAG_INSISTENT;  // Loop sound/vib/blink
     startForeground(FIRING_ALARM_NOTIFICATION_ID, notification);
 
-    refreshNotifyBar();
+    CountdownRefresh.stop(this);
 
     // NOTE: As of API 29, this only works when the app is in the foreground.
     // https://developer.android.com/guide/components/activities/background-starts
@@ -288,7 +274,7 @@ public class AlarmNotificationService extends Service {
     }
 
     activeAlarms.alarmids.clear();
-    refreshNotifyBar();
+    CountdownRefresh.start(this);
   }
 
   private void snoozeAll(long snoozeUTC) {
@@ -310,7 +296,7 @@ public class AlarmNotificationService extends Service {
     }
 
     activeAlarms.alarmids.clear();
-    refreshNotifyBar();
+    CountdownRefresh.start(this);
   }
 
   private void scheduleTrigger(long alarmid, long tsUTC) {
@@ -324,7 +310,7 @@ public class AlarmNotificationService extends Service {
 
     ((AlarmManager)getSystemService(Context.ALARM_SERVICE))
         .setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, tsUTC, schedule);
-    refreshNotifyBar();
+    CountdownRefresh.start(this);
   }
 
   private void removeTrigger(long alarmid) {
@@ -333,89 +319,7 @@ public class AlarmNotificationService extends Service {
         .putExtra(ALARM_ID, alarmid), 0);
 
     ((AlarmManager)getSystemService(Context.ALARM_SERVICE)).cancel(schedule);
-    refreshNotifyBar();
-  }
-
-  private void refreshNotifyBar() {
-    final NotificationManager manager =
-      (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    // Recursive trigger.
-    final PendingIntent tick = PendingIntent.getService(
-        this, 0, new Intent(this, AlarmNotificationService.class)
-        .putExtra(AlarmNotificationService.COMMAND,
-                  AlarmNotificationService.REFRESH), 0);
-
-    final Cursor c = getContentResolver().query(
-        AlarmClockProvider.ALARMS_URI,
-        new String[] { AlarmClockProvider.AlarmEntry.TIME,
-                       AlarmClockProvider.AlarmEntry.ENABLED,
-                       AlarmClockProvider.AlarmEntry.NAME,
-                       AlarmClockProvider.AlarmEntry.DAY_OF_WEEK,
-                       AlarmClockProvider.AlarmEntry.NEXT_SNOOZE },
-        AlarmClockProvider.AlarmEntry.ENABLED + " == 1",
-        null, null);
-
-    // Clear notification bar when there are no alarms enabled or when there
-    // is an alarm currently firing (that alarm will create its own
-    // notification), or when the setting is disabled.
-    if (c.getCount() == 0 ||
-        (activeAlarms != null && !activeAlarms.alarmids.isEmpty()) ||
-        PreferenceManager.getDefaultSharedPreferences(this)
-        .getBoolean(DISPLAY_NOTIFICATION, true) == false) {
-      ((AlarmManager)getSystemService(Context.ALARM_SERVICE)).cancel(tick);
-      manager.cancel(NEXT_ALARM_NOTIFICATION_ID);
-      c.close();
-      return;
-    }
-
-    // Find the next alarm.
-    final Calendar now = Calendar.getInstance();
-    Calendar next = null;
-    String next_label = "";
-    while (c.moveToNext()) {
-      final DbUtil.Alarm a = new DbUtil.Alarm(c);
-      final Calendar n =
-        TimeUtil.nextOccurrence(now, a.time, a.repeat, a.next_snooze);
-      if (next == null || n.before(next)) {
-        next = n;
-        next_label = a.label;
-      }
-    }
-    c.close();
-
-    // Build notification and display it.
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-        manager.getNotificationChannel(FIRING_ALARM_NOTIFICATION_CHAN) == null) {
-      // Create a notification channel on first use.
-      manager.createNotificationChannel(
-          new NotificationChannel(
-              NEXT_ALARM_NOTIFICATION_CHAN,
-              getString(R.string.pending_alarm_notification),
-              NotificationManager.IMPORTANCE_LOW)); // No sound.
-    }
-    manager.notify(
-        NEXT_ALARM_NOTIFICATION_ID,
-        (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
-         new Notification.Builder(this, NEXT_ALARM_NOTIFICATION_CHAN) :
-         new Notification.Builder(this))
-        .setContentTitle(next_label.isEmpty() ?
-                         getString(R.string.app_name) :
-                         next_label)
-        .setContentText(TimeUtil.formatLong(this, next) + " : " +
-                        TimeUtil.until(getApplicationContext(), next))
-        .setSmallIcon(R.drawable.ic_alarm)
-        .setCategory(Notification.CATEGORY_STATUS)
-        .setVisibility(Notification.VISIBILITY_PUBLIC)
-        .setOngoing(true)
-        .setContentIntent(
-            PendingIntent.getActivity(
-                this, 0, new Intent(this, AlarmClockActivity.class), 0))
-        .build());
-
-    // Schedule an update for the notification on the next minute.
-    final Calendar wake = TimeUtil.nextMinute();
-    ((AlarmManager)getSystemService(Context.ALARM_SERVICE)).setExact(
-        AlarmManager.RTC, wake.getTimeInMillis(), tick);
+    CountdownRefresh.start(this);
   }
 
   private static final String TAG =
@@ -427,7 +331,6 @@ public class AlarmNotificationService extends Service {
   private static final int REMOVE_TRIGGER = 3;
   private static final int DISMISS_ALL = 4;
   private static final int SNOOZE_ALL = 5;
-  private static final int REFRESH = 6;
   private static final int MAYBE_SHOW_DISMISS = 7;
   // Notification ids
   private static final int FIRING_ALARM_NOTIFICATION_ID = 42;

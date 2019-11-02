@@ -178,4 +178,8 @@ public class TimeUtil {
       new SimpleDateFormat("h:mm a");
     return f.format(c.getTime());
   }
+
+  public static String formatDebug(Calendar c) {
+    return (new SimpleDateFormat("HH:mm:ss.SSS")).format(c.getTime());
+  }
 }
