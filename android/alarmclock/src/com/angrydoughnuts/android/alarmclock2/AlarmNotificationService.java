@@ -104,14 +104,24 @@ public class AlarmNotificationService extends Service {
   }
 
   /**
-   * Show the dismiss activity if an alarm is firing.
+   * Is an alarm firing?
    */
-  public static void maybeShowDismiss(Context c) {
-    c.startService(new Intent(c, AlarmNotificationService.class)
-                   .putExtra(COMMAND, MAYBE_SHOW_DISMISS));
+  public static boolean isFiring(Context c) {
+    return activeAlarms != null && !activeAlarms.alarmids.isEmpty();
   }
 
-  private ActiveAlarms activeAlarms = null;
+  /**
+   * The set of currently active alarms.
+   */
+  private static ActiveAlarms activeAlarms = null;
+  public static HashSet<Long> getActiveAlarms() {
+    // NOTE: onDestroy sets this to null again.
+    if (activeAlarms != null) {
+      return activeAlarms.alarmids;
+    } else {
+      return new HashSet<Long>();
+    }
+  }
 
   @Override
   public int onStartCommand(Intent i, int flags, int startId) {
@@ -141,15 +151,6 @@ public class AlarmNotificationService extends Service {
     case REMOVE_TRIGGER:
       alarmid = i.getLongExtra(ALARM_ID, -1);
       removeTrigger(alarmid);
-      break;
-    case MAYBE_SHOW_DISMISS:
-      if (activeAlarms != null && !activeAlarms.alarmids.isEmpty()) {
-        startActivity(
-            new Intent(this, AlarmNotificationActivity.class)
-            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            .putExtra(ALARM_ID, activeAlarms.alarmids.iterator().next()));
-
-      }
       break;
     }
 
@@ -205,8 +206,7 @@ public class AlarmNotificationService extends Service {
     }
 
     Intent notify = new Intent(this, AlarmNotificationActivity.class)
-      .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      .putExtra(ALARM_ID, alarmid);
+      .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
     final NotificationManager manager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -331,7 +331,6 @@ public class AlarmNotificationService extends Service {
   private static final int REMOVE_TRIGGER = 3;
   private static final int DISMISS_ALL = 4;
   private static final int SNOOZE_ALL = 5;
-  private static final int MAYBE_SHOW_DISMISS = 7;
   // Notification ids
   private static final int FIRING_ALARM_NOTIFICATION_ID = 42;
   private static final String FIRING_ALARM_NOTIFICATION_CHAN = "ring";
@@ -397,6 +396,8 @@ public class AlarmNotificationService extends Service {
             Intent timeout = new Intent(c, AlarmNotificationActivity.class)
               .putExtra(AlarmNotificationActivity.TIMEOUT, true)
               .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            // NOTE: this only works when the activity is in the foreground.
+            // Otherwise the alarm is dismissed without a warning.
             c.startActivity(timeout);
           }
         };

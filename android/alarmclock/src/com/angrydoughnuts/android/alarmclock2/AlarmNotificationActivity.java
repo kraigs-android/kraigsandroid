@@ -27,6 +27,9 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+
 public class AlarmNotificationActivity extends Activity {
   public static final String TIMEOUT = "timeout";
 
@@ -42,23 +45,12 @@ public class AlarmNotificationActivity extends Activity {
     // Make sure this window always shows over the lock screen.
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 
-    final long alarmid = getIntent().getLongExtra(
-        AlarmNotificationService.ALARM_ID, DbUtil.Settings.DEFAULTS_ID);
-    Log.i(TAG, "Alarm notification intent " + alarmid);
-
-    // Pull snooze from saved state or options database.
+    // Pull snooze from saved state.
     if (state != null && state.containsKey("snooze")) {
       snooze = state.getInt("snooze");
-    } else {
-      snooze = DbUtil.Settings.get(this, alarmid).snooze;
     }
 
     final TextView snooze_text = (TextView)findViewById(R.id.snooze_text);
-    snooze_text.setText(getString(R.string.minutes, snooze));
-
-    ((TextView)findViewById(R.id.alarm_label))
-      .setText(DbUtil.Alarm.get(this, alarmid).label);
-
     findViewById(R.id.snooze_minus_five).setOnClickListener(
         new View.OnClickListener() {
           @Override
@@ -101,28 +93,40 @@ public class AlarmNotificationActivity extends Activity {
   }
 
   @Override
+  protected void onResume() {
+    super.onResume();
+
+    ArrayList<String> labels = new ArrayList<String>();
+    for (long alarmid : AlarmNotificationService.getActiveAlarms()) {
+      if (snooze <= 0) {
+        snooze = DbUtil.Settings.get(this, alarmid).snooze;
+      }
+      String label = DbUtil.Alarm.get(this, alarmid).label;
+      if (!label.isEmpty()) {
+        labels.add(label);
+      }
+    }
+
+    ((TextView)findViewById(R.id.snooze_text))
+      .setText(getString(R.string.minutes, snooze));
+
+    if (!labels.isEmpty()) {
+      ((TextView)findViewById(R.id.alarm_label))
+        .setText(String.join(", ", labels));
+    }
+  }
+
+  @Override
   protected void onNewIntent(Intent i) {
     // The notification service can get us here for one of two reasons:
     super.onNewIntent(i);
-    final long alarmid = i.getLongExtra(AlarmNotificationService.ALARM_ID, -1);
 
     // A firing alarm has run long enough to trigger a timeout.
     if (i.hasExtra(TIMEOUT)) {
       new TimeoutMessage().show(getFragmentManager(), "timeout");
-    // Another alarm triggered before the current one one has been dismissed.
-    } else if (alarmid != -1) {
-      Log.i(TAG, "Another alarm notification intent " + alarmid);
-      TextView t = (TextView)findViewById(R.id.alarm_label);
-      String label = DbUtil.Alarm.get(this, alarmid).label;
-      if (!label.isEmpty()) {
-        if (t.getText().length() == 0)
-          t.setText(label);
-        else
-          t.setText(t.getText() + ", " + label);
-      }
-    } else {
-      Log.e(TAG, "Unhandled intent!");
     }
+    // Another alarm triggered before the current one one has been dismissed.
+    // This triggers onResume() to redraw.
   }
 
   @Override
@@ -137,7 +141,12 @@ public class AlarmNotificationActivity extends Activity {
       return new AlertDialog.Builder(getContext())
         .setTitle(R.string.time_out_title)
         .setMessage(R.string.time_out_error)
-        .setPositiveButton(R.string.ok, null)
+        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface d, int i) {
+              getActivity().finish();
+            }
+          })
         .create();
     }
   }

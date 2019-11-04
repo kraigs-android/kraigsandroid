@@ -25,6 +25,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.Loader;
 import android.content.pm.ApplicationInfo;
 import android.database.Cursor;
@@ -213,7 +214,11 @@ public class AlarmClockActivity extends Activity {
   public void onStart() {
     super.onStart();
     handler.postDelayed(refresh_tick, TimeUtil.nextMinuteDelay());
-    AlarmNotificationService.maybeShowDismiss(this);
+    // Show the notification activity if an alarm is triggering.
+    if (AlarmNotificationService.isFiring(this)) {
+      startActivity(new Intent(this, AlarmNotificationActivity.class)
+                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+    }
   }
 
   @Override
