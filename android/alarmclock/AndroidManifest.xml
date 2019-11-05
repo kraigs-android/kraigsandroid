@@ -39,10 +39,6 @@
         <action android:name="android.intent.action.BOOT_COMPLETED" />
       </intent-filter>
     </receiver>
-    <service
-        android:name=".SystemMessageReceiver$RescheduleService"
-        android:exported="false"
-        android:foregroundServiceType="dataSync" />
     <provider
         android:name=".AlarmClockProvider"
         android:authorities="com.angrydoughnuts.android.alarmclock.provider"
