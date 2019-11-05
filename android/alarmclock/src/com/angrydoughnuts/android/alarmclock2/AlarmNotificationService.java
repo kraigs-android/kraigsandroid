@@ -100,17 +100,59 @@ public class AlarmNotificationService extends Service {
    * be rescheduled appropriately.
    */
   public static void dismissAllAlarms(Context c) {
-    c.startService(new Intent(c, AlarmNotificationService.class)
-                   .putExtra(COMMAND, DISMISS_ALL));
+    if (activeAlarms == null) {
+      Log.w(TAG, "No active alarms when dismissed");
+      return;
+    }
+
+    for (long alarmid : activeAlarms.alarmids) {
+      final DbUtil.Alarm a = DbUtil.Alarm.get(c, alarmid);
+      ContentValues v = new ContentValues();
+      v.put(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE, 0);
+      if (a.repeat == 0)
+        v.put(AlarmClockProvider.AlarmEntry.ENABLED, false);
+      int r = c.getContentResolver().update(
+          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, alarmid),
+          v, null, null);
+      if (r < 1) {
+        Log.e(TAG, "Failed to dismiss " + alarmid);
+      }
+      if (a.repeat != 0) {
+        final long nextUTC =
+          TimeUtil.nextOccurrence(a.time, a.repeat).getTimeInMillis();
+        AlarmNotificationService.scheduleAlarmTrigger(c, alarmid, nextUTC);
+      }
+    }
+
+    activeAlarms.alarmids.clear();
+    CountdownRefresh.start(c);
+    c.stopService(new Intent(c, AlarmNotificationService.class));
   }
 
   /**
    * Snooze all of the currently firing alarms.
    */
-  public static void snoozeAllAlarms(Context c, long snoozeUtc) {
-    c.startService(new Intent(c, AlarmNotificationService.class)
-                   .putExtra(COMMAND, SNOOZE_ALL)
-                   .putExtra(TIME_UTC, snoozeUtc));
+  public static void snoozeAllAlarms(Context c, long snoozeUTC) {
+    if (activeAlarms == null) {
+      Log.w(TAG, "No active alarms when snoozed");
+      return;
+    }
+
+    for (long alarmid : activeAlarms.alarmids) {
+      ContentValues v = new ContentValues();
+      v.put(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE, snoozeUTC);
+      int r = c.getContentResolver().update(
+          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, alarmid),
+          v, null, null);
+      if (r < 1) {
+        Log.e(TAG, "Failed to snooze " + alarmid);
+      }
+      scheduleAlarmTrigger(c, alarmid, snoozeUTC);
+    }
+
+    activeAlarms.alarmids.clear();
+    CountdownRefresh.start(c);
+    c.stopService(new Intent(c, AlarmNotificationService.class));
   }
 
   /**
@@ -143,15 +185,6 @@ public class AlarmNotificationService extends Service {
     switch (i.hasExtra(COMMAND) ? i.getExtras().getInt(COMMAND) : -1) {
     case TRIGGER_ALARM_NOTIFICATION:
       handleTriggerAlarm(i);
-      return START_NOT_STICKY;
-    case DISMISS_ALL:
-      dismissAll();
-      stopSelf();
-      return START_NOT_STICKY;
-    case SNOOZE_ALL:
-      ts = i.getLongExtra(TIME_UTC, -1);
-      snoozeAll(ts);
-      stopSelf();
       return START_NOT_STICKY;
     }
 
@@ -249,64 +282,11 @@ public class AlarmNotificationService extends Service {
     startActivity(notify);
   }
 
-  private void dismissAll() {
-    if (activeAlarms == null) {
-      Log.w(TAG, "No active alarms when dismissed");
-      return;
-    }
-
-    for (long alarmid : activeAlarms.alarmids) {
-      final DbUtil.Alarm a = DbUtil.Alarm.get(this, alarmid);
-      ContentValues v = new ContentValues();
-      v.put(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE, 0);
-      if (a.repeat == 0)
-        v.put(AlarmClockProvider.AlarmEntry.ENABLED, false);
-      int r = getContentResolver().update(
-          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, alarmid),
-          v, null, null);
-      if (r < 1) {
-        Log.e(TAG, "Failed to dismiss " + alarmid);
-      }
-      if (a.repeat != 0) {
-        final long nextUTC =
-          TimeUtil.nextOccurrence(a.time, a.repeat).getTimeInMillis();
-        AlarmNotificationService.scheduleAlarmTrigger(this, alarmid, nextUTC);
-      }
-    }
-
-    activeAlarms.alarmids.clear();
-    CountdownRefresh.start(this);
-  }
-
-  private void snoozeAll(long snoozeUTC) {
-    if (activeAlarms == null) {
-      Log.w(TAG, "No active alarms when snoozed");
-      return;
-    }
-
-    for (long alarmid : activeAlarms.alarmids) {
-      ContentValues v = new ContentValues();
-      v.put(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE, snoozeUTC);
-      int r = getContentResolver().update(
-          ContentUris.withAppendedId(AlarmClockProvider.ALARMS_URI, alarmid),
-          v, null, null);
-      if (r < 1) {
-        Log.e(TAG, "Failed to snooze " + alarmid);
-      }
-      scheduleAlarmTrigger(this, alarmid, snoozeUTC);
-    }
-
-    activeAlarms.alarmids.clear();
-    CountdownRefresh.start(this);
-  }
-
   private static final String TAG =
     AlarmNotificationService.class.getSimpleName();
   // Commands
   private static final String COMMAND = "command";
   private static final int TRIGGER_ALARM_NOTIFICATION = 1;
-  private static final int DISMISS_ALL = 4;
-  private static final int SNOOZE_ALL = 5;
   // Notification ids
   private static final int FIRING_ALARM_NOTIFICATION_ID = 42;
   private static final String FIRING_ALARM_NOTIFICATION_CHAN = "ring";
