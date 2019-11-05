@@ -177,19 +177,9 @@ public class AlarmNotificationService extends Service {
 
   @Override
   public int onStartCommand(Intent i, int flags, int startId) {
-    long alarmid;
-    long ts;
-
     // NOTE: The service should continue running while there are any active
-    // alarms.
-    switch (i.hasExtra(COMMAND) ? i.getExtras().getInt(COMMAND) : -1) {
-    case TRIGGER_ALARM_NOTIFICATION:
-      handleTriggerAlarm(i);
-      return START_NOT_STICKY;
-    }
-
-    if (activeAlarms == null)
-      stopSelf(startId);
+    // alarms.  This calls startForeground() and startActivity().
+    handleTriggerAlarm(i);
 
     return START_NOT_STICKY;
   }
@@ -284,9 +274,6 @@ public class AlarmNotificationService extends Service {
 
   private static final String TAG =
     AlarmNotificationService.class.getSimpleName();
-  // Commands
-  private static final String COMMAND = "command";
-  private static final int TRIGGER_ALARM_NOTIFICATION = 1;
   // Notification ids
   private static final int FIRING_ALARM_NOTIFICATION_ID = 42;
   private static final String FIRING_ALARM_NOTIFICATION_CHAN = "ring";
@@ -434,10 +421,14 @@ public class AlarmNotificationService extends Service {
       locks.put(nextid, w);
       Log.i(TAG, "Acquired lock " + nextid + " for alarm " + alarmid);
 
-      c.startService(new Intent(c, AlarmNotificationService.class)
-                     .putExtra(ALARM_ID, alarmid)
-                     .putExtra(COMMAND, TRIGGER_ALARM_NOTIFICATION)
-                     .putExtra(WAKELOCK_ID, nextid++));
+      Intent alarm = new Intent(c, AlarmNotificationService.class)
+        .putExtra(ALARM_ID, alarmid)
+        .putExtra(WAKELOCK_ID, nextid++);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        c.startForegroundService(alarm);
+      } else {
+        c.startService(alarm);
+      }
     }
 
     public static PowerManager.WakeLock consumeLock(int id) {
