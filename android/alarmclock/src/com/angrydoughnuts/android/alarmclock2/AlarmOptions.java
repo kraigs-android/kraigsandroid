@@ -29,8 +29,10 @@ import android.database.ContentObserver;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
+import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.text.Editable;
@@ -414,9 +416,16 @@ public class AlarmOptions extends DialogFragment {
           new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton b, boolean checked) {
-              if (checked)
-                ((Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE))
-                  .vibrate(100);
+              if (checked) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                  ((Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE))
+                    .vibrate(VibrationEffect.createOneShot(
+                                 100, VibrationEffect.DEFAULT_AMPLITUDE));
+                } else {
+                  ((Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE))
+                    .vibrate(100);
+                }
+              }
               ContentValues val = new ContentValues();
               val.put(AlarmClockProvider.SettingsEntry.VIBRATE, checked);
               c.getContentResolver().update(settings, val, null, null);

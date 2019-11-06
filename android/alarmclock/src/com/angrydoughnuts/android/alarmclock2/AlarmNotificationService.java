@@ -35,6 +35,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.ArrayMap;
 import android.util.Log;
@@ -259,7 +261,6 @@ public class AlarmNotificationService extends Service {
       .setVisibility(Notification.VISIBILITY_PUBLIC)
       .setOngoing(true)
       .setLights(Color.WHITE, 1000, 1000)
-      .setVibrate(settings.vibrate ? new long[] {1000, 1000} : null)
       .build();
     notification.flags |= Notification.FLAG_INSISTENT;  // Loop sound/vib/blink
     startForeground(FIRING_ALARM_NOTIFICATION_ID, notification);
@@ -287,6 +288,7 @@ public class AlarmNotificationService extends Service {
     private PowerManager.WakeLock wakelock = null;
     private HashSet<Long> alarmids = new HashSet<Long>();
     private MediaPlayer player = null;
+    private Vibrator vibrator = null;
     private Handler handler = null;
     private Runnable timeout = null;
 
@@ -302,6 +304,15 @@ public class AlarmNotificationService extends Service {
 
       wakelock = w;
       player = new MediaPlayer();
+      if (s.vibrate) {
+        vibrator = (Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+          vibrator.vibrate(
+              VibrationEffect.createWaveform(new long[] {1000, 1000}, 0));
+        } else {
+          vibrator.vibrate(new long[] {1000, 1000}, 0);
+        }
+      }
       // This handler will be used to asynchronously trigger volume adjustments.
       handler = new Handler() {
           @Override
@@ -398,6 +409,11 @@ public class AlarmNotificationService extends Service {
       player.reset();
       player.release();
       player = null;
+
+      if (vibrator != null) {
+        vibrator.cancel();
+        vibrator = null;
+      }
     }
   }
 
