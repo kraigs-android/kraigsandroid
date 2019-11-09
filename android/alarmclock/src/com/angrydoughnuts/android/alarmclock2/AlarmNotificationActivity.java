@@ -22,6 +22,7 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -112,7 +113,7 @@ public class AlarmNotificationActivity extends Activity {
 
     if (!labels.isEmpty()) {
       ((TextView)findViewById(R.id.alarm_label))
-        .setText(String.join(", ", labels));
+        .setText(TextUtils.join(", ", labels));
     }
   }
 
