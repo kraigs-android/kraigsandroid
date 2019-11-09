@@ -215,7 +215,7 @@ public class AlarmClockActivity extends Activity {
     super.onStart();
     handler.postDelayed(refresh_tick, TimeUtil.nextMinuteDelay());
     // Show the notification activity if an alarm is triggering.
-    if (AlarmNotificationService.isFiring(this)) {
+    if (AlarmNotificationService.isFiring()) {
       startActivity(new Intent(this, AlarmNotificationActivity.class)
                     .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
     }
@@ -261,9 +261,9 @@ public class AlarmClockActivity extends Activity {
         .putBoolean(CountdownRefresh.DISPLAY_NOTIFICATION_PREF, new_val)
         .commit();
       if (new_val) {
-        CountdownRefresh.start(this);
+        CountdownRefresh.start(getApplicationContext());
       } else {
-        CountdownRefresh.stop(this);
+        CountdownRefresh.stop(getApplicationContext());
       }
       return true;
 

@@ -16,6 +16,7 @@
 package com.angrydoughnuts.android.alarmclock;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -93,7 +94,7 @@ public class AlarmOptions extends DialogFragment {
 
     final ScrollView v = new ScrollView(getContext());
     final OptionsView o = new OptionsView(
-        getContext(), getFragmentManager(), player, id);
+        getContext(), getActivity(), getFragmentManager(), player, id);
     v.addView(o);
 
     if (savedInstanceState != null) {
@@ -132,7 +133,7 @@ public class AlarmOptions extends DialogFragment {
             long utc = TimeUtil.nextOccurrence(a.time, a.repeat)
               .getTimeInMillis();
             AlarmNotificationService.scheduleAlarmTrigger(
-                getContext(), id, utc);
+                getActivity().getApplicationContext(), id, utc);
           }
         })
       .setNeutralButton(!defaults ? getString(R.string.delete) : null,
@@ -258,8 +259,8 @@ public class AlarmOptions extends DialogFragment {
     public final DeleteConfirmation.Listener delete_listener;
 
     public OptionsView(
-        final Context c, final FragmentManager fm, final MediaPlayer media,
-        final long id) {
+        final Context c, final Activity activity, final FragmentManager fm,
+        final MediaPlayer media, final long id) {
       super(c);
       setOrientation(LinearLayout.VERTICAL);
 
@@ -298,9 +299,10 @@ public class AlarmOptions extends DialogFragment {
             final Calendar next =
               TimeUtil.nextOccurrence(t, a.repeat, a.next_snooze);
             if (alarm.enabled) {
-              AlarmNotificationService.removeAlarmTrigger(c, id);
+              Context wakeup = activity.getApplicationContext();
+              AlarmNotificationService.removeAlarmTrigger(wakeup, id);
               AlarmNotificationService.scheduleAlarmTrigger(
-                  c, id, next.getTimeInMillis());
+                  wakeup, id, next.getTimeInMillis());
             }
             setText(edit_time, TimeUtil.formatLong(c, next));
           }
@@ -339,9 +341,10 @@ public class AlarmOptions extends DialogFragment {
             final Calendar next =
               TimeUtil.nextOccurrence(a.time, repeat, a.next_snooze);
             if (alarm.enabled) {
-              AlarmNotificationService.removeAlarmTrigger(c, id);
+              Context wakeup = activity.getApplicationContext();
+              AlarmNotificationService.removeAlarmTrigger(wakeup, id);
               AlarmNotificationService.scheduleAlarmTrigger(
-                  c, id, next.getTimeInMillis());
+                  wakeup, id, next.getTimeInMillis());
             }
           }
         };

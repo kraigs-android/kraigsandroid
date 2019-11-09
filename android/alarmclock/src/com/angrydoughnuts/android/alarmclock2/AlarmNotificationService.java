@@ -51,6 +51,7 @@ public class AlarmNotificationService extends Service {
 
   /**
    * Write new alarm information to the data store and schedule it.
+   * NOTE: this context should be the application-level context.
    */
   public static long newAlarm(Context c, int secondsPastMidnight) {
 
@@ -70,6 +71,7 @@ public class AlarmNotificationService extends Service {
 
   /**
    * Schedule an alarm event for a previously created alarm.
+   * NOTE: this context should be the application-level context.
    */
   public static void scheduleAlarmTrigger(Context c, long alarmid, long tsUTC) {
     // Intents are considered equal if they have the same action, data, type,
@@ -87,6 +89,7 @@ public class AlarmNotificationService extends Service {
 
   /**
    * Un-schedule a previously scheduled alarm event.
+   * NOTE: this context should be the application-level context.
    */
   public static void removeAlarmTrigger(Context c, long alarmid) {
     PendingIntent schedule = PendingIntent.getBroadcast(
@@ -100,6 +103,7 @@ public class AlarmNotificationService extends Service {
   /**
    * Dismiss all of the currently firing alarms.  Any marked for repeat will
    * be rescheduled appropriately.
+   * NOTE: this context should be the application-level context.
    */
   public static void dismissAllAlarms(Context c) {
     if (activeAlarms == null) {
@@ -133,6 +137,7 @@ public class AlarmNotificationService extends Service {
 
   /**
    * Snooze all of the currently firing alarms.
+   * NOTE: this context should be the application-level context.
    */
   public static void snoozeAllAlarms(Context c, long snoozeUTC) {
     if (activeAlarms == null) {
@@ -160,7 +165,7 @@ public class AlarmNotificationService extends Service {
   /**
    * Is an alarm firing?
    */
-  public static boolean isFiring(Context c) {
+  public static boolean isFiring() {
     return activeAlarms != null && !activeAlarms.alarmids.isEmpty();
   }
 
@@ -265,7 +270,7 @@ public class AlarmNotificationService extends Service {
     notification.flags |= Notification.FLAG_INSISTENT;  // Loop sound/vib/blink
     startForeground(FIRING_ALARM_NOTIFICATION_ID, notification);
 
-    CountdownRefresh.stop(this);
+    CountdownRefresh.stop(getApplicationContext());
 
     // NOTE: As of API 29, this only works when the app is in the foreground.
     // https://developer.android.com/guide/components/activities/background-starts
