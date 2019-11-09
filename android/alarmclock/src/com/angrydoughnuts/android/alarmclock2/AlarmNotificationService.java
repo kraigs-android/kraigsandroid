@@ -74,6 +74,10 @@ public class AlarmNotificationService extends Service {
    * NOTE: this context should be the application-level context.
    */
   public static void scheduleAlarmTrigger(Context c, long alarmid, long tsUTC) {
+    if (alarmid < 0) {
+      throw new IllegalArgumentException("Invalid alarmid: " + alarmid);
+    }
+
     // Intents are considered equal if they have the same action, data, type,
     // class, and categories.  In order to schedule multiple alarms, every
     // pending intent must be different.  This means that we must encode
@@ -184,11 +188,23 @@ public class AlarmNotificationService extends Service {
 
   @Override
   public int onStartCommand(Intent i, int flags, int startId) {
+    // NOTE: This shouldn't happen, but the crash reports show otherwise.
+    // This does not call startForeground, which is bad if this came from
+    // the alarm trigger, but maybe good if at was some random spurious thing?
+    if (i == null || !i.hasExtra(ALARM_ID)) {
+      Log.e(TAG, "Spurious start, flags: " + flags + " id: " + startId +
+            " intent: " + i.toString());
+      if (!isFiring()) {
+        stopSelf();
+      }
+      return START_NOT_STICKY;
+    }
+
     // NOTE: The service should continue running while there are any active
     // alarms.  This calls startForeground() and startActivity().
     handleTriggerAlarm(i);
 
-    return START_NOT_STICKY;
+    return START_REDELIVER_INTENT;
   }
 
   @Override
@@ -431,6 +447,9 @@ public class AlarmNotificationService extends Service {
     @Override
     public void onReceive(Context c, Intent i) {
       final long alarmid = i.getLongExtra(ALARM_ID, -1);
+      if (alarmid < 0) {
+        throw new IllegalArgumentException("Invalid alarmid: " + alarmid);
+      }
 
       @SuppressWarnings("deprecation")  // SCREEN_DIM_WAKE_LOCK
       PowerManager.WakeLock w =
