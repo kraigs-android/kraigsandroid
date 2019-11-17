@@ -151,4 +151,22 @@ public class AlarmNotificationActivity extends Activity {
         .create();
     }
   }
+
+  @Override
+  public boolean onKeyDown(int keyCode, KeyEvent event) {
+    // any key sends us into snooze
+    // doesn't work for POWER, see below
+    AlarmNotificationService.snoozeAllAlarms(getApplicationContext(), snooze);
+    finish();
+
+    return false;
+  }
+
+  @Override
+  public void onPause() {
+    super.onPause();
+
+    AlarmNotificationService.snoozeAllAlarms(getApplicationContext(), snooze);
+    finish();
+  }
 }
