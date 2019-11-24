@@ -19,14 +19,13 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.FragmentManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -55,11 +54,13 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.util.Calendar;
 
-public class AlarmOptions extends DialogFragment {
+@SuppressWarnings("deprecation")  // DialogFragment
+public class AlarmOptions extends android.app.DialogFragment {
   private final SettingsObserver observer = new SettingsObserver();
   private MediaPlayer player = null;
   private int init_volume = 0;
 
+  @SuppressWarnings("deprecation")  // DialogFragment, Fragment
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     super.onCreateDialog(savedInstanceState);
@@ -84,7 +85,10 @@ public class AlarmOptions extends DialogFragment {
       a.setStreamVolume(AudioManager.STREAM_ALARM,
                         a.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
       player = new MediaPlayer();
-      player.setAudioStreamType(AudioManager.STREAM_ALARM);
+      player.setAudioAttributes(
+          new AudioAttributes.Builder()
+          .setLegacyStreamType(AudioManager.STREAM_ALARM)
+          .build());
       try {
         player.setDataSource(
             getContext(), Settings.System.DEFAULT_NOTIFICATION_URI);
@@ -153,6 +157,7 @@ public class AlarmOptions extends DialogFragment {
     return d;
   }
 
+  @SuppressWarnings("deprecation") // Fragment
   @Override
   public void onDestroy() {
     super.onDestroy();
@@ -177,7 +182,8 @@ public class AlarmOptions extends DialogFragment {
     }
   };
 
-  public static class RepeatEditor extends DialogFragment {
+  @SuppressWarnings("deprecation")
+  public static class RepeatEditor extends android.app.DialogFragment {
     final public static String BITMASK = "bitmask";
     public static interface OnPickListener {
       abstract void onPick(int repeats);
@@ -186,6 +192,7 @@ public class AlarmOptions extends DialogFragment {
     private OnPickListener listener = null;
     public void setListener(OnPickListener l) { listener = l; }
 
+    @SuppressWarnings("deprecation") // DialogFragment
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
       super.onCreateDialog(savedInstanceState);
@@ -229,7 +236,8 @@ public class AlarmOptions extends DialogFragment {
     }
   }
 
-  public static class DeleteConfirmation extends DialogFragment {
+  @SuppressWarnings("deprecation") // DialogFragment, Fragment
+  public static class DeleteConfirmation extends android.app.DialogFragment {
     public static interface Listener {
       abstract void onConfirm();
     }
@@ -237,6 +245,7 @@ public class AlarmOptions extends DialogFragment {
     private Listener listener = null;
     public void setListener(Listener l) { listener = l; }
 
+    @SuppressWarnings("deprecation")  // Fragment
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
       return new AlertDialog.Builder(getContext())
@@ -258,8 +267,10 @@ public class AlarmOptions extends DialogFragment {
     public final MediaPicker.Listener tone_listener;
     public final DeleteConfirmation.Listener delete_listener;
 
+    @SuppressWarnings("deprecation")  // FragmentManager, Fragment
     public OptionsView(
-        final Context c, final Activity activity, final FragmentManager fm,
+        final Context c, final Activity activity,
+        final android.app.FragmentManager fm,
         final MediaPlayer media, final long id) {
       super(c);
       setOrientation(LinearLayout.VERTICAL);
@@ -312,6 +323,7 @@ public class AlarmOptions extends DialogFragment {
           c, TimeUtil.nextOccurrence(alarm.time, alarm.repeat)));
       edit_time.setOnClickListener(
           new View.OnClickListener() {
+            @SuppressWarnings("deprecation")  // Fragment
             @Override
             public void onClick(View view) {
               DbUtil.Alarm a = DbUtil.Alarm.get(c, id);
@@ -354,6 +366,7 @@ public class AlarmOptions extends DialogFragment {
               TimeUtil.repeatString(c, alarm.repeat));
       edit_repeat.setOnClickListener(
           new View.OnClickListener() {
+            @SuppressWarnings("deprecation")  // Fragment
             @Override
             public void onClick(View view) {
               RepeatEditor edit = new RepeatEditor();
@@ -400,6 +413,7 @@ public class AlarmOptions extends DialogFragment {
       setText(edit_tone, s.tone_name);
       edit_tone.setOnClickListener(
           new View.OnClickListener() {
+            @SuppressWarnings("deprecation")  // Fragment
             @Override
             public void onClick(View view) {
               MediaPicker media_pick = new MediaPicker();
@@ -417,6 +431,7 @@ public class AlarmOptions extends DialogFragment {
       vibrate_switch.setChecked(s.vibrate);
       vibrate_switch.setOnCheckedChangeListener(
           new CompoundButton.OnCheckedChangeListener() {
+            @SuppressWarnings("deprecation")  // vibrate
             @Override
             public void onCheckedChanged(CompoundButton b, boolean checked) {
               if (checked) {

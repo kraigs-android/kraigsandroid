@@ -17,7 +17,6 @@ package com.angrydoughnuts.android.alarmclock;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -35,7 +34,8 @@ import android.widget.TextView;
 
 import java.util.Calendar;
 
-public class TimePicker extends DialogFragment {
+@SuppressWarnings("deprecation")  // DialogFragment
+public class TimePicker extends android.app.DialogFragment {
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     super.onCreateDialog(savedInstanceState);

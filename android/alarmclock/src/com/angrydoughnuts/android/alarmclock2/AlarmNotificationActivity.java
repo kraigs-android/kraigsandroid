@@ -18,7 +18,6 @@ package com.angrydoughnuts.android.alarmclock;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -39,6 +38,7 @@ public class AlarmNotificationActivity extends Activity {
 
   private int snooze;
 
+  @SuppressWarnings("deprecation")  // FLAG_SHOW_WHEN_LOCKED
   @Override
   public void onCreate(Bundle state) {
     super.onCreate(state);
@@ -117,6 +117,7 @@ public class AlarmNotificationActivity extends Activity {
     }
   }
 
+  @SuppressWarnings("deprecation") // FragmentManager
   @Override
   protected void onNewIntent(Intent i) {
     // The notification service can get us here for one of two reasons:
@@ -136,7 +137,8 @@ public class AlarmNotificationActivity extends Activity {
     outState.putInt("snooze", snooze);
   }
 
-  public static class TimeoutMessage extends DialogFragment {
+  @SuppressWarnings("deprecation") // DialogFragment
+  public static class TimeoutMessage extends android.app.DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
       return new AlertDialog.Builder(getContext())
@@ -144,6 +146,7 @@ public class AlarmNotificationActivity extends Activity {
         .setMessage(R.string.time_out_error)
         .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             @Override
+            @SuppressWarnings("deprecation") // Fragment
             public void onClick(DialogInterface d, int i) {
               getActivity().finish();
             }

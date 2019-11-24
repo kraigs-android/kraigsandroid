@@ -18,20 +18,15 @@ package com.angrydoughnuts.android.alarmclock;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.Loader;
 import android.content.pm.ApplicationInfo;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -121,6 +116,7 @@ public class AlarmClockActivity extends Activity {
       });
     // And to display the options menu on long click.
     list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+        @SuppressWarnings("deprecation")  // Fragment
         @Override
         public boolean onItemLongClick(AdapterView<?> p, View v, int x, long id) {
           AlarmOptions options = new AlarmOptions();
@@ -134,11 +130,12 @@ public class AlarmClockActivity extends Activity {
 
     // Define the cursor loader for the list view to query all AlarmEntry
     // columns and sort by time.
-    final Loader<Cursor> loader = getLoaderManager().initLoader(
-        0, null, new LoaderManager.LoaderCallbacks<Cursor>() {
+    @SuppressWarnings("deprecation")  // Loader, Cursor
+    final android.content.Loader<Cursor> loader = getLoaderManager().initLoader(
+        0, null, new android.app.LoaderManager.LoaderCallbacks<Cursor>() {
             @Override
-            public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-              return new CursorLoader(
+            public android.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
+              return new android.content.CursorLoader(
                   getApplicationContext(), AlarmClockProvider.ALARMS_URI,
                   new String[] {
                     AlarmClockProvider.AlarmEntry._ID,
@@ -150,11 +147,11 @@ public class AlarmClockActivity extends Activity {
                   null, null, AlarmClockProvider.AlarmEntry.TIME + " ASC");
             }
             @Override
-            public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            public void onLoadFinished(android.content.Loader<Cursor> loader, Cursor data) {
               adapter.changeCursor(data);
             }
             @Override
-            public void onLoaderReset(Loader<Cursor> loader) {
+            public void onLoaderReset(android.content.Loader<Cursor> loader) {
               adapter.changeCursor(null);
             }
           });
@@ -162,6 +159,7 @@ public class AlarmClockActivity extends Activity {
     // Force the cursor loader to refresh on the minute every minute to
     // recompute countdown displays.
     refresh_tick = new Runnable() {
+        @SuppressWarnings("deprecation")  // Loader
         @Override
         public void run() {
           loader.forceLoad();
@@ -192,6 +190,7 @@ public class AlarmClockActivity extends Activity {
     // Setup the new alarm button.
     findViewById(R.id.new_alarm).setOnClickListener(
         new View.OnClickListener() {
+          @SuppressWarnings("deprecation")  // FragmentManager, DialogFragment.show()
           @Override
           public void onClick(View view) {
             TimePicker time_pick = new TimePicker();
@@ -203,6 +202,7 @@ public class AlarmClockActivity extends Activity {
     // Listener can not be serialized in time picker, so it must be explicitly
     // set each time.
     if (savedInstanceState != null) {
+      @SuppressWarnings("deprecation")  // FragmentManager
       TimePicker t = (TimePicker)getFragmentManager()
         .findFragmentByTag("new_alarm");
       if (t != null)
@@ -221,6 +221,7 @@ public class AlarmClockActivity extends Activity {
     }
   }
 
+  @SuppressWarnings("deprecation")  // LoadManager
   @Override
   public void onRestart() {
     super.onRestart();
@@ -233,15 +234,18 @@ public class AlarmClockActivity extends Activity {
     handler.removeCallbacks(refresh_tick);
   }
 
+  @SuppressWarnings("deprecation")  // PreferenceManager
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     getMenuInflater().inflate(R.menu.alarm_list_menu, menu);
     menu.findItem(R.id.display_notification)
-      .setChecked(PreferenceManager.getDefaultSharedPreferences(this)
-        .getBoolean(CountdownRefresh.DISPLAY_NOTIFICATION_PREF, true));
+      .setChecked(
+          android.preference.PreferenceManager.getDefaultSharedPreferences(this)
+          .getBoolean(CountdownRefresh.DISPLAY_NOTIFICATION_PREF, true));
     return super.onCreateOptionsMenu(menu);
   }
 
+  @SuppressWarnings("deprecation")  // FragmentManager, PreferenceManager
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
@@ -256,7 +260,7 @@ public class AlarmClockActivity extends Activity {
     case R.id.display_notification:
       boolean new_val = !item.isChecked();
       item.setChecked(new_val);
-      PreferenceManager.getDefaultSharedPreferences(this)
+      android.preference.PreferenceManager.getDefaultSharedPreferences(this)
         .edit()
         .putBoolean(CountdownRefresh.DISPLAY_NOTIFICATION_PREF, new_val)
         .commit();
@@ -277,7 +281,8 @@ public class AlarmClockActivity extends Activity {
     }
   }
 
-  public static class DeleteAllConfirmation extends DialogFragment {
+  @SuppressWarnings("deprecation")  // DialogFragment
+  public static class DeleteAllConfirmation extends android.app.DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
       return new AlertDialog.Builder(getContext())

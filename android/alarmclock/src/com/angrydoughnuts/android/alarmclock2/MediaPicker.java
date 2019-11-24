@@ -18,13 +18,9 @@ package com.angrydoughnuts.android.alarmclock;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.DialogInterface;
-import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.MatrixCursor;
@@ -50,7 +46,9 @@ import android.widget.ViewAnimator;
 
 import java.io.IOException;
 
-public class MediaPicker extends DialogFragment {
+@SuppressWarnings("deprecation")  // DialogFragment
+public class MediaPicker extends android.app.DialogFragment {
+  @SuppressWarnings("deprecation")  // Fragment
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     super.onCreateDialog(savedInstanceState);
@@ -127,6 +125,7 @@ public class MediaPicker extends DialogFragment {
         }).create();
   }
 
+  @SuppressWarnings("deprecation")  // Fragment
   @Override
   public void onSaveInstanceState(Bundle outState) {
     super.onSaveInstanceState(outState);
@@ -135,6 +134,7 @@ public class MediaPicker extends DialogFragment {
     outState.putInt("tab", tab);
   }
 
+  @SuppressWarnings("deprecation")  // Fragment
   @Override
   public void onDestroy() {
     super.onDestroy();
@@ -147,6 +147,7 @@ public class MediaPicker extends DialogFragment {
 
   private AdapterView.OnItemClickListener newListener() {
     return new AdapterView.OnItemClickListener() {
+      @SuppressWarnings("deprecation")  // Fragment
       @Override
       public void onItemClick(AdapterView<?> parent, View v, int x, long id) {
         TextView t = (TextView)v;
@@ -167,6 +168,7 @@ public class MediaPicker extends DialogFragment {
     };
   }
 
+  @SuppressWarnings("deprecation")  // Fragment
   private View newFlip() {
     final ViewAnimator flip = new ViewAnimator(getContext());
     final ViewGroup.LayoutParams layout = new ViewGroup.LayoutParams(
@@ -207,6 +209,7 @@ public class MediaPicker extends DialogFragment {
     return newList(new MediaQuery(q, entries), newListener());
   }
 
+  @SuppressWarnings("deprecation")  // Fragment
   private View newList(
       final PickerQuery q, final ViewAnimator flip,
       AdapterView.OnItemClickListener click) {
@@ -230,6 +233,7 @@ public class MediaPicker extends DialogFragment {
     return list;
   }
 
+  @SuppressWarnings("deprecation")  // Fragment, Loader, LoadManager
   private View newList(
       final PickerQuery q, AdapterView.OnItemClickListener click) {
     final ResourceCursorAdapter adapter = new ResourceCursorAdapter(
@@ -252,15 +256,16 @@ public class MediaPicker extends DialogFragment {
     list.setAdapter(adapter);
     list.setOnItemClickListener(click);
 
-    final Loader<Cursor> loader = getLoaderManager().initLoader(
-        list.getId(), null, new LoaderManager.LoaderCallbacks<Cursor>() {
+    final android.content.Loader<Cursor> loader = getLoaderManager().initLoader(
+        list.getId(), null, new android.app.LoaderManager.LoaderCallbacks<Cursor>() {
+            @SuppressWarnings("deprecation") // CursorLoader
             @Override
-            public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-              return new CursorLoader(
+            public android.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
+              return new android.content.CursorLoader(
                   getContext(), q.query, null, q.selection, null, q.sort);
             }
             @Override
-            public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            public void onLoadFinished(android.content.Loader<Cursor> loader, Cursor data) {
               if (q.entries == null) {
                 adapter.changeCursor(data);
               } else {
@@ -276,7 +281,7 @@ public class MediaPicker extends DialogFragment {
               }
             }
             @Override
-            public void onLoaderReset(Loader<Cursor> loader) {
+            public void onLoaderReset(android.content.Loader<Cursor> loader) {
               adapter.changeCursor(null);
             }
           });

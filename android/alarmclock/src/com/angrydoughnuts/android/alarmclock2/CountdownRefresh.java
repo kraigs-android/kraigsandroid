@@ -24,7 +24,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.util.Calendar;
@@ -67,8 +66,9 @@ public class CountdownRefresh extends BroadcastReceiver {
 
   private static final int NEXT_ALARM_NOTIFICATION_ID = 69;
   private static final String NEXT_ALARM_NOTIFICATION_CHAN = "next";
+  @SuppressWarnings("deprecation")  // PreferenceManager, NotificationBuilder
   private static boolean showNotification(Context c) {
-    if (PreferenceManager.getDefaultSharedPreferences(c)
+    if (android.preference.PreferenceManager.getDefaultSharedPreferences(c)
         .getBoolean(DISPLAY_NOTIFICATION_PREF, true) == false) {
       clearNotification(c);
       return false;

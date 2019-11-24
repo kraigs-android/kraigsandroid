@@ -27,6 +27,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -219,6 +220,7 @@ public class AlarmNotificationService extends Service {
   @Override
   public IBinder onBind(Intent intent) { return null; }
 
+  @SuppressWarnings("deprecation") // Notification channel required
   private void handleTriggerAlarm(Intent i) {
     final long alarmid = i.getLongExtra(ALARM_ID, -1);
     final DbUtil.Settings settings =
@@ -313,6 +315,7 @@ public class AlarmNotificationService extends Service {
     private Handler handler = null;
     private Runnable timeout = null;
 
+    @SuppressWarnings("deprecation")  // vibrate()
     public ActiveAlarms(final Context c, PowerManager.WakeLock w,
                         final DbUtil.Settings s) {
       // Since we will be changing the notification channel volume, store
@@ -379,7 +382,10 @@ public class AlarmNotificationService extends Service {
       handler.postDelayed(timeout, 10 * 60 * 1000);
 
       // NOTE: We use the alarm channel for notification sound.
-      player.setAudioStreamType(AudioManager.STREAM_ALARM);
+      player.setAudioAttributes(
+          new AudioAttributes.Builder()
+          .setLegacyStreamType(AudioManager.STREAM_ALARM)
+          .build());
       player.setLooping(true);
       final float start = s.volume_starting/(float)100.0;
       player.setVolume(start, start);
