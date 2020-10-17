@@ -40,7 +40,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
-import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.ViewAnimator;
 
@@ -63,7 +62,7 @@ public class MediaPicker extends android.app.DialogFragment {
       getContext().checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE,
                                    Process.myPid(), Process.myUid());
 
-    final TabHost t = (TabHost)(View.inflate(
+    final android.widget.TabHost t = (android.widget.TabHost)(View.inflate(
         getContext(), R.layout.media_picker, null));
     t.setup();
 
@@ -71,14 +70,14 @@ public class MediaPicker extends android.app.DialogFragment {
       t.addTab(
           t.newTabSpec("artists").setIndicator(getString(R.string.artists))
           .setContent(
-              new TabHost.TabContentFactory() {
+              new android.widget.TabHost.TabContentFactory() {
                 @Override
                 public View createTabContent(String tag) { return newFlip(); }
               }));
       t.addTab(
           t.newTabSpec("external").setIndicator(getString(R.string.songs))
           .setContent(
-              new TabHost.TabContentFactory() {
+              new android.widget.TabHost.TabContentFactory() {
                 @Override
                 public View createTabContent(String tag) {
                   return newList(Audio.Media.EXTERNAL_CONTENT_URI);
@@ -88,7 +87,7 @@ public class MediaPicker extends android.app.DialogFragment {
     t.addTab(
         t.newTabSpec("internal").setIndicator(getString(R.string.internal))
         .setContent(
-            new TabHost.TabContentFactory() {
+            new android.widget.TabHost.TabContentFactory() {
               @Override
               public View createTabContent(String tag) {
                 return newList(
@@ -97,7 +96,7 @@ public class MediaPicker extends android.app.DialogFragment {
                                      getString(R.string.system_default)) });
               }
             }));
-    t.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+    t.setOnTabChangedListener(new android.widget.TabHost.OnTabChangeListener() {
         @Override
         public void onTabChanged(String id) {
           tab = t.getCurrentTab();

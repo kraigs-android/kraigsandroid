@@ -27,6 +27,7 @@ import android.content.pm.ApplicationInfo;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -41,7 +42,7 @@ import java.util.LinkedList;
 
 public class AlarmClockActivity extends Activity {
   private Runnable refresh_tick;
-  private final Handler handler = new Handler();
+  private final Handler handler = new Handler(Looper.getMainLooper());
   private final TimePicker.OnTimePickListener new_alarm =
     new TimePicker.OnTimePickListener() {
       @Override
