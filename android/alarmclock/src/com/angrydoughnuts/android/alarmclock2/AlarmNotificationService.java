@@ -88,7 +88,9 @@ public class AlarmNotificationService extends Service {
         .putExtra(ALARM_ID, alarmid), 0);
 
     ((AlarmManager)c.getSystemService(Context.ALARM_SERVICE))
-      .setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, tsUTC, schedule);
+      .setAlarmClock(new AlarmManager.AlarmClockInfo(
+          tsUTC, PendingIntent.getActivity(
+              c, 0, new Intent(c, AlarmClockActivity.class), 0)), schedule);
     CountdownRefresh.start(c);
   }
 
