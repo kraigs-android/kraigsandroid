@@ -2,8 +2,8 @@
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.angrydoughnuts.android.alarmclock"
-    android:versionCode="21"
-    android:versionName="2.7">
+    android:versionCode="22"
+    android:versionName="2.8">
   <uses-sdk android:minSdkVersion="23" android:targetSdkVersion="30"/>
   <uses-permission android:name="android.permission.WAKE_LOCK" />
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
