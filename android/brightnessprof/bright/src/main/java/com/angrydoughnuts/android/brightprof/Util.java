@@ -15,15 +15,18 @@
 
 package com.angrydoughnuts.android.brightprof;
 
-import java.math.BigDecimal;
+import java.lang.Math;
 
 import android.content.ContentResolver;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 
 public class Util {
+  private static final String TAG = Util.class.getSimpleName();
+  private static final double base = 10.0;
 
   /**
    * Calculates the current application-defined brightness value of the phone.
@@ -45,18 +48,20 @@ public class Util {
     // The system brightness can range from 0 to 255. To normalize this
     // to the application's 0 to 100 brightness values, we lookup the
     // configured minimum value and then normalize for the range
-    // minValue to 255.
-    BigDecimal d = new BigDecimal((systemBrightness - minValue)
-        / (255.0 - minValue) * 100.0);
-    d = d.setScale(0, BigDecimal.ROUND_HALF_EVEN);
-    int normalizedBrightness = d.intValue();
+    // minValue to 255.  (See below).
+    double normalizedBrightness = Math.log10(
+        (systemBrightness - minValue) * (base-1) / (255-minValue) + 1);
+    Log.i(TAG, "BRIGHTNESS got: sys " + systemBrightness +
+          " min " + minValue +
+          " slide " + normalizedBrightness +
+          "(" + normalizedBrightness*100 +")");
 
     if (normalizedBrightness < 0) {
       // This can happen if another application sets the phone's brightness
       // to a value lower than our configured minimum.
       return 0;
     } else {
-      return normalizedBrightness;
+      return (int)Math.round(normalizedBrightness*100);
     }
   }
 
@@ -101,18 +106,20 @@ public class Util {
     // Lookup the minimum acceptable brightness set by the CalibrationActivity.
     int min_value = db.getMinimumBrightness();
 
-    // Convert the normalized application brightness to a system value (between
-    // min_value and 255).
-    BigDecimal d = new BigDecimal((brightnessPercentage / 100.0)
-        * (255 - min_value) + min_value);
-    d = d.setScale(0, BigDecimal.ROUND_HALF_EVEN);
-    int brightnessUnits = d.intValue();
+    // Logarithmic scale:
+    // y = a*base^x + b
+    // System brightness units: y:[min_value,255]
+    // Slider: x[0,100] (we normalize this to [0.0,1.0] to avoid big exponent)).
+    // y = [ (255-ymin)*(base^x-1) ] + ymin
+    //     [       (base-1)        ]
+    double b = (255-min_value) *
+      (Math.pow(base, brightnessPercentage/100.0)-1) /
+      (base-1) + min_value;
+    int brightnessUnits = (int)Math.round(b);
+    Log.i(TAG, "BRIGHTNESS set: slide " + brightnessPercentage +
+          " min " + min_value +
+          " sys " + b + "(" + brightnessUnits + ")");
 
-    if (brightnessUnits < min_value) {
-      brightnessUnits = min_value;
-    } else if (brightnessUnits > 255) {
-      brightnessUnits = 255;
-    }
     setSystemBrightness(resolver, brightnessUnits);
     setActivityBrightness(window, brightnessUnits);
   }
