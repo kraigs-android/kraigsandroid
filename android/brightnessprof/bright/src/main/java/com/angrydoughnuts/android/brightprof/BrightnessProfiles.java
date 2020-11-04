@@ -16,9 +16,12 @@
 package com.angrydoughnuts.android.brightprof;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -85,7 +88,6 @@ public class BrightnessProfiles extends Activity {
       public void onCheckedChanged(
           CompoundButton buttonView, boolean isChecked) {
         Util.setAutoBrightnessEnabled(getContentResolver(), isChecked);
-        lockBrightnessControls(isChecked);
         // Update the app brightness in case auto brightness changed it.
         appBrightness = Util.getPhoneBrighness(getContentResolver(), dbAccessor);
         setBrightness(appBrightness);
@@ -145,6 +147,18 @@ public class BrightnessProfiles extends Activity {
 
   @Override
   protected void onResume() {
+    if (!Settings.System.canWrite(this)) {
+      final AlertDialog perms = new AlertDialog.Builder(this)
+        .setMessage(R.string.permission)
+        .setNegativeButton(R.string.cancel, null)
+        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+              startActivity(new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS));
+            }
+          })
+        .show();
+    }
     // Lookup the initial system brightness and set our app's brightness
     // percentage appropriately.
     appBrightness = Util.getPhoneBrighness(getContentResolver(), dbAccessor);
@@ -192,6 +206,10 @@ public class BrightnessProfiles extends Activity {
 
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
+    if (!Settings.System.canWrite(this)) {
+      return super.onKeyDown(keyCode, event);
+    }
+
     switch (keyCode) {
       case KeyEvent.KEYCODE_VOLUME_DOWN:
         setBrightness(getBrightness() - 10);
@@ -236,21 +254,16 @@ public class BrightnessProfiles extends Activity {
     SeekBar slider = (SeekBar) findViewById(R.id.slider);
     slider.setProgress(getBrightness());
 
-    // Show/Hide the auto brightness check box.
+    // Show/Hide controls.
     CheckBox checkbox = (CheckBox) findViewById(R.id.auto_brightness);
-    if (Util.supportsAutoBrightness(getContentResolver())) {
-      checkbox.setVisibility(View.VISIBLE);
-      if (Util.getAutoBrightnessEnabled(getContentResolver())) {
-        checkbox.setChecked(true);
-        lockBrightnessControls(true);
-      } else {
-        checkbox.setChecked(false);
-        lockBrightnessControls(false);
-      }
-    } else {
-      checkbox.setVisibility(View.GONE);
-      lockBrightnessControls(false);
-    }
+    boolean autobright = Util.supportsAutoBrightness(getContentResolver()) &&
+      Util.getAutoBrightnessEnabled(getContentResolver());
+    checkbox.setVisibility(Util.supportsAutoBrightness(getContentResolver()) ?
+      View.VISIBLE : View.GONE);
+    checkbox.setChecked(autobright);
+    boolean canwrite = Settings.System.canWrite(this);
+    checkbox.setEnabled(canwrite);
+    lockBrightnessControls(autobright || !canwrite);
   }
 
   private int getBrightness() {

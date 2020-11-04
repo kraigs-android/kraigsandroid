@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.angrydoughnuts.android.brightprof"
-        minSdkVersion 4
+        minSdkVersion 23
         targetSdkVersion 30
     }
 
