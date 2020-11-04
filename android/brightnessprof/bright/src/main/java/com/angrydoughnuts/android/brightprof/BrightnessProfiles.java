@@ -43,8 +43,6 @@ public class BrightnessProfiles extends Activity {
   private static final int MENU_EDIT = 0;
   private static final int MENU_DELETE = 1;
 
-  private static final int OPTION_CALIBRATE = 0;
-
   private int appBrightness;
   private DbAccessor dbAccessor;
   private Cursor listViewCursor;
@@ -70,6 +68,14 @@ public class BrightnessProfiles extends Activity {
       public void onClick(View view) {
         Intent i = new Intent(getApplication(), EditActivity.class);
         startActivityForResult(i, ACTIVITY_EDIT);
+      }
+    });
+    // Button to calibrate the brightness scale
+    Button calibrateBtn = (Button) findViewById(R.id.calibrate_button);
+    calibrateBtn.setOnClickListener(new View.OnClickListener() {
+      public void onClick(View view) {
+        Intent i = new Intent(getApplication(), CalibrateActivity.class);
+        startActivityForResult(i, ACTIVITY_CALIBRATE);
       }
     });
 
@@ -185,41 +191,6 @@ public class BrightnessProfiles extends Activity {
   }
 
   @Override
-  public boolean onCreateOptionsMenu(Menu menu) {
-    boolean result = super.onCreateOptionsMenu(menu);
-    MenuItem calibrate = menu.add(0, OPTION_CALIBRATE, 0, R.string.calibrate);
-    calibrate.setIcon(android.R.drawable.ic_menu_preferences);
-    return result;
-  }
-
-  @Override
-  public boolean onPrepareOptionsMenu(Menu menu) {
-    boolean result = super.onPrepareOptionsMenu(menu);
-    // Don't setup the calibrate menu item if auto brightness is enabled.
-    // Trying to calibrate while it's on is weird...
-    MenuItem calibrate = menu.findItem(OPTION_CALIBRATE);
-    if (Util.supportsAutoBrightness(getContentResolver()) &&
-        Util.getAutoBrightnessEnabled(getContentResolver())) {
-      calibrate.setEnabled(false);
-    } else {
-      calibrate.setEnabled(true);
-    }
-    return result;
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    switch (item.getItemId()) {
-      case OPTION_CALIBRATE:
-        Intent i = new android.content.Intent(getApplicationContext(),
-            CalibrateActivity.class);
-        startActivityForResult(i, ACTIVITY_CALIBRATE);
-        break;
-    }
-    return super.onOptionsItemSelected(item);
-  }
-
-  @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
     switch (keyCode) {
       case KeyEvent.KEYCODE_VOLUME_DOWN:
@@ -264,7 +235,7 @@ public class BrightnessProfiles extends Activity {
 
     SeekBar slider = (SeekBar) findViewById(R.id.slider);
     slider.setProgress(getBrightness());
- 
+
     // Show/Hide the auto brightness check box.
     CheckBox checkbox = (CheckBox) findViewById(R.id.auto_brightness);
     if (Util.supportsAutoBrightness(getContentResolver())) {
@@ -308,6 +279,7 @@ public class BrightnessProfiles extends Activity {
   private void lockBrightnessControls(boolean lock) {
     SeekBar slider = (SeekBar) findViewById(R.id.slider);
     ListView profileList = (ListView) findViewById(R.id.profile_list);
+    Button calibrate = (Button) findViewById(R.id.calibrate_button);
 
     // Note: setEnabled() doesn't seem to work with this ListView, nor does
     // calling setEnabled() on the individual children of the ListView.
@@ -316,9 +288,11 @@ public class BrightnessProfiles extends Activity {
     if (lock) {
       profileList.setVisibility(View.GONE);
       slider.setEnabled(false);
+      calibrate.setEnabled(false);
     } else {
       profileList.setVisibility(View.VISIBLE);
       slider.setEnabled(true);
+      calibrate.setEnabled(true);
     }
   }
 }
