@@ -3,7 +3,7 @@
   package="com.angrydoughnuts.android.brightprof"
   android:versionCode="5" android:versionName="1.3">
   <uses-permission android:name="android.permission.WRITE_SETTINGS"></uses-permission>
-  <application android:icon="@drawable/brightness"
+  <application android:icon="@mipmap/brightness"
                android:label="@string/app_name"
                android:theme="@style/BrightnessProfilesTheme"
                android:allowBackup="true"
