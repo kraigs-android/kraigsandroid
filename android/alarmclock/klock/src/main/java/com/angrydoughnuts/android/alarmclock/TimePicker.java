@@ -106,6 +106,8 @@ public class TimePicker extends android.app.DialogFragment {
     // The edit field should be fully selected and focused at creation time.
     final EditText e = (EditText)v.findViewById(R.id.picker_time_entry);
     e.setText(time());
+    e.requestFocus();
+    e.selectAll();
     e.addTextChangedListener(new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int st, int c, int a) {}

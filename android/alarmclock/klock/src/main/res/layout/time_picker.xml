@@ -43,7 +43,6 @@
         android:id="@+id/picker_time_entry"
         android:inputType="time"
         android:imeOptions="actionDone|flagNoFullscreen"
-        android:selectAllOnFocus="true"
         android:gravity="center"
         android:textSize="34sp"
         android:layout_gravity="center"
