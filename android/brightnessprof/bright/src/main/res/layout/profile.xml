@@ -5,6 +5,7 @@
   android:textSize="24sp"
   android:paddingTop="10sp"
   android:paddingBottom="10sp"
-  android:paddingLeft="5sp"
+  android:paddingStart="5sp"
+  android:paddingEnd="5sp"
   android:layout_width="fill_parent"
   android:layout_height="wrap_content" />

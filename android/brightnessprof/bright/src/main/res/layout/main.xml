@@ -2,8 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
   android:orientation="vertical"
   android:layout_width="fill_parent"
-  android:layout_height="fill_parent"
-  android:minWidth="400px">
+  android:layout_height="fill_parent">
 
   <CheckBox android:id="@+id/auto_brightness"
     android:text="@string/auto_brightness"
@@ -16,7 +15,7 @@
 
     <TextView android:id="@+id/brightness"
       android:layout_weight="1"
-      android:layout_width="wrap_content"
+      android:layout_width="0dp"
       android:layout_height="wrap_content" />
 
     <Button android:id="@+id/calibrate_button"
@@ -36,7 +35,7 @@
     android:paddingTop="15sp"
     android:paddingBottom="15sp"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="0dp"
     android:layout_weight="1.0" />
 
   <LinearLayout

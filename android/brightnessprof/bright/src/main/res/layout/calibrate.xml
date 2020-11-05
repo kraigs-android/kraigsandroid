@@ -5,7 +5,10 @@
   android:layout_height="fill_parent" >
 
   <TextView android:text="@string/calibration_warning"
-    android:paddingBottom="10px"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:paddingEnd="8dp"
+    android:paddingStart="8dp"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
 
@@ -13,28 +16,28 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
     <TextView android:text="@string/current_setting"
-      android:paddingRight="4px"
+      android:paddingEnd="8dp"
+      android:paddingStart="8dp"
       android:textSize="16sp"
       android:layout_width="wrap_content"
-      android:layout_height="wrap_content" />    
+      android:layout_height="wrap_content" />
     <TextView android:id="@+id/current_min_brightness"
-      android:text="0"
       android:textSize="16sp"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content" />
   </LinearLayout>
 
   <LinearLayout
-    android:paddingBottom="10px"
+    android:paddingBottom="10dp"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
     <TextView android:text="@string/test_setting"
-      android:paddingRight="4px"
+      android:paddingEnd="8dp"
+      android:paddingStart="8dp"
       android:textSize="16sp"
       android:layout_width="wrap_content"
-      android:layout_height="wrap_content" />    
+      android:layout_height="wrap_content" />
     <TextView android:id="@+id/test_min_brightness"
-      android:text="0"
       android:textSize="16sp"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content" />
@@ -44,15 +47,15 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
 
-    <Button android:id="@+id/ok_button"
-      android:text="@string/ok"
+    <Button android:id="@+id/cancel_button"
+      android:text="@string/cancel"
       android:textSize="18sp"
       android:layout_weight="1"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content" />
 
-    <Button android:id="@+id/cancel_button"
-      android:text="@string/cancel"
+    <Button android:id="@+id/ok_button"
+      android:text="@string/ok"
       android:textSize="18sp"
       android:layout_weight="1"
       android:layout_width="wrap_content"
