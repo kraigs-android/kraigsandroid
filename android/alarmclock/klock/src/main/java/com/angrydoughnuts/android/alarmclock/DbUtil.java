@@ -19,6 +19,7 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.provider.Settings;
 
 import java.util.Calendar;
 
@@ -113,7 +114,7 @@ public class DbUtil {
     public final int volume_time;
 
     private static final Uri TONE_URL_DEFAULT =
-      android.provider.Settings.System.DEFAULT_NOTIFICATION_URI;
+      android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI;
     private static final int SNOOZE_DEFAULT = 10;
     private static final boolean VIBRATE_DEFAULT = false;
     private static final int VOLUME_STARTING_DEFAULT = 0;
@@ -177,7 +178,7 @@ public class DbUtil {
 
     private Settings(Context c) {
       tone_url = TONE_URL_DEFAULT;
-      tone_name = c.getString(R.string.system_default);
+      tone_name = c.getString(R.string.system_default_alarm);
       snooze = SNOOZE_DEFAULT;
       vibrate = VIBRATE_DEFAULT;
       volume_starting = VOLUME_STARTING_DEFAULT;

@@ -92,8 +92,13 @@ public class MediaPicker extends android.app.DialogFragment {
               public View createTabContent(String tag) {
                 return newList(
                     Audio.Media.INTERNAL_CONTENT_URI, new ExtraEntry[] {
+                      new ExtraEntry(Settings.System.DEFAULT_ALARM_ALERT_URI,
+                                      getString(R.string.system_default_alarm)),
                       new ExtraEntry(Settings.System.DEFAULT_NOTIFICATION_URI,
-                                     getString(R.string.system_default)) });
+                                      getString(R.string.system_default_notification)),
+                      new ExtraEntry(Settings.System.DEFAULT_RINGTONE_URI,
+                                      getString(R.string.system_default_ringtone)) }
+                );
               }
             }));
     t.setOnTabChangedListener(new android.widget.TabHost.OnTabChangeListener() {

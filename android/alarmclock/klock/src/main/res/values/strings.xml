@@ -48,6 +48,9 @@
   <string name="weekdays">Weekdays</string>
   <string name="weekends">Weekends</string>
   <string name="system_default">System default</string>
+  <string name="system_default_alarm">System default alarm</string>
+  <string name="system_default_notification">System default notification</string>
+  <string name="system_default_ringtone">System default ringtone</string>
   <string name="internal">Internal</string>
   <string name="artists">Artists</string>
   <string name="songs">Songs</string>
