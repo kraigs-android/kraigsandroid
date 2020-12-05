@@ -22,10 +22,12 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.database.MergeCursor;
 import android.media.MediaPlayer;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Process;
@@ -125,6 +127,29 @@ public class MediaPicker extends android.app.DialogFragment {
           public void onClick(DialogInterface dialog, int which) {
             if (listener != null && uri != null && title != null)
               listener.onMediaPick(uri, title);
+          }
+        })
+      .setNeutralButton(getString(R.string.other), new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            // NOTE: This assumes that AlarmOptions will be the only thing
+            // that ever shows MediaPicker.
+            AlarmOptions parent = (AlarmOptions)getFragmentManager()
+              .findFragmentByTag("alarm_options");
+            if (parent == null) {
+              parent = (AlarmOptions)getFragmentManager()
+                .findFragmentByTag("default_alarm_options");
+            }
+            if (parent == null) {
+              return;
+            }
+            // Show the system ringtone manager
+            Intent i = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+            i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false);
+            i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
+            i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALL);
+            i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, getString(R.string.alarm_tone));
+            parent.startActivityForResult(i, AlarmOptions.EXTERNAL_TONE_PICK);
           }
         }).create();
   }

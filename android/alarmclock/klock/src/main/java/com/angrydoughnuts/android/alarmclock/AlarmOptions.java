@@ -24,10 +24,12 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.content.Intent;
 import android.database.ContentObserver;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -59,6 +61,8 @@ public class AlarmOptions extends android.app.DialogFragment {
   private final SettingsObserver observer = new SettingsObserver();
   private MediaPlayer player = null;
   private int init_volume = 0;
+  public static final int EXTERNAL_TONE_PICK = 59;
+  private MediaPicker.Listener external_tone_picked;
 
   @SuppressWarnings("deprecation")  // DialogFragment, Fragment
   @Override
@@ -100,6 +104,8 @@ public class AlarmOptions extends android.app.DialogFragment {
     final OptionsView o = new OptionsView(
         getContext(), getActivity(), getFragmentManager(), player, id);
     v.addView(o);
+    // keep a copy for dispatching events from RingtoneManager.ACTION_RINGTONE_PICKER
+    external_tone_picked = o.tone_listener;
 
     if (savedInstanceState != null) {
       TimePicker t = (TimePicker)getFragmentManager()
@@ -155,6 +161,19 @@ public class AlarmOptions extends android.app.DialogFragment {
         WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
     return d;
+  }
+
+  @SuppressWarnings("deprecation")  // Fragment
+  @Override
+  public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    // Handle responses from RingtoneManager.ACTION_RINGTONE_PICKER
+    if (requestCode == EXTERNAL_TONE_PICK && resultCode == Activity.RESULT_OK) {
+      Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+      if (uri != null && external_tone_picked != null) {
+        String title = uri.getQueryParameter("title");
+        external_tone_picked.onMediaPick(uri, title != null ? title : "Unknown");
+      }
+    }
   }
 
   @SuppressWarnings("deprecation") // Fragment
