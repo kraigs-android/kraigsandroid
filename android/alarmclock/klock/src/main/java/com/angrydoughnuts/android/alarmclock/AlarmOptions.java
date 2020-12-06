@@ -91,7 +91,7 @@ public class AlarmOptions extends android.app.DialogFragment {
           .build());
       try {
         player.setDataSource(
-            getContext(), Settings.System.DEFAULT_NOTIFICATION_URI);
+            getContext(), Settings.System.DEFAULT_ALARM_ALERT_URI);
         player.prepare();
       } catch (IOException e) {}
     }
