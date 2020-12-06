@@ -400,7 +400,7 @@ public class AlarmNotificationService extends Service {
       } catch (IOException e) {
         Log.e(TAG, "Failed loading tone: " + e.toString());
         try {
-          player.setDataSource(c, Settings.System.DEFAULT_NOTIFICATION_URI);
+          player.setDataSource(c, Settings.System.DEFAULT_ALARM_ALERT_URI);
         } catch (IOException e2) {
           Log.e(TAG, "Failed loading backup tone: " + e2.toString());
         }
