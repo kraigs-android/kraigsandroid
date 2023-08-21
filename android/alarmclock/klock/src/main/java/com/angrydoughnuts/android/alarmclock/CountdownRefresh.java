@@ -45,7 +45,8 @@ public class CountdownRefresh extends BroadcastReceiver {
     ((AlarmManager)c.getSystemService(Context.ALARM_SERVICE))
       .cancel(
           PendingIntent.getBroadcast(
-              c, JOB_ID, new Intent(c, CountdownRefresh.class), 0));
+              c, JOB_ID, new Intent(c, CountdownRefresh.class),
+              PendingIntent.FLAG_IMMUTABLE));
     clearNotification(c);
   }
 
@@ -61,7 +62,8 @@ public class CountdownRefresh extends BroadcastReceiver {
     ((AlarmManager)c.getSystemService(Context.ALARM_SERVICE))
       .setExact(AlarmManager.RTC, refresh.getTimeInMillis(),
                 PendingIntent.getBroadcast(
-                    c, JOB_ID, new Intent(c, CountdownRefresh.class), 0));
+                    c, JOB_ID, new Intent(c, CountdownRefresh.class),
+                    PendingIntent.FLAG_IMMUTABLE));
   }
 
   private static final int NEXT_ALARM_NOTIFICATION_ID = 69;
@@ -111,7 +113,8 @@ public class CountdownRefresh extends BroadcastReceiver {
         .setOngoing(true)
         .setContentIntent(
             PendingIntent.getActivity(
-                c, 0, new Intent(c, AlarmClockActivity.class), 0))
+                c, 0, new Intent(c, AlarmClockActivity.class),
+                PendingIntent.FLAG_IMMUTABLE))
         .build());
 
     return true;

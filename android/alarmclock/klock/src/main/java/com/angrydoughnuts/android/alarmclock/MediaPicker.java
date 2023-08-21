@@ -29,6 +29,7 @@ import android.database.MergeCursor;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.provider.BaseColumns;
@@ -60,9 +61,11 @@ public class MediaPicker extends android.app.DialogFragment {
       tab = savedInstanceState.getInt("tab");
     }
 
+    String readPerm = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) ?
+      Manifest.permission.READ_MEDIA_AUDIO :
+      Manifest.permission.READ_EXTERNAL_STORAGE;
     final boolean has_external = PackageManager.PERMISSION_GRANTED ==
-      getContext().checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE,
-                                   Process.myPid(), Process.myUid());
+      getContext().checkPermission(readPerm, Process.myPid(), Process.myUid());
 
     final android.widget.TabHost t = (android.widget.TabHost)(View.inflate(
         getContext(), R.layout.media_picker, null));

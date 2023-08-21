@@ -70,7 +70,9 @@ public class AlarmOptions extends android.app.DialogFragment {
     super.onCreateDialog(savedInstanceState);
 
     {
-      String p = Manifest.permission.READ_EXTERNAL_STORAGE;
+      String p = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) ?
+        Manifest.permission.READ_MEDIA_AUDIO :
+        Manifest.permission.READ_EXTERNAL_STORAGE;
       if (getContext().checkPermission(p, Process.myPid(), Process.myUid()) !=
           PackageManager.PERMISSION_GRANTED)
         requestPermissions(new String[] { p }, 0);

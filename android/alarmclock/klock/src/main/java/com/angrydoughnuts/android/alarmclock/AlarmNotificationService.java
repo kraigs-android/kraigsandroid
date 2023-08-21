@@ -85,12 +85,14 @@ public class AlarmNotificationService extends Service {
     // the alarm id in the request code.
     PendingIntent schedule = PendingIntent.getBroadcast(
         c, (int)alarmid, new Intent(c, AlarmTriggerReceiver.class)
-        .putExtra(ALARM_ID, alarmid), 0);
+        .putExtra(ALARM_ID, alarmid), PendingIntent.FLAG_IMMUTABLE);
 
     ((AlarmManager)c.getSystemService(Context.ALARM_SERVICE))
       .setAlarmClock(new AlarmManager.AlarmClockInfo(
           tsUTC, PendingIntent.getActivity(
-              c, 0, new Intent(c, AlarmClockActivity.class), 0)), schedule);
+              c, 0, new Intent(c, AlarmClockActivity.class),
+              PendingIntent.FLAG_IMMUTABLE)),
+              schedule);
     CountdownRefresh.start(c);
   }
 
@@ -101,7 +103,7 @@ public class AlarmNotificationService extends Service {
   public static void removeAlarmTrigger(Context c, long alarmid) {
     PendingIntent schedule = PendingIntent.getBroadcast(
         c, (int)alarmid, new Intent(c, AlarmTriggerReceiver.class)
-        .putExtra(ALARM_ID, alarmid), 0);
+        .putExtra(ALARM_ID, alarmid), PendingIntent.FLAG_IMMUTABLE);
 
     ((AlarmManager)c.getSystemService(Context.ALARM_SERVICE)).cancel(schedule);
     CountdownRefresh.start(c);
@@ -280,7 +282,9 @@ public class AlarmNotificationService extends Service {
       .setSmallIcon(R.drawable.ic_alarm_on)
       // NOTE: This takes the place of the window attribute
       // FLAG_SHOW_WHEN_LOCKED in the activity itself for newer APIs.
-      .setFullScreenIntent(PendingIntent.getActivity(this, 0, notify, 0), true)
+      .setFullScreenIntent(
+          PendingIntent.getActivity(
+              this, 0, notify, PendingIntent.FLAG_IMMUTABLE), true)
       .setCategory(Notification.CATEGORY_ALARM)
       .setPriority(Notification.PRIORITY_MAX)
       .setVisibility(Notification.VISIBILITY_PUBLIC)

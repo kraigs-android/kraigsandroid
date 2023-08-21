@@ -15,6 +15,7 @@
 
 package com.angrydoughnuts.android.alarmclock;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -24,10 +25,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Process;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -55,6 +58,13 @@ public class AlarmClockActivity extends Activity {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.alarm_list);
+
+    {
+      String p = Manifest.permission.POST_NOTIFICATIONS;
+      if (checkPermission(p, Process.myPid(), Process.myUid()) !=
+          PackageManager.PERMISSION_GRANTED)
+        requestPermissions(new String[] { p }, 0);
+    }
 
     // Map AlarmEntry fields to list view item views.
     final ResourceCursorAdapter adapter = new ResourceCursorAdapter(
