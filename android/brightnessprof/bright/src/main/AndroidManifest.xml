@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.angrydoughnuts.android.brightprof"
-  android:versionCode="6" android:versionName="1.4">
+    android:versionCode="7" android:versionName="1.5">
   <uses-permission android:name="android.permission.WRITE_SETTINGS"></uses-permission>
   <application android:icon="@mipmap/brightness"
                android:label="@string/app_name"
@@ -9,7 +8,7 @@
                android:allowBackup="true"
                android:fullBackupContent="@xml/backup">
     <activity android:name=".BrightnessProfiles"
-      android:label="@string/app_name">
+      android:label="@string/app_name" android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />

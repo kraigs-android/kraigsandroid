@@ -1,13 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.2"
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "com.angrydoughnuts.android.brightprof"
         minSdkVersion 23
-        targetSdkVersion 30
+        targetSdkVersion 33
     }
 
     buildTypes {
@@ -16,4 +15,5 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+    namespace 'com.angrydoughnuts.android.brightprof'
 }
