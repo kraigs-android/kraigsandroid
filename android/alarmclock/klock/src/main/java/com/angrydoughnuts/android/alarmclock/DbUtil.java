@@ -19,7 +19,6 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.Settings;
 
 import java.util.Calendar;
 
@@ -112,6 +111,7 @@ public class DbUtil {
     public final int volume_starting;
     public final int volume_ending;
     public final int volume_time;
+    public final boolean dismiss_by_button;
 
     private static final Uri TONE_URL_DEFAULT =
       android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI;
@@ -120,6 +120,7 @@ public class DbUtil {
     private static final int VOLUME_STARTING_DEFAULT = 0;
     private static final int VOLUME_ENDING_DEFAULT = 100;
     private static final int VOLUME_TIME_DEFAULT = 20;
+    private static final boolean DISMISS_BY_BUTTON_DEFAULT = false;
 
     public static Settings get(Context context, long id) {
       Settings s = null;
@@ -155,7 +156,8 @@ public class DbUtil {
             AlarmClockProvider.SettingsEntry.VIBRATE,
             AlarmClockProvider.SettingsEntry.VOLUME_STARTING,
             AlarmClockProvider.SettingsEntry.VOLUME_ENDING,
-            AlarmClockProvider.SettingsEntry.VOLUME_TIME },
+            AlarmClockProvider.SettingsEntry.VOLUME_TIME,
+            AlarmClockProvider.SettingsEntry.DISMISS_BY_BUTTON},
           null, null, null);
     }
 
@@ -174,6 +176,8 @@ public class DbUtil {
           AlarmClockProvider.SettingsEntry.VOLUME_ENDING));
       volume_time = c.getInt(c.getColumnIndex(
           AlarmClockProvider.SettingsEntry.VOLUME_TIME));
+      dismiss_by_button = c.getInt(c.getColumnIndex(
+              AlarmClockProvider.SettingsEntry.DISMISS_BY_BUTTON)) != 0;
     }
 
     private Settings(Context c) {
@@ -184,6 +188,7 @@ public class DbUtil {
       volume_starting = VOLUME_STARTING_DEFAULT;
       volume_ending = VOLUME_ENDING_DEFAULT;
       volume_time = VOLUME_TIME_DEFAULT;
+      dismiss_by_button = DISMISS_BY_BUTTON_DEFAULT;
     }
   }
 }

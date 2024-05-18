@@ -107,6 +107,8 @@ public final class AlarmClockProvider extends ContentProvider {
         values.put(SettingsEntry.VOLUME_ENDING, defaults.volume_ending);
       if (!values.containsKey(SettingsEntry.VOLUME_TIME))
         values.put(SettingsEntry.VOLUME_TIME, defaults.volume_time);
+      if (!values.containsKey(SettingsEntry.DISMISS_BY_BUTTON))
+        values.put(SettingsEntry.DISMISS_BY_BUTTON, defaults.dismiss_by_button);
 
       db.insertOrThrow(SettingsEntry.TABLE_NAME, null, values);
       getContext().getContentResolver().notifyChange(uri, null);
@@ -250,11 +252,12 @@ public final class AlarmClockProvider extends ContentProvider {
     public static final String VOLUME_STARTING = "vol_start";
     public static final String VOLUME_ENDING = "vol_end";
     public static final String VOLUME_TIME = "vol_time";
+    public static final String DISMISS_BY_BUTTON = "dismiss_button";
   }
 
   private static class DbAlarmClockHelper extends SQLiteOpenHelper {
     private static final String DB_NAME = "alarmclock";
-    private static final int DB_VERSION = 2;
+    private static final int DB_VERSION = 3;
 
     public DbAlarmClockHelper(Context context) {
       super(context, DB_NAME, null, DB_VERSION);
@@ -275,8 +278,8 @@ public final class AlarmClockProvider extends ContentProvider {
           AlarmEntry.DAY_OF_WEEK + " UNSIGNED INTEGER (0, 127)," +
           AlarmEntry.NEXT_SNOOZE + " UNSIGNED INTEGER DEFAULT 0)");
 
-      // |(primary) | (string) | (string)  | (1 to 60) | (boolean) | (0 to 100) | (0 to 100) | (0 to 60) |
-      // |   id     | tone_url | tone_name |   snooze  |  vibrate  |  vol_start |  vol_end   | vol_time  |
+      // |(primary) | (string) | (string)  | (1 to 60) | (boolean) | (0 to 100) | (0 to 100) | (0 to 60) | (boolean)      |
+      // |   id     | tone_url | tone_name |   snooze  |  vibrate  |  vol_start |  vol_end   | vol_time  | dismiss_button |
       // snooze is in minutes.
       db.execSQL(
           "CREATE TABLE " + SettingsEntry.TABLE_NAME + " (" +
@@ -287,7 +290,8 @@ public final class AlarmClockProvider extends ContentProvider {
           SettingsEntry.VIBRATE + " UNSIGNED INTEGER (0, 1)," +
           SettingsEntry.VOLUME_STARTING + " UNSIGNED INTEGER (1, 100)," +
           SettingsEntry.VOLUME_ENDING + " UNSIGNED INTEGER (1, 100)," +
-          SettingsEntry.VOLUME_TIME + " UNSIGNED INTEGER (1, 60))");
+          SettingsEntry.VOLUME_TIME + " UNSIGNED INTEGER (1, 60)," +
+          SettingsEntry.DISMISS_BY_BUTTON + " UNSIGNED INTEGER (0, 1))");
     }
 
     @Override
@@ -308,6 +312,11 @@ public final class AlarmClockProvider extends ContentProvider {
             "UPDATE " + SettingsEntry.TABLE_NAME + " SET " +
             SettingsEntry.ALARM_ID + " = " + DbUtil.Settings.DEFAULTS_ID +
             " WHERE " + SettingsEntry.ALARM_ID + " == -1");
+      }
+      if (oldVersion < 3) {
+        db.execSQL(
+                "ALTER TABLE " + SettingsEntry.TABLE_NAME + " ADD COLUMN " +
+                        SettingsEntry.DISMISS_BY_BUTTON + " UNSIGNED INTEGER (0, 1) DEFAULT 0");
       }
     }
   }

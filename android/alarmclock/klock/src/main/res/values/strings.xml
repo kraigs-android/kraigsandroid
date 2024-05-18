@@ -60,4 +60,6 @@
   <string name="time_out_error">WARNING: This alarm has timed out waiting for an acknowledgment.</string>
   <string name="pending_alarm_notification">Pending alarms</string>
   <string name="ringing_alarm_notification">Ringing alarms</string>
+  <string name="alarm_dismiss_by_button">Dismiss alarm by button.</string>
+  <string name="alarm_dismiss_by_slider">Dismiss alarm by slider.</string>
 </resources>

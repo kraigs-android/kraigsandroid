@@ -64,6 +64,25 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content" />
 
+  <View
+      android:id="@+id/divider"
+      android:layout_width="match_parent"
+      android:layout_height="1dp"
+      android:layout_weight="1"
+      android:visibility="invisible"
+      android:background="?android:attr/listDivider" />
+
+  <Button
+      android:id="@+id/dismiss_alarm_button"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:background="@drawable/rect_btn"
+      android:elevation="6dp"
+      android:text="@string/dismiss"
+      android:visibility="invisible"
+      android:textSize="36sp" />
+
   <TextView
       android:id="@+id/alarm_label"
       android:textSize="36sp"
