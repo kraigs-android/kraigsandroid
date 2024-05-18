@@ -586,6 +586,28 @@ public class AlarmOptions extends android.app.DialogFragment {
       setView(edit_volume_time, volume_time_slide, 1.0f);
 
       setView(this, volume_status, 1.0f);
+
+      // EDIT DISMISS BUTTON
+      final TextView edit_dismiss_by_button_status = new TextView(c);
+      edit_dismiss_by_button_status.setText(s.dismiss_by_button ?c.getString(R.string.alarm_dismiss_by_button):c.getString(R.string.alarm_dismiss_by_slider));
+
+      final ViewGroup edit_dismiss_by_button = newItem(c);
+      addView(edit_dismiss_by_button);
+      setImage(edit_dismiss_by_button, R.drawable.baseline_call_to_action_24);
+      Switch dismiss_by_button_switch = new Switch(c);
+      setView(edit_dismiss_by_button, dismiss_by_button_switch, 0.0f);
+      setView(this, edit_dismiss_by_button_status, 1.0f);
+      dismiss_by_button_switch.setChecked(s.dismiss_by_button);
+      dismiss_by_button_switch.setOnCheckedChangeListener(
+              new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton b, boolean checked) {
+                  ContentValues val = new ContentValues();
+                  val.put(AlarmClockProvider.SettingsEntry.DISMISS_BY_BUTTON, checked);
+                  c.getContentResolver().update(settings, val, null, null);
+                  edit_dismiss_by_button_status.setText(checked?c.getString(R.string.alarm_dismiss_by_button):c.getString(R.string.alarm_dismiss_by_slider));
+                }
+              });
     }
 
     private ViewGroup newItem(Context c) {

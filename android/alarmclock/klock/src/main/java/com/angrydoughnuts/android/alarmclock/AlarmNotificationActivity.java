@@ -22,13 +22,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 
 public class AlarmNotificationActivity extends Activity {
   public static final String TIMEOUT = "timeout";
@@ -82,6 +80,25 @@ public class AlarmNotificationActivity extends Activity {
             finish();
           }
         });
+
+      boolean dismiss_by_button = false;
+      for (long alarmid : AlarmNotificationService.getActiveAlarms()) {
+          dismiss_by_button = dismiss_by_button || DbUtil.Settings.get(this, alarmid).dismiss_by_button;
+      }
+
+      if (dismiss_by_button) {
+          findViewById(R.id.dismiss_alarm_button).setVisibility(View.VISIBLE);
+          findViewById(R.id.dismiss_alarm).setVisibility(View.INVISIBLE);
+      }
+
+      findViewById(R.id.dismiss_alarm_button).setOnClickListener(
+              new View.OnClickListener() {
+                  @Override
+                  public void onClick(View view) {
+                      AlarmNotificationService.dismissAllAlarms(getApplicationContext());
+                      finish();
+                  }
+              });
 
     ((Slider)findViewById(R.id.dismiss_alarm)).setListener(
         new Slider.Listener() {

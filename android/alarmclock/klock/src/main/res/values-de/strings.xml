@@ -46,4 +46,6 @@
   <string name="selected">Ausgewählt: </string>
   <string name="time_out_title">Wecker-Zeitlimit</string>
   <string name="time_out_error">ACHTUNG: Diese Weckzeit hat ihr Zeitlimit erreicht.</string>
+  <string name="alarm_dismiss_by_button">Ausschalten mit einem Button.</string>
+  <string name="alarm_dismiss_by_slider">Ausschalten mit einem Schieberegler.</string>
 </resources>
