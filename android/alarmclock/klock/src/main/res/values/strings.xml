@@ -14,6 +14,7 @@
   <string name="alarm_tone">Alarm tone</string>
   <string name="fade_description">%1$d%% to %2$d%% over %3$d seconds</string>
   <string name="ok">OK</string>
+  <string name="off">off</string>
   <string name="cancel">Cancel</string>
   <string name="done">Done</string>
   <string name="snooze">SNOOZE</string>

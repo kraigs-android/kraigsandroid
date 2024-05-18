@@ -8,6 +8,7 @@
   <string name="alarm_tone">Weckton</string>
   <string name="fade_description">Von %1$d%% bis %2$d%% über %3$d Sekunden</string>
   <string name="ok">OK</string>
+  <string name="off">aus</string>
   <string name="cancel">Abbrechen</string>
   <string name="delete">Löschen</string>
   <string name="snooze">SNOOZE</string>
