@@ -91,6 +91,10 @@ public class AlarmNotificationActivity extends Activity {
             finish();
           }
         });
+    if (snooze==0){
+        findViewById(R.id.snooze_alarm).setVisibility(View.INVISIBLE);
+        findViewById(R.id.snooze_bar).setVisibility(View.INVISIBLE);
+    }
   }
 
   @Override

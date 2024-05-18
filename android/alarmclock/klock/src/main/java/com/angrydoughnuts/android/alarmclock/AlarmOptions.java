@@ -475,26 +475,24 @@ public class AlarmOptions extends android.app.DialogFragment {
       final ViewGroup edit_snooze = newItem(c);
       addView(edit_snooze);
       setImage(edit_snooze, R.drawable.ic_snooze);
-      setText(edit_snooze, c.getString(R.string.minute_abbriv, s.snooze));
+      setText(edit_snooze, s.snooze==0?c.getString(R.string.off):c.getString(R.string.minute_abbriv, s.snooze));
       final SeekBar snooze_bar = new SeekBar(c);
       setView(edit_snooze, snooze_bar, 1.0f);
-      // Range 1 - 60 increments of 1.
-      snooze_bar.setMax(59);
-      snooze_bar.setProgress(s.snooze - 1);
+      // Range 0 - 60 increments of 1. 0 means off
+      snooze_bar.setMax(60);
+      snooze_bar.setProgress(s.snooze);
       snooze_bar.setOnSeekBarChangeListener(
           new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar s, int prog, boolean user) {
-              final int snooze = prog + 1;
-              setText(edit_snooze, c.getString(R.string.minute_abbriv, snooze));
+              setText(edit_snooze, prog==0?c.getString(R.string.off):c.getString(R.string.minute_abbriv, prog));
             }
             @Override
             public void onStartTrackingTouch(SeekBar s) {}
             @Override
             public void onStopTrackingTouch(SeekBar s) {
-              final int snooze = s.getProgress() + 1;
               ContentValues val = new ContentValues();
-              val.put(AlarmClockProvider.SettingsEntry.SNOOZE, snooze);
+              val.put(AlarmClockProvider.SettingsEntry.SNOOZE, s.getProgress());
               c.getContentResolver().update(settings, val, null, null);
             }
           });
