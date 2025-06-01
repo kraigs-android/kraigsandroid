@@ -16,6 +16,7 @@
 package com.angrydoughnuts.android.alarmclock;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -24,8 +25,11 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 
+import java.util.ArrayList;
+
 public class Slider extends FrameLayout {
   private final View slide;
+  private final ArrayList<Rect> excludeGestures;
   private boolean tracking = false;
   private Listener listener;
   public void setListener(Listener l) { listener = l; }
@@ -48,6 +52,15 @@ public class Slider extends FrameLayout {
     ((LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
       .inflate(R.layout.slider, this, true);
     slide = findViewById(R.id.slider_slide);
+    excludeGestures = new ArrayList<Rect>() {{ add(new Rect()); }};
+  }
+
+  @Override
+  public void onLayout(boolean changed, int left, int top, int right, int bottom) {
+    super.onLayout(changed, left, top, right, bottom);
+    // Disable system gestures over slider.  Only kind of works?
+    excludeGestures.get(0).set(left, top, right, bottom);
+    setSystemGestureExclusionRects(excludeGestures);
   }
 
   @Override
