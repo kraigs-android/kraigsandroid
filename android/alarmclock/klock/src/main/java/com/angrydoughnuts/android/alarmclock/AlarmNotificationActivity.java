@@ -20,10 +20,12 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Insets;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.TextView;
 
@@ -45,6 +47,15 @@ public class AlarmNotificationActivity extends Activity {
     setContentView(R.layout.notification);
     // Make sure this window always shows over the lock screen.
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+    // android edge-to-edge shenanigans...
+    getWindow().getDecorView().setOnApplyWindowInsetsListener(
+        new View.OnApplyWindowInsetsListener() {
+          public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
+            Insets i = insets.getInsets(WindowInsets.Type.systemBars());
+            v.setPadding(i.left, i.top, i.right, i.bottom);
+            return WindowInsets.CONSUMED;
+          }
+        });
 
     // Pull snooze from saved state.
     if (state != null && state.containsKey("snooze")) {

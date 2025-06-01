@@ -28,6 +28,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Insets;
 import android.net.Uri;
 import android.provider.Settings;
 import android.os.Bundle;
@@ -37,6 +38,7 @@ import android.os.Process;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowInsets;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.ListView;
@@ -61,6 +63,16 @@ public class AlarmClockActivity extends Activity {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.alarm_list);
+    // android edge-to-edge shenanigans...
+    getWindow().getDecorView().setOnApplyWindowInsetsListener(
+        new View.OnApplyWindowInsetsListener() {
+          @Override
+          public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
+            Insets i = insets.getInsets(WindowInsets.Type.systemBars());
+            v.setPadding(i.left, i.top, i.right, i.bottom);
+            return WindowInsets.CONSUMED;
+          }
+        });
 
     {
       String p = Manifest.permission.POST_NOTIFICATIONS;
