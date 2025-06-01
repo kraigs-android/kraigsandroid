@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion 36
 
     defaultConfig {
         applicationId "com.angrydoughnuts.android.alarmclock"
-        minSdkVersion 23
-        targetSdkVersion 33
+        minSdkVersion 33
+        targetSdkVersion 36
     }
 
     buildTypes {
@@ -15,5 +15,5 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
-    namespace 'com.angrydoughnuts.android.alarmclock'
+    namespace = 'com.angrydoughnuts.android.alarmclock'
 }
