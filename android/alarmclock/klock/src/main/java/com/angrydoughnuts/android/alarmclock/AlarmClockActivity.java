@@ -17,6 +17,7 @@ package com.angrydoughnuts.android.alarmclock;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ContentUris;
@@ -27,6 +28,8 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.Uri;
+import android.provider.Settings;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -237,6 +240,16 @@ public class AlarmClockActivity extends Activity {
   public void onRestart() {
     super.onRestart();
     getLoaderManager().getLoader(0).forceLoad();
+  }
+  @Override
+  public void onResume() {
+    super.onResume();
+    if (!((AlarmManager)getSystemService(Context.ALARM_SERVICE))
+        .canScheduleExactAlarms()) {
+      Intent i = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+      i.setData(Uri.fromParts("package", getPackageName(), null));
+      startActivity(i);
+    }
   }
 
   @Override
