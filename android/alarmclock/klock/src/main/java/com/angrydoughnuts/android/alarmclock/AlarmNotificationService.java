@@ -41,6 +41,7 @@ import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.ArrayMap;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -78,7 +79,7 @@ public class AlarmNotificationService extends Service {
     if (alarmid < 0) {
       throw new IllegalArgumentException("Invalid alarmid: " + alarmid);
     }
-
+    AlarmManager alarmManager = (AlarmManager)c.getSystemService(Context.ALARM_SERVICE);
     // Intents are considered equal if they have the same action, data, type,
     // class, and categories.  In order to schedule multiple alarms, every
     // pending intent must be different.  This means that we must encode
@@ -86,13 +87,16 @@ public class AlarmNotificationService extends Service {
     PendingIntent schedule = PendingIntent.getBroadcast(
         c, (int)alarmid, new Intent(c, AlarmTriggerReceiver.class)
         .putExtra(ALARM_ID, alarmid), PendingIntent.FLAG_IMMUTABLE);
-
-    ((AlarmManager)c.getSystemService(Context.ALARM_SERVICE))
-      .setAlarmClock(new AlarmManager.AlarmClockInfo(
-          tsUTC, PendingIntent.getActivity(
-              c, 0, new Intent(c, AlarmClockActivity.class),
-              PendingIntent.FLAG_IMMUTABLE)),
-              schedule);
+    if (alarmManager.canScheduleExactAlarms()) {
+      alarmManager.setAlarmClock(
+          new AlarmManager.AlarmClockInfo(
+              tsUTC, PendingIntent.getActivity(
+                  c, 0, new Intent(c, AlarmClockActivity.class),
+                  PendingIntent.FLAG_IMMUTABLE)),
+          schedule);
+    } else {
+      Toast.makeText(c, "Can's schedule alarm!", Toast.LENGTH_LONG).show();
+    }
     CountdownRefresh.start(c);
   }
 

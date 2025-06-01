@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.Calendar;
 
@@ -59,7 +60,12 @@ public class CountdownRefresh extends BroadcastReceiver {
   private static void scheduleRefresh(Context c) {
     Calendar refresh = TimeUtil.nextMinute();
     Log.i(TAG, "Schedule refresh at: " + TimeUtil.formatDebug(refresh));
-    ((AlarmManager)c.getSystemService(Context.ALARM_SERVICE))
+    AlarmManager alarmManager = (AlarmManager)c.getSystemService(Context.ALARM_SERVICE);
+    if (!alarmManager.canScheduleExactAlarms()) {
+      Toast.makeText(c, "Can's schedule alarm!", Toast.LENGTH_LONG).show();
+      return;
+    }
+    alarmManager
       .setExact(AlarmManager.RTC, refresh.getTimeInMillis(),
                 PendingIntent.getBroadcast(
                     c, JOB_ID, new Intent(c, CountdownRefresh.class),
