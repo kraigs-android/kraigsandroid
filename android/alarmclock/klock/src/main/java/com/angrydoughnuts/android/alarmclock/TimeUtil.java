@@ -15,6 +15,7 @@
 
 package com.angrydoughnuts.android.alarmclock;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.text.format.DateFormat;
 
@@ -166,19 +167,20 @@ public class TimeUtil {
   }
 
   public static String format(Context context, Calendar c) {
-    SimpleDateFormat f = DateFormat.is24HourFormat(context) ?
+    @SuppressLint("SimpleDateFormat") SimpleDateFormat f = DateFormat.is24HourFormat(context) ?
       new SimpleDateFormat("HH:mm") :
       new SimpleDateFormat("h:mm");
     return f.format(c.getTime());
   }
 
   public static String formatLong(Context context, Calendar c) {
-    SimpleDateFormat f = DateFormat.is24HourFormat(context) ?
+    @SuppressLint("SimpleDateFormat") SimpleDateFormat f = DateFormat.is24HourFormat(context) ?
       new SimpleDateFormat("HH:mm") :
       new SimpleDateFormat("h:mm a");
     return f.format(c.getTime());
   }
 
+  @SuppressLint("SimpleDateFormat")
   public static String formatDebug(Calendar c) {
     return (new SimpleDateFormat("HH:mm:ss.SSS")).format(c.getTime());
   }

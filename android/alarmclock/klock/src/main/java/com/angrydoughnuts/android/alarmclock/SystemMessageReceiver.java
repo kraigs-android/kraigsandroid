@@ -15,6 +15,7 @@
 
 package com.angrydoughnuts.android.alarmclock;
 
+import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -58,8 +59,7 @@ public class SystemMessageReceiver extends BroadcastReceiver {
       final String CHAN = "reschedule";
       final NotificationManager manager =
         (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-          manager.getNotificationChannel(CHAN) != null) {
+      if (manager.getNotificationChannel(CHAN) != null) {
         manager.deleteNotificationChannel(CHAN);
       }
     }
@@ -85,6 +85,7 @@ public class SystemMessageReceiver extends BroadcastReceiver {
   private static class Alarm {
     final long id;
     final long tsUTC;
+    @SuppressLint("Range")
     public Alarm(Cursor c) {
       this.id = c.getLong(c.getColumnIndex(AlarmClockProvider.AlarmEntry._ID));
       this.tsUTC = TimeUtil.nextOccurrence(

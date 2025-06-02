@@ -15,11 +15,11 @@
 
 package com.angrydoughnuts.android.alarmclock;
 
+import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.Settings;
 
 import java.util.Calendar;
 
@@ -82,6 +82,7 @@ public class DbUtil {
       return alarm;
     }
 
+    @SuppressLint("Range")
     public Alarm(Cursor c) {
       time = c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
       enabled = c.getInt(c.getColumnIndex(
@@ -159,6 +160,7 @@ public class DbUtil {
           null, null, null);
     }
 
+    @SuppressLint("Range")
     private Settings(Cursor c) {
       tone_url = Uri.parse(c.getString(c.getColumnIndex(
           AlarmClockProvider.SettingsEntry.TONE_URL)));

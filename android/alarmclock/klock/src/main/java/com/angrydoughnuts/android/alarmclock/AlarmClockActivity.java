@@ -16,6 +16,7 @@
 package com.angrydoughnuts.android.alarmclock;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
@@ -86,15 +87,15 @@ public class AlarmClockActivity extends Activity {
         this, R.layout.alarm_list_item, null, 0) {
         @Override
         public void bindView(View v, Context context, Cursor c) {
-          final int secondsPastMidnight =
+          @SuppressLint("Range") final int secondsPastMidnight =
             c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.TIME));
-          final int enabled =
+          @SuppressLint("Range") final int enabled =
             c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.ENABLED));
-          final String label =
+          @SuppressLint("Range") final String label =
             c.getString(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NAME));
-          final int repeats =
+          @SuppressLint("Range") final int repeats =
             c.getInt(c.getColumnIndex(AlarmClockProvider.AlarmEntry.DAY_OF_WEEK));
-          final long nextSnooze =
+          @SuppressLint("Range") final long nextSnooze =
             c.getLong(c.getColumnIndex(AlarmClockProvider.AlarmEntry.NEXT_SNOOZE));
           final Calendar next =
             TimeUtil.nextOccurrence(secondsPastMidnight, repeats, nextSnooze);
@@ -299,7 +300,7 @@ public class AlarmClockActivity extends Activity {
       android.preference.PreferenceManager.getDefaultSharedPreferences(this)
         .edit()
         .putBoolean(CountdownRefresh.DISPLAY_NOTIFICATION_PREF, new_val)
-        .commit();
+        .apply();
       if (new_val) {
         CountdownRefresh.start(getApplicationContext());
       } else {
@@ -327,6 +328,7 @@ public class AlarmClockActivity extends Activity {
         .setNegativeButton(R.string.cancel, null)
         .setPositiveButton(
             R.string.ok, new DialogInterface.OnClickListener() {
+                @SuppressLint("Range")
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                   // Find all of the enabled alarm ids.

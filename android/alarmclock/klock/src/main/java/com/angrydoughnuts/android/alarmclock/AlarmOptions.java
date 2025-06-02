@@ -31,7 +31,6 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.os.VibrationEffect;
@@ -70,9 +69,7 @@ public class AlarmOptions extends android.app.DialogFragment {
     super.onCreateDialog(savedInstanceState);
 
     {
-      String p = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) ?
-        Manifest.permission.READ_MEDIA_AUDIO :
-        Manifest.permission.READ_EXTERNAL_STORAGE;
+      String p = Manifest.permission.READ_MEDIA_AUDIO;
       if (getContext().checkPermission(p, Process.myPid(), Process.myUid()) !=
           PackageManager.PERMISSION_GRANTED)
         requestPermissions(new String[] { p }, 0);
@@ -201,7 +198,7 @@ public class AlarmOptions extends android.app.DialogFragment {
     public void onChange(boolean selfChange, Uri uri) {
       state_changed = true;
     }
-  };
+  }
 
   @SuppressWarnings("deprecation")
   public static class RepeatEditor extends android.app.DialogFragment {
@@ -456,14 +453,9 @@ public class AlarmOptions extends android.app.DialogFragment {
             @Override
             public void onCheckedChanged(CompoundButton b, boolean checked) {
               if (checked) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                  ((Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE))
-                    .vibrate(VibrationEffect.createOneShot(
-                                 100, VibrationEffect.DEFAULT_AMPLITUDE));
-                } else {
-                  ((Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE))
-                    .vibrate(100);
-                }
+                ((Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE))
+                  .vibrate(VibrationEffect.createOneShot(
+                               100, VibrationEffect.DEFAULT_AMPLITUDE));
               }
               ContentValues val = new ContentValues();
               val.put(AlarmClockProvider.SettingsEntry.VIBRATE, checked);

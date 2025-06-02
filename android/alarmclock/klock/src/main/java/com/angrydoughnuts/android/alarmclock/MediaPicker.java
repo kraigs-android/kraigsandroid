@@ -16,6 +16,7 @@
 package com.angrydoughnuts.android.alarmclock;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ContentUris;
@@ -29,12 +30,10 @@ import android.database.MergeCursor;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.provider.BaseColumns;
 import android.provider.MediaStore.Audio;
-import android.provider.MediaStore.MediaColumns;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -61,9 +60,7 @@ public class MediaPicker extends android.app.DialogFragment {
       tab = savedInstanceState.getInt("tab");
     }
 
-    String readPerm = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) ?
-      Manifest.permission.READ_MEDIA_AUDIO :
-      Manifest.permission.READ_EXTERNAL_STORAGE;
+    String readPerm = Manifest.permission.READ_MEDIA_AUDIO;
     final boolean has_external = PackageManager.PERMISSION_GRANTED ==
       getContext().checkPermission(readPerm, Process.myPid(), Process.myUid());
 
@@ -270,6 +267,7 @@ public class MediaPicker extends android.app.DialogFragment {
       final PickerQuery q, AdapterView.OnItemClickListener click) {
     final ResourceCursorAdapter adapter = new ResourceCursorAdapter(
         getContext(), R.layout.media_picker_item, null, 0) {
+        @SuppressLint("Range")
         @Override
         public void bindView(View v, Context context, Cursor c) {
           TextView t = (TextView)v;

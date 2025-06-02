@@ -23,7 +23,6 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -94,8 +93,7 @@ public class CountdownRefresh extends BroadcastReceiver {
       (NotificationManager)c.getSystemService(Context.NOTIFICATION_SERVICE);
 
     // Create a notification channel on first use.
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-        manager.getNotificationChannel(NEXT_ALARM_NOTIFICATION_CHAN) == null) {
+    if (manager.getNotificationChannel(NEXT_ALARM_NOTIFICATION_CHAN) == null) {
       manager.createNotificationChannel(
           new NotificationChannel(
               NEXT_ALARM_NOTIFICATION_CHAN,
@@ -105,9 +103,7 @@ public class CountdownRefresh extends BroadcastReceiver {
 
     manager.notify(
         NEXT_ALARM_NOTIFICATION_ID,
-        (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
-         new Notification.Builder(c, NEXT_ALARM_NOTIFICATION_CHAN) :
-         new Notification.Builder(c))
+        new Notification.Builder(c, NEXT_ALARM_NOTIFICATION_CHAN)
         .setContentTitle(next.label.isEmpty() ?
                          c.getString(R.string.app_name) :
                          next.label)

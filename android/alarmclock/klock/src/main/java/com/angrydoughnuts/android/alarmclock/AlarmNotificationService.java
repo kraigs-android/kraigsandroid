@@ -31,7 +31,6 @@ import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -267,8 +266,7 @@ public class AlarmNotificationService extends Service {
 
     final NotificationManager manager =
       (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-        manager.getNotificationChannel(FIRING_ALARM_NOTIFICATION_CHAN) == null) {
+    if (manager.getNotificationChannel(FIRING_ALARM_NOTIFICATION_CHAN) == null) {
       // Create a notification channel on first use.
       NotificationChannel chan = new NotificationChannel(
           FIRING_ALARM_NOTIFICATION_CHAN,
@@ -278,9 +276,7 @@ public class AlarmNotificationService extends Service {
       manager.createNotificationChannel(chan);
     }
     final Notification notification =
-      (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
-       new Notification.Builder(this, FIRING_ALARM_NOTIFICATION_CHAN) :
-       new Notification.Builder(this))
+      new Notification.Builder(this, FIRING_ALARM_NOTIFICATION_CHAN)
       .setContentTitle(getString(R.string.app_name))
       .setContentText(labels.isEmpty() ? getString(R.string.dismiss) : labels)
       .setSmallIcon(R.drawable.ic_alarm_on)
@@ -340,12 +336,8 @@ public class AlarmNotificationService extends Service {
       player = new MediaPlayer();
       if (s.vibrate) {
         vibrator = (Vibrator)c.getSystemService(Context.VIBRATOR_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-          vibrator.vibrate(
-              VibrationEffect.createWaveform(new long[] {1000, 1000}, 0));
-        } else {
-          vibrator.vibrate(new long[] {1000, 1000}, 0);
-        }
+        vibrator.vibrate(
+            VibrationEffect.createWaveform(new long[] {1000, 1000}, 0));
       }
       // This handler will be used to asynchronously trigger volume adjustments.
       handler = new Handler() {
@@ -480,11 +472,7 @@ public class AlarmNotificationService extends Service {
       Intent alarm = new Intent(c, AlarmNotificationService.class)
         .putExtra(ALARM_ID, alarmid)
         .putExtra(WAKELOCK_ID, nextid++);
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        c.startForegroundService(alarm);
-      } else {
-        c.startService(alarm);
-      }
+      c.startForegroundService(alarm);
     }
 
     public static PowerManager.WakeLock consumeLock(int id) {
