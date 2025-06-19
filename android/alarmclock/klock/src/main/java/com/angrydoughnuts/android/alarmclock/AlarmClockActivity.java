@@ -35,6 +35,7 @@ import android.provider.Settings;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.os.Process;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -80,6 +81,14 @@ public class AlarmClockActivity extends Activity {
       if (checkPermission(p, Process.myPid(), Process.myUid()) !=
           PackageManager.PERMISSION_GRANTED)
         requestPermissions(new String[] { p }, 0);
+    }
+    {
+      PowerManager pm = ((PowerManager)getSystemService(Context.POWER_SERVICE));
+      if (!pm.isIgnoringBatteryOptimizations(getPackageName())) {
+        Intent i = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+        i.setData(Uri.fromParts("package", getPackageName(), null));
+        startActivity(i);
+      }
     }
 
     // Map AlarmEntry fields to list view item views.
